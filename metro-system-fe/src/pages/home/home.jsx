@@ -1,7 +1,9 @@
+import TicketSearchTool from "../../components/ticket-search/TicketSearchTool";
+
 const Home = () => {
     return (
         <>
-        <p>Day la trang home</p>
+            <TicketSearchTool />
         </>
         
     )

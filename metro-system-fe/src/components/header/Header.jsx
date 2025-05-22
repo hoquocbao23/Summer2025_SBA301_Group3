@@ -2,7 +2,7 @@ const Header = () => {
     return (
         <>
         <footer>
-            <p>Footer</p>
+            <p>Header</p>
         </footer>
         </>
         

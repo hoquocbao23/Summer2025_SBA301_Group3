@@ -1,0 +1,51 @@
+/* .hero-container {
+  background: url('https://cdn2.tuoitre.vn/thumb_w/730/471584752817336320/2025/3/25/worlds-greatest-places-2025-hochiminhcity-metro-17428917678101535724843.png') center center / contain no-repeat;
+  height: 100vh;
+  width: 100vw;
+  position: relative;
+} */
+
+.hero-container {
+  position: relative;
+  width: 100%;
+  aspect-ratio: 16 / 9; /* ✅ Đảm bảo tỷ lệ 16:9 */
+  overflow: auto;
+}
+
+/* ✅ Ảnh nền với độ mờ và lớp phủ tối */
+.hero-container::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-image: url('https://cdn2.tuoitre.vn/thumb_w/730/471584752817336320/2025/3/25/worlds-greatest-places-2025-hochiminhcity-metro-17428917678101535724843.png'); /* thay bằng ảnh của bạn */
+  background-size: cover;
+  background-position: center;
+  filter: brightness(50%) blur(2px); /* ✅ Làm tối và mờ 20% */
+  z-index: 0;
+}
+
+.hero-container .content-wrapper {
+  position: relative;
+  z-index: 1;
+  height: 100%;
+}
+
+.form-card {
+  background: rgba(0, 0, 0, 0.6);
+  border: none;
+}
+
+.hero-container .text-white h1,
+.hero-container .text-white p {
+  text-shadow: 1px 1px 4px rgba(0,0,0,0.7);
+}
+
+@media (max-width: 767px) {
+  .hero-container {
+    height: auto;
+    padding: 3rem 0;
+  }
+}
