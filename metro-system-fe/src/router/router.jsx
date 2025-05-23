@@ -3,6 +3,7 @@ import App from "../App";
 import Home from "../pages/home/home";
 import BookingSummary from "../components/ticket-summary/BookingSummary";
 import TicketSearchOverview from "../components/ticket-search/ticketSearchOverview";
+import TicketLayout from "../pages/layout/TicketLayout";
 
 const router = createBrowserRouter([
     {
@@ -15,7 +16,13 @@ const router = createBrowserRouter([
             },
             {
                 path: "/tickets",
-                element: <TicketSearchOverview/>
+                element: <TicketLayout/>,
+                children: [
+                    {
+                        index: true,
+                        element: <TicketSearchOverview/>
+                    },
+                ]
             },
         ]
     }
