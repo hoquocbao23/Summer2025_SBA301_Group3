@@ -1,9 +1,9 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/home/home";
-import BookingSummary from "../components/ticket-summary/BookingSummary";
-import TicketSearchOverview from "../components/ticket-search/ticketSearchOverview";
-
+import TicketSearchOverview from "../components/ticket-search/TicketSearchOverview";
+import PaymentMethodList from "../components/passenger/PaymentMethodList";
+import PassengerPage from "../pages/passenger/passenger-page";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -17,6 +17,10 @@ const router = createBrowserRouter([
                 path: "/tickets",
                 element: <TicketSearchOverview/>
             },
+            {
+                path: "/passenger",
+                element: <PassengerPage/>
+            }
         ]
     }
 ])
