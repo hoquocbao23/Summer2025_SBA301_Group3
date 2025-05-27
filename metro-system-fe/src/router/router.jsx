@@ -1,7 +1,10 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/home/home";
+
 import TicketSearchOverview from "../components/ticket-search/TicketSearchOverview";
+
+import TicketPage from "../pages/ticket/TicketPage";
 
 import PassengerPage from "../pages/passenger/passenger-page";
 import DashboardLayout from "../pages/dashboard/dashboard-layout";
@@ -17,11 +20,17 @@ const router = createBrowserRouter([
                 element: <Home/>
             },
             {
-                path: "tickets",
-                element: <TicketSearchOverview/>
+                path: "/tickets",
+                element: <TicketPage/>,
+                children: [
+                    {
+                        index: true,
+                        element: <TicketSearchOverview/>
+                    }
+                ]
             },
             {
-                path: "passenger",
+                path: "/passenger",
                 element: <PassengerPage/>
             }
         ]
