@@ -1,0 +1,120 @@
+/* .steps-container {
+  display: flex;
+  width: 100%;
+  font-family: Arial, sans-serif;
+  font-weight: 500;
+
+}
+
+.step-item {
+  position: relative;
+  width: 100%;
+  padding: 1rem 2rem;
+  background-color: #2d2d2d;
+  color: white;
+  display: flex;
+  align-items: center;
+  clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%);
+  overflow: visible;
+}
+
+.step-item.active {
+  background-color: #f53b1f;
+}
+
+.step-item .step-number {
+  border: 2px solid white;
+  border-radius: 50%;
+  padding: 0.2rem 0.6rem;
+  margin-right: 0.6rem;
+  font-weight: bold;
+}*/
+
+.ticket-layout-image {
+    position: relative;
+    width: 100%;
+    aspect-ratio: 16 / 9;
+}
+
+.ticket-layout-image::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 50vh;
+    background-image: url('https://cdn2.tuoitre.vn/thumb_w/730/471584752817336320/2025/3/25/worlds-greatest-places-2025-hochiminhcity-metro-17428917678101535724843.png');
+    background-size: cover;
+    background-position: center;
+    filter: brightness(50%) blur(2px);
+    z-index: 0;
+    overflow: hidden;
+}
+
+.ticket-search {
+    position: relative;
+}
+
+.step-item.arrow-right::after {
+    content: "";
+    position: absolute;
+    right: 1px;
+    top: 0;
+    width: 1.4vw;
+    height: 10px;
+    background-color: #716c6c;
+    border-top: 32px solid transparent;
+    border-bottom: 32px solid transparent;
+    clip-path: polygon(95% 0%, 100% 50%, 95% 100%, 0% 100%, 100% 50%, 0% 0%);
+}
+
+
+.steps-container {
+    display: flex;
+    width: 100%;
+    font-weight: 500;
+    position: relative;
+    translate: 0 -25px;
+}
+
+.step-item {
+    position: relative;
+    width: 100%;
+    padding: 1rem 2rem 1rem 1.5rem;
+    background-color: #2d2d2d;
+    color: white;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    clip-path: polygon(0 0, 95% 0, 100% 50%, 95% 100%, 0 100%);
+    margin-right: -30px;
+    /* Để bước sau bị đè lên */
+    z-index: 1;
+    transition: all 0.3s ease;
+
+}
+
+.step-item.active {
+    background-color: #f53b1f;
+    z-index: 2;
+    /* Đè lên các bước chưa active */
+}
+
+.step-number {
+    border: 2px solid white;
+    border-radius: 50%;
+    padding: 0.2rem 0.6rem;
+    margin-right: 0.6rem;
+    font-weight: bold;
+    font-size: 14px;
+}
+
+.step-label {
+    white-space: nowrap;
+    font-size: 14px;
+}
+
+.steps-container .step-item:last-child {
+    clip-path: polygon(0 0, 100% 0, 100% 100%, 0 100%);
+    margin-right: 0;
+}

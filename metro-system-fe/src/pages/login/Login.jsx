@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import './Login.scss';
+import { useNavigate } from "react-router-dom";
 import { accounts } from '../../data/authentication';
 
 const Login = () => {
+  const navigate = useNavigate();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -17,6 +19,9 @@ const Login = () => {
       (acc) => acc.email === email && acc.password === password
     );
     if (found) {
+      if(found.role === "admin") {
+        navigate("/dashboard");
+      }
       setSuccess("Đăng nhập thành công! Xin chào " + found.fullname);
       localStorage.setItem("user", JSON.stringify(found));
     } else {
