@@ -1,0 +1,85 @@
+.login-page {
+  height: 100vh;
+  background-image: url('https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg');
+  background-size: cover;
+  background-position: center;
+  position: relative;
+
+  &::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6); // Dark overlay
+  }
+}
+
+.login-form-col {
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+}
+
+.login-card {
+  background: #2d2d2d; // Dark background for the card
+  border: none;
+  padding: 2rem;
+  color: white;
+  width: 100%;
+  max-width: 400px;
+}
+
+.login-text-col {
+  z-index: 1;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100vh;
+  color: white;
+}
+
+.login-text {
+  max-width: 600px;
+  padding: 2rem;
+
+  h1 {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+  }
+
+  p {
+    font-size: 1.1rem;
+    line-height: 1.6;
+    opacity: 0.9;
+  }
+}
+
+.form-label {
+  color: white;
+}
+
+.form-control {
+  background: white;
+  border: none;
+  color: #666;
+}
+
+.btn-danger {
+  background-color: #ff5733; // Custom red/orange color
+  border: none;
+  font-weight: bold;
+}
+
+.btn-primary {
+  background-color: #3b5998; // Facebook blue
+  border: none;
+  font-weight: bold;
+}
+
+.fab {
+  font-size: 1.2rem;
+}

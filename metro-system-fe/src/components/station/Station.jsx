@@ -94,7 +94,7 @@ const Station = () => {
           <Col key={station.id} xs={12} md={6} lg={4}>
             <Card
               className="h-100 border-0 shadow-sm"
-              style={{ cursor: 'pointer' }} // Add cursor pointer for clickable effect
+              style={{ cursor: 'pointer' }} 
               onClick={
                 () => navigate('/station-detail', { state: { station } })
               } // Navigate on click
@@ -116,9 +116,7 @@ const Station = () => {
                     background: station.overlay,
                   }}
                 ></div>
-                <Button onClick={
-                () => navigate('/station-detail', { state: { station } })
-              }
+                <Button
                   variant="light"
                   size="sm"
                   className="show-ticket-btn"

@@ -1,11 +1,13 @@
 import { createBrowserRouter } from "react-router-dom";
 import App from "../App";
 import Home from "../pages/home/home";
+import BookingSummary from "../components/ticket-summary/BookingSummary";
 import TicketSearchOverview from "../components/ticket-search/ticketSearchOverview";
 import Station from "../components/station/Station";
 import StationDetail from "../components/station/StationDetail";
 import PassengerPage from "../pages/passenger/passenger-page";
->>>>>>> 33fac717353f5878a683b1b6b61e6577c2c50dca
+import Login from "../pages/login/Login";
+import SignUp from "../pages/login/signin";
 const router = createBrowserRouter([
     {
         path: "/",
@@ -29,6 +31,12 @@ const router = createBrowserRouter([
             },{
                 path: "/passenger",
                 element: <PassengerPage/>
+            },{
+                path:"/login",
+                element:<Login/>
+            },{
+                path:"/signin",
+                element:<SignUp/>
             }
         ]
     }
