@@ -13,6 +13,8 @@ import DashboardLayout from "../pages/dashboard/dashboard-layout";
 import CustomerDashboard from "../pages/dashboard/customer/customer-dashboard";
 import PromotionDashboard from "../pages/dashboard/promotion/promotion-dashboard";
 import AdminStationManager from "../pages/dashboard/station/station-dashboard";
+import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
+import MetroServiceStatus from "../components/route/RouteOverview";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -56,6 +58,10 @@ const router = createBrowserRouter([
         path: "/booking-summary",
         element: <BookingSummary />,
       },
+      {
+        path: "/routes",
+        element: <MetroServiceStatus />,
+      },
     ],
   },
   {
@@ -73,6 +79,10 @@ const router = createBrowserRouter([
       {
         path: "stations",
         element: <AdminStationManager/>
+      },
+      {
+        path: "routes",
+        element: <AdminRouteManager/>
       }
     ],
   },
