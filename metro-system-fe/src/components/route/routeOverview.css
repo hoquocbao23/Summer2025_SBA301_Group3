@@ -1,0 +1,412 @@
+/* Metro Service Status CSS */
+
+/* Main Container */
+.metro-container {
+    min-height: 100vh;
+    background-color: #f9fafb;
+    padding: 1.5rem;
+}
+
+.metro-content {
+    max-width: 72rem;
+    margin: 0 auto;
+}
+
+/* Header */
+.page-header {
+    margin-bottom: 2rem;
+}
+
+.page-title {
+    font-size: 1.875rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 0.5rem;
+}
+
+.page-subtitle {
+    color: #6b7280;
+}
+
+/* Overview Bar */
+.overview-bar {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid #e5e7eb;
+}
+
+.overview-content {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: 1rem;
+}
+
+.overview-item {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.overview-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+    margin-bottom: 0.5rem;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.overview-icon:hover {
+    transform: scale(1.05);
+}
+
+.overview-details {
+    text-align: center;
+}
+
+.overview-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+}
+
+.overview-label {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+.overview-status {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-top: 0.25rem;
+}
+
+.status-dot {
+    width: 0.5rem;
+    height: 0.5rem;
+    color: #10b981;
+    fill: currentColor;
+    margin-right: 0.25rem;
+}
+
+.status-text {
+    font-size: 0.75rem;
+    color: #6b7280;
+}
+
+/* Lines Container */
+.lines-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+/* Line Card */
+.line-card {
+    background-color: white;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border: 1px solid #e5e7eb;
+}
+
+.line-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+}
+
+.line-info {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.line-icon {
+    width: 3rem;
+    height: 3rem;
+    border-radius: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-weight: 700;
+}
+
+.line-details {
+    /* Container for line title and label */
+}
+
+.line-title {
+    font-weight: 700;
+    font-size: 1.125rem;
+    color: #1f2937;
+    margin: 0;
+}
+
+.line-label {
+    font-size: 0.875rem;
+    color: #6b7280;
+    font-weight: 500;
+    margin: 0;
+}
+
+.line-status {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.status-badge {
+    padding: 0.25rem 0.75rem;
+    background-color: #dcfce7;
+    color: #166534;
+    border-radius: 9999px;
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Expanded Content */
+.expanded-content {
+    margin-top: 1rem;
+    padding-top: 1rem;
+    border-top: 1px solid #f3f4f6;
+}
+
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+    font-size: 0.875rem;
+}
+
+@media (min-width: 768px) {
+    .stats-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+.stat-item {
+    /* Individual stat container */
+}
+
+.stat-label {
+    color: #6b7280;
+}
+
+.stat-value {
+    font-weight: 600;
+    margin: 0;
+}
+
+/* Stations Section */
+.stations-section {
+    margin-top: 1rem;
+}
+
+.stations-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    color: #374151;
+    margin-bottom: 0.75rem;
+}
+
+.stations-route {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    /* overflow-x: auto; */
+    padding-bottom: 0.5rem;
+}
+
+.station-container {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+}
+
+.station-button {
+    position: relative;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0;
+}
+
+.station-dot {
+    border-radius: 50%;
+    border: 2px solid white;
+    cursor: pointer;
+    transition: transform 0.2s;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+.station-dot.expanded {
+    width: 1rem;
+    height: 1rem;
+}
+
+.station-dot.mini {
+    width: 0.75rem;
+    height: 0.75rem;
+    border: 1px solid white;
+}
+
+.station-dot:hover {
+    transform: scale(1.25);
+}
+
+.station-dot.mini:hover {
+    transform: scale(1.1);
+}
+
+.station-tooltip {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    background-color: #1f2937;
+    color: white;
+    font-size: 0.75rem;
+    padding: 0.5rem;
+    border-radius: 0.25rem;
+    opacity: 0;
+    transition: opacity 0.2s;
+    white-space: nowrap;
+    z-index: 10;
+    bottom: -2rem;
+}
+
+.station-tooltip.mini {
+    bottom: -1.5rem;
+    padding: 0.25rem;
+}
+
+.station-button:hover .station-tooltip {
+    opacity: 1;
+}
+
+.station-connector {
+    height: 0.125rem;
+    margin: 0 0.25rem;
+}
+
+.station-connector.expanded {
+    width: 2rem;
+}
+
+.station-connector.mini {
+    width: 1rem;
+    margin: 0 0.125rem;
+}
+
+/* Mini Route */
+.mini-route {
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mini-stations {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.mini-station-container {
+    display: flex;
+    align-items: center;
+}
+
+/* Selected Station */
+.selected-station {
+    position: fixed;
+    bottom: 1rem;
+    right: 1rem;
+    background-color: #2563eb;
+    color: white;
+    padding: 1rem;
+    border-radius: 0.5rem;
+    box-shadow: 0 10px 15px rgba(0, 0, 0, 0.1);
+}
+
+.selected-title {
+    font-weight: 600;
+    margin: 0 0 0.25rem 0;
+}
+
+.selected-name {
+    font-size: 0.875rem;
+    margin: 0 0 0.5rem 0;
+}
+
+.close-button {
+    margin-top: 0.5rem;
+    font-size: 0.75rem;
+    background-color: #3b82f6;
+    padding: 0.25rem 0.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    color: white;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.close-button:hover {
+    background-color: #60a5fa;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .metro-container {
+        padding: 1rem;
+    }
+
+    .overview-content {
+        gap: 0.75rem;
+    }
+
+    .overview-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+    }
+
+    .line-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .line-status {
+        align-self: flex-end;
+    }
+}
+
+@media (max-width: 480px) {
+    .page-title {
+        font-size: 1.5rem;
+    }
+
+    .stations-route {
+        justify-content: center;
+    }
+
+    .selected-station {
+        left: 1rem;
+        right: 1rem;
+        bottom: 1rem;
+    }
+}
