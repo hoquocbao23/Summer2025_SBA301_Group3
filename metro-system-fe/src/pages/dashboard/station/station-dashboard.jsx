@@ -1,6 +1,5 @@
-"use client"
-
-import { useState } from "react"
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const initialStations = [
   {
@@ -43,22 +42,51 @@ const initialStations = [
     image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
     status: "Inactive",
   },
-]
+];
 
 const AdminStationManager = () => {
-  const [stations, setStations] = useState(initialStations)
-  const [editStation, setEditStation] = useState(null)
-  const [showModal, setShowModal] = useState(false)
-  const [selectedStations, setSelectedStations] = useState([])
+  const navigate = useNavigate();
+
+  let isAdmin = false;
+  try {
+    const user = JSON.parse(localStorage.getItem("user"));
+    isAdmin = user && user.role === "admin";
+  } catch (error) {
+    console.error("Lỗi khi phân tích dữ liệu người dùng từ localStorage:", error);
+  }
+
+  if (!isAdmin) {
+    return (
+      <div className="container py-4">
+        <div className="alert alert-danger" role="alert">
+          <h4 className="alert-heading">Access Denied</h4>
+          <p>Bạn không có quyền truy cập trang quản lý nhà ga. Vui lòng đăng nhập với tài khoản admin.</p>
+          <hr />
+          <button
+            className="btn btn-primary"
+            onClick={() => navigate("/login")}
+            style={{ borderRadius: "8px" }}
+          >
+            Đi đến trang đăng nhập
+          </button>
+        </div>
+      </div>
+    );
+  }
+
+  const [stations, setStations] = useState(initialStations);
+  const [editStation, setEditStation] = useState(null);
+  const [showModal, setShowModal] = useState(false);
+  const [selectedStations, setSelectedStations] = useState([]);
 
   const handleEditOrAdd = (station = null) => {
     setEditStation(
       station
         ? { ...station, location: { ...station.location } }
         : { name: "", location: { lat: "", long: "" }, gates: "", image: "", status: "Active" },
-    )
-    setShowModal(true)
-  }
+    );
+    setShowModal(true);
+  };
 
   const handleSave = () => {
     if (editStation.id) {
@@ -75,9 +103,9 @@ const AdminStationManager = () => {
               }
             : s,
         ),
-      )
+      );
     } else {
-      const newId = stations.length ? stations[stations.length - 1].id + 1 : 1
+      const newId = stations.length ? stations[stations.length - 1].id + 1 : 1;
       setStations([
         ...stations,
         {
@@ -89,47 +117,47 @@ const AdminStationManager = () => {
           },
           gates: Number.parseInt(editStation.gates),
         },
-      ])
+      ]);
     }
-    setShowModal(false)
-    setEditStation(null)
-  }
+    setShowModal(false);
+    setEditStation(null);
+  };
 
   const handleDelete = (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa ga này không?")) {
-      setStations(stations.filter((s) => s.id !== id))
+      setStations(stations.filter((s) => s.id !== id));
     }
-  }
+  };
 
   const handleInputChange = (e) => {
-    const { name, value } = e.target
+    const { name, value } = e.target;
     if (name === "lat" || name === "long") {
-      setEditStation({ ...editStation, location: { ...editStation.location, [name]: value } })
+      setEditStation({ ...editStation, location: { ...editStation.location, [name]: value } });
     } else {
-      setEditStation({ ...editStation, [name]: value })
+      setEditStation({ ...editStation, [name]: value });
     }
-  }
+  };
 
   const toggleStationSelection = (stationId) => {
     setSelectedStations((prev) =>
       prev.includes(stationId) ? prev.filter((id) => id !== stationId) : [...prev, stationId],
-    )
-  }
+    );
+  };
 
   const toggleAllStations = () => {
-    setSelectedStations(selectedStations.length === stations.length ? [] : stations.map((station) => station.id))
-  }
+    setSelectedStations(selectedStations.length === stations.length ? [] : stations.map((station) => station.id));
+  };
 
-  const activeStations = stations.filter((s) => s.status === "Active").length
-  const inactiveStations = stations.filter((s) => s.status === "Inactive").length
+  const activeStations = stations.filter((s) => s.status === "Active").length;
+  const inactiveStations = stations.filter((s) => s.status === "Inactive").length;
 
   return (
     <div className="station-manager">
       {/* Page Header */}
       <div className="d-flex justify-content-between align-items-center mb-4">
         <div>
-          <h2 className="h3 mb-1 text-dark fw-bold">Station Management</h2>
-          <p className="text-muted mb-0">Manage your transit stations and their configurations</p>
+          <h2 className="h3 mb-1 text-dark fw-bold">Quản lý nhà ga</h2>
+          <p className="text-muted mb-0">Quản lý các nhà ga và cấu hình của chúng</p>
         </div>
         <button
           onClick={() => handleEditOrAdd()}
@@ -139,7 +167,7 @@ const AdminStationManager = () => {
           <svg width="16" height="16" fill="currentColor" viewBox="0 0 16 16">
             <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
           </svg>
-          Add Station
+          Thêm nhà ga
         </button>
       </div>
 
@@ -150,7 +178,7 @@ const AdminStationManager = () => {
             <div className="card-body p-4">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <p className="text-muted mb-1 small text-uppercase fw-medium">Total Stations</p>
+                  <p className="text-muted mb-1 small text-uppercase fw-medium">Tổng số nhà ga</p>
                   <h3 className="mb-0 fw-bold text-dark">{stations.length}</h3>
                 </div>
                 <div className="bg-primary bg-opacity-10 p-3 rounded-3">
@@ -168,7 +196,7 @@ const AdminStationManager = () => {
             <div className="card-body p-4">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <p className="text-muted mb-1 small text-uppercase fw-medium">Active Stations</p>
+                  <p className="text-muted mb-1 small text-uppercase fw-medium">Nhà ga hoạt động</p>
                   <h3 className="mb-0 fw-bold text-success">{activeStations}</h3>
                 </div>
                 <div className="bg-success bg-opacity-10 p-3 rounded-3">
@@ -186,7 +214,7 @@ const AdminStationManager = () => {
             <div className="card-body p-4">
               <div className="d-flex justify-content-between align-items-center">
                 <div>
-                  <p className="text-muted mb-1 small text-uppercase fw-medium">Inactive Stations</p>
+                  <p className="text-muted mb-1 small text-uppercase fw-medium">Nhà ga không hoạt động</p>
                   <h3 className="mb-0 fw-bold text-danger">{inactiveStations}</h3>
                 </div>
                 <div className="bg-danger bg-opacity-10 p-3 rounded-3">
@@ -204,10 +232,10 @@ const AdminStationManager = () => {
       <div className="card border-0 shadow-sm" style={{ borderRadius: "12px" }}>
         <div className="card-header bg-white border-0 p-4" style={{ borderRadius: "12px 12px 0 0" }}>
           <div className="d-flex justify-content-between align-items-center">
-            <h5 className="mb-0 fw-semibold">Stations List</h5>
+            <h5 className="mb-0 fw-semibold">Danh sách nhà ga</h5>
             {selectedStations.length > 0 && (
               <span className="badge bg-primary bg-opacity-10 text-primary px-3 py-2 rounded-pill">
-                {selectedStations.length} selected
+                {selectedStations.length} được chọn
               </span>
             )}
           </div>
@@ -226,12 +254,12 @@ const AdminStationManager = () => {
                       className="form-check-input"
                     />
                   </th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Station</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Location</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Gates</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Image</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Status</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark text-end">Actions</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Nhà ga</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Vị trí</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Số cổng</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Hình ảnh</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Trạng thái</th>
+                  <th className="border-0 px-4 py-3 fw-semibold text-dark text-end">Hành động</th>
                 </tr>
               </thead>
               <tbody>
@@ -258,7 +286,7 @@ const AdminStationManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span className="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1 rounded-pill">
-                        {station.gates} gates
+                        {station.gates} cổng
                       </span>
                     </td>
                     <td className="px-4 py-3">
@@ -268,7 +296,7 @@ const AdminStationManager = () => {
                         className="rounded border"
                         style={{ width: "60px", height: "40px", objectFit: "cover" }}
                         onError={(e) => {
-                          e.target.src = "/placeholder.svg?height=40&width=60"
+                          e.target.src = "/placeholder.svg?height=40&width=60";
                         }}
                       />
                     </td>
@@ -280,7 +308,7 @@ const AdminStationManager = () => {
                             : "bg-danger bg-opacity-10 text-danger"
                         }`}
                       >
-                        {station.status}
+                        {station.status === "Active" ? "Hoạt động" : "Không hoạt động"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-end">
@@ -288,7 +316,7 @@ const AdminStationManager = () => {
                         <button
                           onClick={() => handleEditOrAdd(station)}
                           className="btn btn-sm btn-outline-primary border-0"
-                          title="Edit station"
+                          title="Chỉnh sửa nhà ga"
                         >
                           <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M12.146.146a.5.5 0 0 1 .708 0l3 3a.5.5 0 0 1 0 .708L10.5 8.207l-3-3L12.146.146zM11.207 9l-3-3L2.5 11.707V14.5a.5.5 0 0 0 .5.5h2.793L11.207 9z" />
@@ -297,7 +325,7 @@ const AdminStationManager = () => {
                         <button
                           onClick={() => handleDelete(station.id)}
                           className="btn btn-sm btn-outline-danger border-0"
-                          title="Delete station"
+                          title="Xóa nhà ga"
                         >
                           <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
@@ -318,9 +346,9 @@ const AdminStationManager = () => {
           {/* Pagination */}
           <div className="px-4 py-3 border-top bg-light d-flex justify-content-between align-items-center">
             <small className="text-muted">
-              Showing 1-{stations.length} of {stations.length} stations
+              Hiển thị 1-{stations.length} trong số {stations.length} nhà ga
             </small>
-            <small className="text-muted">Rows per page: 5</small>
+            <small className="text-muted">Số hàng mỗi trang: 5</small>
           </div>
         </div>
       </div>
@@ -331,77 +359,77 @@ const AdminStationManager = () => {
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">{editStation?.id ? "Edit Station" : "Add New Station"}</h5>
+                <h5 className="modal-title fw-bold">{editStation?.id ? "Chỉnh sửa nhà ga" : "Thêm nhà ga mới"}</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
 
               <div className="modal-body p-4">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Station Name</label>
+                    <label className="form-label fw-semibold">Tên nhà ga</label>
                     <input
                       type="text"
                       name="name"
                       value={editStation?.name || ""}
                       onChange={handleInputChange}
-                      placeholder="Enter station name"
+                      placeholder="Nhập tên nhà ga"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Number of Gates</label>
+                    <label className="form-label fw-semibold">Số cổng</label>
                     <input
                       type="number"
                       name="gates"
                       value={editStation?.gates || ""}
                       onChange={handleInputChange}
-                      placeholder="Number of gates"
+                      placeholder="Số cổng"
                       min="1"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Latitude</label>
+                    <label className="form-label fw-semibold">Vĩ độ</label>
                     <input
                       type="number"
                       name="lat"
                       value={editStation?.location?.lat || ""}
                       onChange={handleInputChange}
-                      placeholder="Latitude"
+                      placeholder="Vĩ độ"
                       step="any"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Longitude</label>
+                    <label className="form-label fw-semibold">Kinh độ</label>
                     <input
                       type="number"
                       name="long"
                       value={editStation?.location?.long || ""}
                       onChange={handleInputChange}
-                      placeholder="Longitude"
+                      placeholder="Kinh độ"
                       step="any"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">Image URL</label>
+                    <label className="form-label fw-semibold">URL hình ảnh</label>
                     <input
                       type="text"
                       name="image"
                       value={editStation?.image || ""}
                       onChange={handleInputChange}
-                      placeholder="Enter image URL"
+                      placeholder="Nhập URL hình ảnh"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">Status</label>
+                    <label className="form-label fw-semibold">Trạng thái</label>
                     <select
                       name="status"
                       value={editStation?.status || "Active"}
@@ -409,8 +437,8 @@ const AdminStationManager = () => {
                       className="form-select"
                       style={{ borderRadius: "8px" }}
                     >
-                      <option value="Active">Active</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="Active">Hoạt động</option>
+                      <option value="Inactive">Không hoạt động</option>
                     </select>
                   </div>
                 </div>
@@ -423,10 +451,10 @@ const AdminStationManager = () => {
                   onClick={() => setShowModal(false)}
                   style={{ borderRadius: "8px" }}
                 >
-                  Cancel
+                  Hủy
                 </button>
                 <button type="button" className="btn btn-primary" onClick={handleSave} style={{ borderRadius: "8px" }}>
-                  {editStation?.id ? "Update Station" : "Add Station"}
+                  {editStation?.id ? "Cập nhật nhà ga" : "Thêm nhà ga"}
                 </button>
               </div>
             </div>
@@ -434,7 +462,7 @@ const AdminStationManager = () => {
         </div>
       )}
     </div>
-  )
-}
+  );
+};
 
-export default AdminStationManager
+export default AdminStationManager;

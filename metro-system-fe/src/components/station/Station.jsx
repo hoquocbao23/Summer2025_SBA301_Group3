@@ -1,73 +1,12 @@
+// src/components/Station.js
 import React from 'react';
 import { Container, Row, Col, Card, Button } from "react-bootstrap";
 import { CircleFill } from "react-bootstrap-icons";
 import { useNavigate } from 'react-router-dom';
+import { stations } from '../../data/stationsData';
 
 const Station = () => {
   const navigate = useNavigate();
-  const stations = [
-    {
-      id: 1,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "Ben Thanh",
-      toStation: "Ba Son",
-      frequency: "Every day",
-      price: "$238",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-
-    },
-    {
-      id: 2,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "Ba Son",
-      toStation: "Hiep Thanh",
-      frequency: "Week days",
-      price: "$248",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    },
-    {
-      id: 3,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "Hiep Thanh",
-      toStation: "Thao Dien",
-      frequency: "Week days",
-      price: "$258.00",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    },
-    {
-      id: 4,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "Thao Dien",
-      toStation: "An Phu",
-      frequency: "Every day",
-      price: "$238",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    },
-    {
-      id: 5,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "An Phu",
-      toStation: "Tan Cang",
-      frequency: "Week days",
-      price: "$248",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    },
-    {
-      id: 6,
-      fromCity: "Ho Chi Minh City",
-      toCity: "Ho Chi Minh City",
-      fromStation: "Tan Cang",
-      toStation: "Ben Thanh",
-      frequency: "Week days",
-      price: "$258.00",
-      image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    },
-  ];
 
   return (
     <Container className="py-4">
@@ -94,10 +33,8 @@ const Station = () => {
           <Col key={station.id} xs={12} md={6} lg={4}>
             <Card
               className="h-100 border-0 shadow-sm"
-              style={{ cursor: 'pointer' }} 
-              onClick={
-                () => navigate('/station-detail', { state: { station } })
-              } // Navigate on click
+              style={{ cursor: 'pointer' }}
+              onClick={() => navigate(`/stations/${station.id}`)}
             >
               <div className="card-img-container">
                 <Card.Img
@@ -106,16 +43,6 @@ const Station = () => {
                   alt={`${station.fromStation} to ${station.toStation}`}
                   style={{ height: "200px", objectFit: "cover" }}
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: 0,
-                    left: 0,
-                    width: "100%",
-                    height: "100%",
-                    background: station.overlay,
-                  }}
-                ></div>
                 <Button
                   variant="light"
                   size="sm"
