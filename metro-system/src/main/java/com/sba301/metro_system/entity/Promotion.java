@@ -17,11 +17,9 @@ public class Promotion {
     private String promotionName;
     private String promotionCode;
     private BigDecimal promotionDiscount;
-    
-    @Column(name = "from")
+
     private LocalDateTime fromDate;
-    
-    @Column(name = "to")
+
     private LocalDateTime toDate;
 
     @Enumerated(EnumType.STRING)
