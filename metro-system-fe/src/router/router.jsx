@@ -32,6 +32,10 @@ const router = createBrowserRouter([
             index: true,
             element: <TicketSearchOverview />,
           },
+          {
+            path: "passenger",
+            element: <PassengerPage />,
+          },
         ],
       },
       {
@@ -42,10 +46,7 @@ const router = createBrowserRouter([
         path: "/station-detail",
         element: <StationDetail />,
       },
-      {
-        path: "/passenger",
-        element: <PassengerPage />,
-      },
+      
       {
         path: "/login",
         element: <Login />,
