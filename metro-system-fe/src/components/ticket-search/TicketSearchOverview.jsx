@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Pagination } from 'react-bootstrap';
-
+import { useNavigate } from 'react-router-dom';
 const TicketSearchOverview = () => {
+  const navigate = useNavigate();
   const [priceRange, setPriceRange] = useState([100, 125]);
   const [departureTime, setDepartureTime] = useState([9, 19]);
   const [selectedIndex, setSelectedIndex] = useState(null);
@@ -205,7 +206,7 @@ const TicketSearchOverview = () => {
                     <div className="mb-2 small">
                       {ticket.icons.map((icon, i) => <i key={i} className={`bi bi-${icon} me-2`}></i>)}
                     </div>
-                    {(idx === selectedIndex) && <Button variant="danger">Buy Now</Button>}
+                    {(idx === selectedIndex) && <Button variant="danger" onClick={() => navigate('/tickets/passenger')}>Buy Now</Button>}
                   </Col>
                 </Row>
               </Card.Body>

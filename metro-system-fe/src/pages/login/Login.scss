@@ -58,14 +58,16 @@
   }
 }
 
-.form-label {
-  color: white;
+.login-page {
+  .form-control {
+    background: white;
+    border: none;
+    color: #666;
 }
 
-.form-control {
-  background: white;
-  border: none;
-  color: #666;
+  .form-label {
+    color: white;
+  }
 }
 
 .btn-danger {
