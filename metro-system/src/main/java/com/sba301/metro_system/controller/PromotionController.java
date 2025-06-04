@@ -2,20 +2,18 @@ package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
-import com.sba301.metro_system.entity.Promotion;
-import com.sba301.metro_system.service.PromotionService;
+import com.sba301.metro_system.service.IPromotionService;
+import com.sba301.metro_system.service.implement.PromotionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.List;
-
 @RestController
 @RequiredArgsConstructor
 public class PromotionController {
-    private final PromotionService promotionService;
+    private final IPromotionService promotionService;
 
     @PostMapping("promotion")
     public ResponseApi<?> createPromotion( @Valid @RequestBody PromotionRequestDto promotionRequestDto) throws BadRequestException {
