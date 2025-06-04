@@ -1,9 +1,9 @@
-package com.sba301.metro_system.service;
+package com.sba301.metro_system.service.implement;
 
 import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
 import com.sba301.metro_system.entity.Promotion;
 import com.sba301.metro_system.repository.PromotionRepository;
-import lombok.NoArgsConstructor;
+import com.sba301.metro_system.service.IPromotionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
@@ -12,12 +12,11 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
-import java.util.List;
 import java.util.Optional;
 
 @Service
 @RequiredArgsConstructor
-public class PromotionService {
+public class PromotionService implements IPromotionService {
     private final PromotionRepository promotionRepository;
 
     public void createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {
