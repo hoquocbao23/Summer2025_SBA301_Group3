@@ -40,6 +40,10 @@ public class Ticket {
     private TicketType ticketType;
 
     @ManyToOne
-    @JoinColumn(name = "promotion_id")
-    private Promotion promotion;
+    @JoinColumn(name = "voucher_id")
+    private Voucher voucher;
+    
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
 }

@@ -6,6 +6,7 @@ import com.sba301.metro_system.repository.PromotionRepository;
 import com.sba301.metro_system.service.IPromotionService;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -17,6 +18,8 @@ import java.util.Optional;
 @Service
 @RequiredArgsConstructor
 public class PromotionService implements IPromotionService {
+
+    @Autowired
     private final PromotionRepository promotionRepository;
 
     public void createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {

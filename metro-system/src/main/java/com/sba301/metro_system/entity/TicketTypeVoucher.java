@@ -6,7 +6,7 @@ import lombok.Data;
 @Entity
 @Table(name = "ticket_type_voucher")
 @Data
-public class TicketTypePromotion {
+public class TicketTypeVoucher {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ticketTypeVoucherId;

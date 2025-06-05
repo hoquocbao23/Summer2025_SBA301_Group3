@@ -2,6 +2,7 @@ package com.sba301.metro_system.entity;
 
 import jakarta.persistence.*;
 import lombok.Data;
+import java.math.BigDecimal;
 
 @Data
 @Entity
@@ -19,4 +20,8 @@ public class Route {
     @ManyToOne
     @JoinColumn(name = "rule_id")
     private TicketRule ticketRule;
+    
+    private BigDecimal totalDistance;
+    private Integer estimatedDuration;
+    private Integer frequencyMinutes;
 }
