@@ -4,11 +4,14 @@ import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
 import com.sba301.metro_system.entity.Promotion;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 
 import java.util.Optional;
 
 public interface IPromotionService {
-    void createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException;
+    Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException;
     Page<Promotion> findAll(int page, int size);
-    Optional<Promotion> findById(long id);
+    Promotion findById(long id);
+    Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) ;
+    void deletePromotion(long id);
 }
