@@ -4,6 +4,7 @@ import com.sba301.metro_system.enums.Role;
 import com.sba301.metro_system.enums.AccountStatus;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.RequiredArgsConstructor;
 
 @Data
 @Entity
@@ -24,4 +25,6 @@ public class Account {
 
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
+
+
 }

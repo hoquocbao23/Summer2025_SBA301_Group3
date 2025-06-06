@@ -1,16 +1,14 @@
 package com.sba301.metro_system.entity;
 
 import jakarta.persistence.*;
-import lombok.Builder;
 import lombok.Data;
 
 @Entity
-@Table(name = "ticketType_promotion")
+@Table(name = "ticket_type_voucher")
 @Data
 public class TicketTypePromotion {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-
     private Long ticketTypeVoucherId;
 
     @ManyToOne
@@ -20,5 +18,4 @@ public class TicketTypePromotion {
     @ManyToOne
     @JoinColumn(name = "ticket_type_id")
     private TicketType ticketType;
-
 }

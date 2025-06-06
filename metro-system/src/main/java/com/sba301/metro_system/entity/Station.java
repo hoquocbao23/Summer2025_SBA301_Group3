@@ -1,5 +1,6 @@
 package com.sba301.metro_system.entity;
 
+import com.sba301.metro_system.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -15,4 +16,7 @@ public class Station {
     private String stationName;
     
     private String stationLocation;
+
+    @Enumerated(EnumType.STRING)
+    private Status status;
 }
