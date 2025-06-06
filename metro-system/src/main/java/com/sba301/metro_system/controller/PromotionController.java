@@ -18,15 +18,18 @@ import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 
 @RestController
 @RequiredArgsConstructor
+@RequestMapping("/promotions")
 @Tag(name = "Promotion")
 public class PromotionController {
     private final IPromotionService promotionService;
 
 
-    @PostMapping("promotion")
+    @PostMapping()
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
@@ -42,7 +45,7 @@ public class PromotionController {
                 .build();
     }
 
-    @GetMapping("promotions")
+    @GetMapping()
     public ResponseApi<?> findAll(@RequestParam(defaultValue = "0") int page,
                                   @RequestParam(defaultValue = "5") int size) {
         return ResponseApi
@@ -54,7 +57,7 @@ public class PromotionController {
     }
 
 
-    @GetMapping("promotion/{id}")
+    @GetMapping("/{id}")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
@@ -75,7 +78,7 @@ public class PromotionController {
                 .build();
     }
 
-    @PatchMapping("promotion/{id}")
+    @PatchMapping("/{id}")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200"
@@ -87,6 +90,7 @@ public class PromotionController {
     })
     public ResponseApi<?> updatePromotion(@Valid @PathVariable long id,
                                           @RequestBody PromotionRequestDto promotionRequestDto) {
+        System.out.println(promotionRequestDto);
         return ResponseApi
                 .builder()
                 .status(HttpStatus.OK.value())
@@ -95,7 +99,7 @@ public class PromotionController {
                 .build();
     }
 
-    @DeleteMapping("promotion/{id}")
+    @DeleteMapping("/{id}")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200"
@@ -111,6 +115,17 @@ public class PromotionController {
                 .builder()
                 .status(HttpStatus.OK.value())
                 .message("Delete success")
+                .build();
+    }
+
+    @GetMapping("/active/{id}")
+    public ResponseApi getActivePromotionsByTicketTypes(@PathVariable long id) {
+        List<Promotion> promotions = promotionService.findAvailablePromotions(id);
+
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(promotions)
                 .build();
     }
 

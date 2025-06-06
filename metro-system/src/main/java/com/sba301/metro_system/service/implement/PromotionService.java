@@ -17,6 +17,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.time.LocalDateTime;
+import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
@@ -24,6 +25,7 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PromotionService implements IPromotionService {
     private final PromotionRepository promotionRepository;
+    private final TicketTypePromotionService ticketTypePromotionService;
 
     @Override
     public Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {
@@ -39,12 +41,17 @@ public class PromotionService implements IPromotionService {
         }
 
         promotion.setStatus(promotionRequestDto.getStatus());
-        return promotionRepository.save(promotion);
+        promotionRepository.save(promotion);
+        if (promotionRequestDto.getTicketTypeIds() != null) {
+            ticketTypePromotionService.saveTicketTypePromotion(promotion, promotionRequestDto.getTicketTypeIds() );
+        }
+
+        return promotion;
     }
 
     public boolean isValidDate(LocalDateTime fromDate, LocalDateTime toDate) throws BadRequestException {
         LocalDateTime now = LocalDateTime.now();
-        if (fromDate.isBefore(now) || toDate.isBefore(now)) {
+        if (toDate.isBefore(now)) {
             throw new BadRequestException("Ngày bắt đầu hoặc kết thúc không được nhỏ hơn ngày hiện tại.");
         }
         if (fromDate.isAfter(toDate)) {
@@ -97,6 +104,8 @@ public class PromotionService implements IPromotionService {
                 !promotionRequestDto.getStatus().equals(existPromotion.getStatus())) {
             existPromotion.setStatus(promotionRequestDto.getStatus());
         }
+        if (promotionRequestDto.getTicketTypeIds() != null ) {}
+
 
         return promotionRepository.save(existPromotion);
 
@@ -108,6 +117,11 @@ public class PromotionService implements IPromotionService {
                 .orElseThrow(() -> new NotFoundException("Promotion not found"));
         existPromotion.setStatus(Status.INACTIVE);
         promotionRepository.save(existPromotion);
+    }
+
+    @Override
+    public List<Promotion> findAvailablePromotions(long ticketTypeId) {
+        return promotionRepository.findActivePromotionsByTicketTypeIds(ticketTypeId);
     }
 
 
