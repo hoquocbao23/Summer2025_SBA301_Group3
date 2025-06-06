@@ -14,10 +14,9 @@ public class RouteRule {
     @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
-
     @ManyToOne
     @JoinColumn(name = "rule_id")
-    private TicketRule rule;
+    private TicketRule ticketRule;
     
     private String type;
 }

@@ -1,12 +1,9 @@
 package com.sba301.metro_system.service;
 
-import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
+import com.sba301.metro_system.dto.request.PromotionRequestDto;
 import com.sba301.metro_system.entity.Promotion;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
-import org.springframework.web.bind.MethodArgumentNotValidException;
-
-import java.util.Optional;
 
 public interface IPromotionService {
     Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException;

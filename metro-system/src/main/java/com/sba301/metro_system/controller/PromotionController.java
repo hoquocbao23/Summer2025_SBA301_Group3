@@ -1,12 +1,10 @@
 package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
-import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
+import com.sba301.metro_system.dto.request.PromotionRequestDto;
 import com.sba301.metro_system.entity.Promotion;
 import com.sba301.metro_system.service.IPromotionService;
-import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.media.Content;
-import io.swagger.v3.oas.annotations.media.ExampleObject;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
@@ -14,8 +12,8 @@ import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
-import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -23,8 +21,9 @@ import org.springframework.web.bind.annotation.*;
 @RequiredArgsConstructor
 @Tag(name = "Promotion")
 public class PromotionController {
-    private final IPromotionService promotionService;
 
+    @Autowired
+    private final IPromotionService promotionService;
 
     @PostMapping("promotion")
     @ApiResponses({

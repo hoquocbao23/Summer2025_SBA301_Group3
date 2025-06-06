@@ -1,4 +1,4 @@
-package com.sba301.metro_system.dto.request.promotion;
+package com.sba301.metro_system.dto.request;
 
 import com.sba301.metro_system.enums.Status;
 

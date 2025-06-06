@@ -12,8 +12,8 @@ public class TicketTypePromotion {
     private Long ticketTypeVoucherId;
 
     @ManyToOne
-    @JoinColumn(name = "voucher_id")
-    private Voucher voucher;
+    @JoinColumn(name = "promotion_id")
+    private Promotion promotion;
 
     @ManyToOne
     @JoinColumn(name = "ticket_type_id")
