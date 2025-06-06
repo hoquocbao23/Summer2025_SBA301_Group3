@@ -1,4 +1,4 @@
-package com.sba301.metro_system.dto.request;
+package com.sba301.metro_system.dto.request.promotion;
 
 import com.sba301.metro_system.enums.Status;
 
@@ -8,6 +8,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class PromotionRequestDto {
@@ -39,4 +40,9 @@ public class PromotionRequestDto {
     private LocalDateTime toDate;
 
     private Status status;
+
+    @Schema(
+            example = "1, 2"
+    )
+    private List<Long> ticketTypeIds;
 }
