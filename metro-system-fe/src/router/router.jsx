@@ -15,6 +15,7 @@ import PromotionDashboard from "../pages/dashboard/promotion/promotion-dashboard
 import AdminStationManager from "../pages/dashboard/station/station-dashboard";
 import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
+import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -84,6 +85,10 @@ const router = createBrowserRouter([
       {
         path: "routes",
         element: <AdminRouteManager/>
+      },
+      {
+        path: "ticket-type",
+        element: <TicketTypeDashboard/>
       }
     ],
   },

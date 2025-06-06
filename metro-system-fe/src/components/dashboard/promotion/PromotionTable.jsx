@@ -18,13 +18,13 @@ const PromotionTable = () => {
 
   const fetchPromotions = async () => {
     try {
-      const response = await axios.get('https://682e8ef4746f8ca4a47d7191.mockapi.io/vouchers');
+      const response = await axios.get('http://localhost:8080/api/v1/promotions?page=0&size=5');
       // Format lại ngày
     const formatDate = (isoString) => isoString.slice(0, 10).replace(/-/g, '-');
-    const formattedData = response.data.map(item => ({
+    const formattedData = response.data.data.content.map(item => ({
       ...item,
-      from: formatDate(item.from),
-      to: formatDate(item.to)
+      fromDate: formatDate(item.fromDate),
+      toDate: formatDate(item.toDate)
     }));
       setPromotions(formattedData);
     } catch (error) {
@@ -40,7 +40,6 @@ const PromotionTable = () => {
 
   const handleUpdateBtn = (promotion) => {
     setSelectedPromotion(promotion);
-    console.log(promotion);
     setShowModal(true);
   };
 
@@ -51,16 +50,22 @@ const PromotionTable = () => {
 
   const handleSubmitPromotion = async (promotionData) => {
     try {
+      
+      if (promotionData.fromDate > promotionData.toDate) {
+        alert('Start date cannot be greater than end date');
+        return;
+      }
       if (selectedPromotion) {
         // Update existing promotion
-        const response = await axios.put(
-          `https://682e8ef4746f8ca4a47d7191.mockapi.io/vouchers/${selectedPromotion.voucher_id}`,
+        const response = await axios.patch(
+          `http://localhost:8080/api/v1/promotions/${selectedPromotion.promotionId}`,
           promotionData
         );       
+        console.log("PromotionData", promotionData)
       } else {
         // Add new promotion
         const response = await axios.post(
-          'https://682e8ef4746f8ca4a47d7191.mockapi.io/vouchers',
+          'http://localhost:8080/api/v1/promotions',
           promotionData
         );
       }
@@ -74,7 +79,7 @@ const PromotionTable = () => {
 
   const handleDeleteBtn = async (id) => {
     const response = await axios.delete(
-      `https://682e8ef4746f8ca4a47d7191.mockapi.io/vouchers/${id}`,
+      `http://localhost:8080/api/v1/promotions/${id}`,
     );
   };
   
@@ -120,15 +125,19 @@ const PromotionTable = () => {
         </thead>
         <tbody>
           {paginatedPromotions.map((promotion) => (
-            <tr key={promotion.voucher_id} className="table-row">
+            <tr key={promotion.promotionId} className="table-row">
               <td className="align-items-center">
-                {promotion.voucher_name}
+                {promotion.promotionName}
               </td>
-              <td>{promotion.voucher_code}</td>
-              <td>{promotion.voucher_discount}%</td>
-              <td>{promotion.from}</td>
-              <td>{promotion.to}</td>
-              <td>{promotion.status ? 'Active' : 'Inactive'}</td>
+              <td>{promotion.promotionCode}</td>
+              <td>{promotion.promotionDiscount}%</td>
+              <td>{promotion.fromDate}</td>
+              <td>{promotion.toDate}</td>
+              <td>
+                <span className={`badge ${promotion.status === 'ACTIVE' ? 'bg-success' : 'bg-danger'}`}>
+                  {promotion.status}
+                </span>
+              </td>
               <td>
                 <Button
                   variant="warning"
@@ -138,10 +147,11 @@ const PromotionTable = () => {
                 >
                   <FaEdit />
                 </Button>
+
                 <Button
                   variant="danger"
                   size="sm"
-                  onClick={() => handleDeleteBtn(promotion.voucher_id)}
+                  onClick={() => handleDeleteBtn(promotion.promotionId)}
                 >
                   <FaTrash />
                 </Button>
