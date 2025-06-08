@@ -1,7 +1,7 @@
 package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
-import com.sba301.metro_system.dto.request.PromotionRequestDto;
+import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
 import com.sba301.metro_system.entity.Promotion;
 import com.sba301.metro_system.service.IPromotionService;
 import io.swagger.v3.oas.annotations.media.Content;

@@ -28,7 +28,9 @@ public class SecurityConfig {
     UserDetailsService userDetailService;
 
     @Autowired
-    JwtFilter jwtFilter;    private final String[] PUBLIC_URLS= {
+    JwtFilter jwtFilter;
+
+    private final String[] PUBLIC_URLS= {
             "/security/**",
             "/swagger-ui/**",
             "/swagger-ui.html",
@@ -39,18 +41,21 @@ public class SecurityConfig {
             "/security/**"
     };
 
-    private final String[] ADMIN_URLS= {};
+    private final String[] ADMIN_URLS= {
+            "/dashboard/**",
+    };
 
     private final String[] USER_URLS= {};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
         httpSecurity.cors(Customizer.withDefaults());
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);        httpSecurity.authorizeHttpRequests(request -> request
-                        .requestMatchers(PUBLIC_URLS).permitAll()
-//                        .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+        httpSecurity.csrf(AbstractHttpConfigurer::disable);
+        httpSecurity.authorizeHttpRequests(request -> request
+//                        .requestMatchers(PUBLIC_URLS).permitAll()
+//                          .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
 //                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
-                        .anyRequest().authenticated())
+                        .anyRequest().permitAll())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
