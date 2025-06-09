@@ -42,7 +42,7 @@ public class PromotionRequestDto {
     private Status status;
 
     @Schema(
-            example = "1, 2"
+            example = "1"
     )
-    private List<Long> ticketTypeIds;
+    private Long ticketTypeId;
 }

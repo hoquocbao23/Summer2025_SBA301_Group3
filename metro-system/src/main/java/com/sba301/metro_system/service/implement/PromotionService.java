@@ -1,7 +1,9 @@
 package com.sba301.metro_system.service.implement;
 
 import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
+import com.sba301.metro_system.dto.response.TicketTypeResponseDto;
 import com.sba301.metro_system.entity.Promotion;
+import com.sba301.metro_system.entity.TicketType;
 import com.sba301.metro_system.enums.Status;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.repository.PromotionRepository;
@@ -25,7 +27,8 @@ import java.util.Optional;
 @RequiredArgsConstructor
 public class PromotionService implements IPromotionService {
     private final PromotionRepository promotionRepository;
-    private final TicketTypePromotionService ticketTypePromotionService;
+    private final TicketTypeService ticketTypeService;
+
 
     @Override
     public Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {
@@ -41,10 +44,11 @@ public class PromotionService implements IPromotionService {
         }
 
         promotion.setStatus(promotionRequestDto.getStatus());
-        promotionRepository.save(promotion);
-        if (promotionRequestDto.getTicketTypeIds() != null) {
-            ticketTypePromotionService.saveTicketTypePromotion(promotion, promotionRequestDto.getTicketTypeIds() );
+        if (promotionRequestDto.getTicketTypeId() != null) {
+            TicketType ticketType = ticketTypeService.findById(promotionRequestDto.getTicketTypeId());
+            promotion.setTicketType(ticketType);
         }
+        promotionRepository.save(promotion);
 
         return promotion;
     }
@@ -104,7 +108,9 @@ public class PromotionService implements IPromotionService {
                 !promotionRequestDto.getStatus().equals(existPromotion.getStatus())) {
             existPromotion.setStatus(promotionRequestDto.getStatus());
         }
-        if (promotionRequestDto.getTicketTypeIds() != null ) {}
+        if (promotionRequestDto.getTicketTypeId() != null ) {
+            existPromotion.setTicketType(ticketTypeService.findById(promotionRequestDto.getTicketTypeId()));
+        }
 
 
         return promotionRepository.save(existPromotion);
@@ -121,7 +127,7 @@ public class PromotionService implements IPromotionService {
 
     @Override
     public List<Promotion> findAvailablePromotions(long ticketTypeId) {
-        return promotionRepository.findActivePromotionsByTicketTypeIds(ticketTypeId);
+        return null;
     }
 
 
