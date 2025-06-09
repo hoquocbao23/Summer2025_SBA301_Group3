@@ -8,10 +8,11 @@ const navItems = [
   { to: '', icon: <House className="me-2" />, label: 'Overview' },
   { to: 'customers', icon: <People className="me-2" />, label: 'Customers' },
   { to: 'promotions', icon: <Puzzle className="me-2" />, label: 'Promotions' },
+  { to: 'ticket-type', icon: <ExclamationTriangle className="me-2" />, label: 'Ticket Type' },
   { to: 'stations', icon: <Gear className="me-2" />, label: 'Stations' },
   { to: 'routes', icon: <Person className="me-2" />, label: 'Routes' },
   { to: 'account', icon: <ExclamationTriangle className="me-2" />, label: 'Account' },
-  { to: 'ticket-type', icon: <ExclamationTriangle className="me-2" />, label: 'Ticket Type' },
+  
 ];
 
 const SideNav = () => {

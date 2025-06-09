@@ -1,9 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { Table, Button, Container, Pagination } from 'react-bootstrap';
 import { FaEdit, FaTrash, FaPlus } from 'react-icons/fa';
-import axios from 'axios';
+import axiosInstance from '../../../config/axios';
 import PromotionModal from './PromotionModal';
-// import './promotion-table.css';
+// import axios from 'axios';
+
 
 const getInitial = (name) => name ? name.charAt(0).toUpperCase() : '';
 
@@ -15,18 +16,22 @@ const PromotionTable = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [showModal, setShowModal] = useState(false);
   const [selectedPromotion, setSelectedPromotion] = useState(null);
+  const [totalElements, setTotalElements] = useState(0);
+  const [totalPages, setTotalPages] = useState(0);
 
   const fetchPromotions = async () => {
     try {
-      const response = await axios.get('http://localhost:8080/api/v1/promotions?page=0&size=5');
+      const response = await axiosInstance.get(`/promotions?page=${currentPage - 1}&size=${PAGE_SIZE}`);
       // Format lại ngày
-    const formatDate = (isoString) => isoString.slice(0, 10).replace(/-/g, '-');
-    const formattedData = response.data.data.content.map(item => ({
-      ...item,
-      fromDate: formatDate(item.fromDate),
-      toDate: formatDate(item.toDate)
-    }));
+      const formatDate = (isoString) => isoString.slice(0, 10).replace(/-/g, '-');
+      const formattedData = response.data.data.content.map(item => ({
+        ...item,
+        fromDate: formatDate(item.fromDate),
+        toDate: formatDate(item.toDate)
+      }));
       setPromotions(formattedData);
+      setTotalElements(response.data.data.totalElements);
+      setTotalPages(response.data.data.totalPages);
     } catch (error) {
       console.error('Error fetching promotions:', error);
     }
@@ -34,12 +39,13 @@ const PromotionTable = () => {
 
   useEffect(() => {
     fetchPromotions();
-  }, [reload]);
+  }, [reload, currentPage]);
 
   
 
   const handleUpdateBtn = (promotion) => {
     setSelectedPromotion(promotion);
+    console.log("Selected Promotion", promotion);
     setShowModal(true);
   };
 
@@ -50,47 +56,51 @@ const PromotionTable = () => {
 
   const handleSubmitPromotion = async (promotionData) => {
     try {
-      
       if (promotionData.fromDate > promotionData.toDate) {
         alert('Start date cannot be greater than end date');
         return;
       }
       if (selectedPromotion) {
         // Update existing promotion
-        const response = await axios.patch(
-          `http://localhost:8080/api/v1/promotions/${selectedPromotion.promotionId}`,
-          promotionData
-        );       
-        console.log("PromotionData", promotionData)
+        await axiosInstance.patch(
+          `/promotions/${selectedPromotion.promotionId}`,
+          promotionData,
+          {
+            headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
+          }
+        );
       } else {
         // Add new promotion
-        const response = await axios.post(
-          'http://localhost:8080/api/v1/promotions',
-          promotionData
+        await axiosInstance.post(
+          '/promotions',
+          promotionData,
+          {
+            headers: {
+              'Access-Control-Allow-Origin': '*'
+            }
+          }
         );
       }
       setReload(r => !r);
       setShowModal(false);
       setSelectedPromotion(null);
     } catch (error) {
-      console.error('Error adding promotion:', error);
+      console.error('Error submitting promotion:', error);
     }
   };
 
   const handleDeleteBtn = async (id) => {
-    const response = await axios.delete(
-      `http://localhost:8080/api/v1/promotions/${id}`,
-    );
+    try {
+      await axiosInstance.delete(`/promotions/${id}`, {
+      });
+      setReload(r => !r);
+    } catch (error) {
+      console.error('Error deleting promotion:', error);
+    }
   };
   
-
-
-
-
-  // Pagination
-  const totalPages = Math.ceil(promotions.length / PAGE_SIZE);
-  const paginatedPromotions = promotions.slice((currentPage - 1) * PAGE_SIZE, currentPage * PAGE_SIZE);
-
   return (
     <Container className="mt-4">
       
@@ -119,12 +129,13 @@ const PromotionTable = () => {
             <th>Discount</th>
             <th>From</th>
             <th>To</th>
+            <th>Ticket Type</th>
             <th>Status</th>
             <th>Actions</th>
           </tr>
         </thead>
         <tbody>
-          {paginatedPromotions.map((promotion) => (
+          {promotions.map((promotion) => (
             <tr key={promotion.promotionId} className="table-row">
               <td className="align-items-center">
                 {promotion.promotionName}
@@ -134,10 +145,14 @@ const PromotionTable = () => {
               <td>{promotion.fromDate}</td>
               <td>{promotion.toDate}</td>
               <td>
+                {promotion.ticketType.ticketName}
+              </td>
+              <td>
                 <span className={`badge ${promotion.status === 'ACTIVE' ? 'bg-success' : 'bg-danger'}`}>
                   {promotion.status}
                 </span>
               </td>
+              
               <td>
                 <Button
                   variant="warning"
@@ -161,19 +176,31 @@ const PromotionTable = () => {
         </tbody>
       </Table>
 
-      <div className="pagination-container">
-        <span className="me-3">Rows per page: {PAGE_SIZE}</span>
-        <span className="me-3">
-          {((currentPage - 1) * PAGE_SIZE) + 1}
-          -
-          {Math.min(currentPage * PAGE_SIZE, promotions.length)}
-          {' '}of {promotions.length}
-        </span>
-        <Pagination size="sm">
+      {/* Pagination */}
+      <div className="d-flex justify-content-between align-items-center mt-3">
+        <div>
+          <span className="me-3">Rows per page: {PAGE_SIZE}</span>
+          <span>
+            {((currentPage - 1) * PAGE_SIZE) + 1}
+            -
+            {Math.min(currentPage * PAGE_SIZE, totalElements)}
+            {' '}of {totalElements}
+          </span>
+        </div>
+        <Pagination className="mb-0">
           <Pagination.Prev
             onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
             disabled={currentPage === 1}
           />
+          {[...Array(totalPages)].map((_, idx) => (
+            <Pagination.Item
+              key={idx + 1}
+              active={idx + 1 === currentPage}
+              onClick={() => setCurrentPage(idx + 1)}
+            >
+              {idx + 1}
+            </Pagination.Item>
+          ))}
           <Pagination.Next
             onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
             disabled={currentPage === totalPages}
