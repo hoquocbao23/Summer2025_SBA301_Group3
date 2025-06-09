@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-
+import axios from 'axios';
  
 
 const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
@@ -11,10 +11,20 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     promotionDiscount: Number,
     fromDate: '',
     toDate: '',
-    status: true
+    status: true,
+    ticketTypeId: ''
   });
 
+  const [ticketTypes, setTicketTypes] = useState([]);
+
+  const fetchTicketTypes = async () => {
+    const response = await axiosInstance.get('/ticket-types');
+    setTicketTypes(response.data.data);
+  };
+
+
   useEffect(() => {
+    fetchTicketTypes();
     if (promotion) {
       // Convert timestamp to date string for input
       setPromotionData({
@@ -23,7 +33,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: promotion.promotionDiscount,
         fromDate: promotion.fromDate,
         toDate: promotion.toDate,
-        status: promotion.status
+        status: promotion.status,
+        ticketTypeId: promotion.ticketType.ticketTypeId
       });
     } else {
       // Reset form when adding new promotion
@@ -33,7 +44,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: '',
         fromDate: '',
         toDate: '',
-        status: true
+        status: '',
+        ticketTypeId: ''
       });
     }
   }, [promotion]);
@@ -126,12 +138,29 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <Form.Label>Ticket Type</Form.Label>
+            <Form.Select
+              name="ticketTypeId"
+              value={promotionData.ticketTypeId}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select ticket type</option>
+              {ticketTypes.map((ticketType) => (
+                <option key={ticketType.ticketTypeId} value={ticketType.ticketTypeId}>
+                  {ticketType.ticketName}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
             <Form.Check
               type="switch"
               id="status-switch"
               name="status"
               label="Active"
-              checked={promotionData.status === 'ACTIVE'}
+              checked={promotionData.status === 'ACTIVE' }
               onChange={handleInputChange}
             />
           </Form.Group>
