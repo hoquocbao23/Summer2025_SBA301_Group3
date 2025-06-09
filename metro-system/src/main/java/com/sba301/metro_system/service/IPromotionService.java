@@ -16,4 +16,5 @@ public interface IPromotionService {
     Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) ;
     void deletePromotion(long id);
     List<Promotion> findAvailablePromotions(long ticketTypeId );
+
 }

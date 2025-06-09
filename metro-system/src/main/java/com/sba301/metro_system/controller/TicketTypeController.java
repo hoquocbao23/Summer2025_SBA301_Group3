@@ -2,6 +2,7 @@ package com.sba301.metro_system.controller;
 import com.sba301.metro_system.dto.ResponseApi;
 
 import com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;
+import com.sba301.metro_system.service.ITicketTypeService;
 import com.sba301.metro_system.service.implement.TicketTypeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import org.springframework.http.HttpStatus;
@@ -14,7 +15,7 @@ import lombok.RequiredArgsConstructor;
 @Tag(name = "TicketType")
 public class TicketTypeController {
 
-    private final TicketTypeService ticketTypeService;
+    private final ITicketTypeService ticketTypeService;
 
     @GetMapping("/{id}")
     public ResponseApi<?> getTicketTypeById(@PathVariable long id) {
@@ -54,7 +55,7 @@ public class TicketTypeController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseApi<?>  deleteTicketType(@PathVariable long id) {
+    public ResponseApi<?> deleteTicketType(@PathVariable long id) {
         ticketTypeService.deleteTicketType(id);
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
