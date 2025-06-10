@@ -10,6 +10,10 @@
   width: 100%;
   aspect-ratio: 16 / 9; /* ✅ Đảm bảo tỷ lệ 16:9 */
   overflow: auto;
+  background-image: linear-gradient(rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0.5)), url('../../assets/images/hero-bg.jpg');
+  background-size: cover;
+  background-position: center;
+  min-height: 100vh;
 }
 
 /* ✅ Ảnh nền với độ mờ và lớp phủ tối */
@@ -31,10 +35,13 @@
   position: relative;
   z-index: 1;
   height: 100%;
+  padding: 80px 0;
 }
 
 .form-card {
-  background: rgba(0, 0, 0, 0.6);
+  background: rgba(255, 255, 255, 0.95);
+  border-radius: 15px;
+  box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.15);
   border: none;
 }
 
@@ -48,4 +55,36 @@
     height: auto;
     padding: 3rem 0;
   }
+}
+
+/* Passenger Selector Styles */
+.passenger-selector {
+  padding: 10px;
+}
+
+.passenger-selector .btn-outline-secondary {
+  width: 32px;
+  height: 32px;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+}
+
+.passenger-selector .btn-outline-secondary:hover {
+  background-color: #dc3545;
+  border-color: #dc3545;
+  color: white;
+}
+
+.accordion-button:not(.collapsed) {
+  background-color: #fff;
+  color: #000;
+  box-shadow: none;
+}
+
+.accordion-button:focus {
+  box-shadow: none;
+  border-color: rgba(0, 0, 0, 0.125);
 }

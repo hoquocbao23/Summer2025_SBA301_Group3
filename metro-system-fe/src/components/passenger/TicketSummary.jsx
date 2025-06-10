@@ -1,7 +1,14 @@
-import React from 'react';
-import { Button } from 'react-bootstrap';
+import React, { useState } from 'react';
+import { Button, Form, InputGroup } from 'react-bootstrap';
 
 const TicketSummary = () => {
+  const [voucherCode, setVoucherCode] = useState('');
+
+  const handleApplyVoucher = () => {
+    // Handle voucher application logic here
+    console.log('Applying voucher:', voucherCode);
+  };
+
   return (
     <div>
       <h5 className="mb-3">Ticket Summary</h5>
@@ -32,6 +39,21 @@ const TicketSummary = () => {
           <span>Service Fee</span>
           <span>$2.00</span>
         </div>
+      </div>
+
+      <div className="mb-3">
+        <Form.Label>Voucher Code</Form.Label>
+        <InputGroup>
+          <Form.Control
+            type="text"
+            value={voucherCode}
+            onChange={(e) => setVoucherCode(e.target.value)}
+            placeholder="Enter voucher code"
+          />
+          <Button variant="outline-primary" onClick={handleApplyVoucher}>
+            Apply
+          </Button>
+        </InputGroup>
       </div>
 
       <hr className="my-3" />

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "./ticketLayout.css";
 import { Outlet, useLocation } from "react-router-dom";
-
+import SingleTripForm from "../../components/ticket-search/SingleTripForm";
 const TicketLayout = () => {
     const location = useLocation();
     const [steps, setSteps] = useState([
@@ -36,69 +36,7 @@ const TicketLayout = () => {
             <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
                 <Container>
                     <Row className="justify-content-center">
-                        <Col md={2}>
-                            <Form.Group>
-                                <Form.Label>Travelling Route</Form.Label>
-                                <Form.Control type="text" placeholder="From" />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={1} className="d-flex align-items-end justify-content-center">
-                            <Button variant="light">↔</Button>
-                        </Col>
-
-                        <Col md={2}>
-                            <Form.Group>
-                                <Form.Label>&nbsp;</Form.Label>
-                                <Form.Control type="text" placeholder="To" />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={2}>
-                            <Form.Group>
-                                <Form.Label>Travelling Date</Form.Label>
-                                <Form.Control type="date" />
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={2}>
-                            <Form.Group>
-                                <Form.Label>Travelling Type</Form.Label>
-                                <Form.Select>
-                                    <option>One Way</option>
-                                    <option>Round Trip</option>
-                                </Form.Select>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={2}>
-                            <Form.Group>
-                                <Form.Label>Travelling Persons</Form.Label>
-                                <Form.Control as="select">
-                                    <option>1 Adult</option>
-                                    <option>2 Adults</option>
-                                </Form.Control>
-                            </Form.Group>
-                        </Col>
-
-                        <Col md={1}>
-                            <Form.Group>
-                                <Form.Label>&nbsp;</Form.Label>
-                                <Form.Control as="select">
-                                    <option>0 Kids</option>
-                                    <option>1 Kid</option>
-                                </Form.Control>
-                            </Form.Group>
-                        </Col>
-
-                    </Row>
-                    <Row className="justify-content-center mt-3">
-                        <Col md={11} className="d-flex align-items-center justify-content-end ">
-                            <Button variant="danger" block className="w-25">
-                                SEARCH TICKETS
-                            </Button>
-                        </Col>
-
+                        <SingleTripForm/>
                     </Row>
                 </Container>
             </div>
