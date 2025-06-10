@@ -5,6 +5,7 @@ import com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;
 import com.sba301.metro_system.service.ITicketTypeService;
 import com.sba301.metro_system.service.implement.TicketTypeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.*;
 import lombok.RequiredArgsConstructor;
@@ -37,7 +38,7 @@ public class TicketTypeController {
 
     @PostMapping
     @ResponseStatus(HttpStatus.CREATED)
-    public ResponseApi<?> createTicketType(@RequestBody TicketTypeDto ticketTypeDto) {
+    public ResponseApi<?> createTicketType(@Valid @RequestBody TicketTypeDto ticketTypeDto) {
         return ResponseApi.builder()
                 .status(HttpStatus.CREATED.value())
                 .message(HttpStatus.CREATED.getReasonPhrase())
@@ -46,7 +47,7 @@ public class TicketTypeController {
     }
 
     @PatchMapping("/{id}")
-    public ResponseApi<?>  updateTicketType(@PathVariable long id, @RequestBody TicketTypeDto ticketTypeDto) {
+    public ResponseApi<?>  updateTicketType( @PathVariable long id, @RequestBody TicketTypeDto ticketTypeDto) {
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
