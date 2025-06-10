@@ -13,9 +13,9 @@ const TicketTypeModal = ({ show, onHide, onSubmit, ticketType }) => {
   useEffect(() => {
     if (ticketType) {
       setTicketTypeData({
-        ticketName: ticketType.ticketName || '',
-        validityDays: ticketType.validityDays || '',
-        description: ticketType.description || '',
+        ticketName: ticketType.ticketName ,
+        validityDays: ticketType.validityDays ,
+        description: ticketType.description ,
         usageLimit: ticketType.usageLimit || false,
         status: ticketType.status || 'ACTIVE'
       });
@@ -70,7 +70,7 @@ const TicketTypeModal = ({ show, onHide, onSubmit, ticketType }) => {
               name="validityDays"
               value={ticketTypeData.validityDays}
               onChange={handleInputChange}
-              min="1"
+              min="0"
               required
             />
           </Form.Group>
@@ -83,7 +83,6 @@ const TicketTypeModal = ({ show, onHide, onSubmit, ticketType }) => {
               name="description"
               value={ticketTypeData.description}
               onChange={handleInputChange}
-              required
             />
           </Form.Group>
 

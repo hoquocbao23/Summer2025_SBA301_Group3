@@ -42,16 +42,13 @@ const TicketTypeTable = () => {
 
   const handleSubmitTicketType = async (ticketTypeData) => {
     try {
-      
       if (selectedTicketType) {
-        await axiosInstance.patch(
+         await axiosInstance.patch(
           `/ticket-types/${selectedTicketType.ticketTypeId}`,
           ticketTypeData
         );       
-        console.log("TicketTypeData", ticketTypeData)
-      } else {
-        // Add new promotion
-        await axiosInstance.post(
+      }else {
+         await axiosInstance.post(
           '/ticket-types',
           ticketTypeData
         );
@@ -60,7 +57,7 @@ const TicketTypeTable = () => {
       setShowModal(false);
       setSelectedTicketType(null);
     } catch (error) {
-      console.error('Error submitting ticket type:', error);
+      alert(`${error.response?.data?.message || error.message || 'Failed to submit ticket type'}`);
     }
   };
 
