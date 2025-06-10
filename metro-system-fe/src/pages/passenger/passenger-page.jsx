@@ -15,11 +15,6 @@ const PassengerPage = () => {
               <PassengerForm />
             </Card.Body>
           </Card>
-          {/* <Card>
-            <Card.Body>
-              <PaymentMethodList />
-            </Card.Body>
-          </Card> */}
         </Col>
 
         {/* Right Section */}
