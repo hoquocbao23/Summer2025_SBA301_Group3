@@ -1,7 +1,7 @@
 import React from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import PassengerForm from '../../components/passenger/PassengerForm';
-import PaymentMethodList from '../../components/passenger/PaymentMethodList';
+// import PaymentMethodList from '../../components/passenger/PaymentMethodList';
 import TicketSummary from '../../components/passenger/TicketSummary';
 
 const PassengerPage = () => {
@@ -15,11 +15,11 @@ const PassengerPage = () => {
               <PassengerForm />
             </Card.Body>
           </Card>
-          <Card>
+          {/* <Card>
             <Card.Body>
               <PaymentMethodList />
             </Card.Body>
-          </Card>
+          </Card> */}
         </Col>
 
         {/* Right Section */}

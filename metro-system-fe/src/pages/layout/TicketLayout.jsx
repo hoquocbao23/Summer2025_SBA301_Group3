@@ -1,16 +1,35 @@
-import React from "react";
+import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "./ticketLayout.css";
-import { Outlet } from "react-router-dom";
+import { Outlet, useLocation } from "react-router-dom";
 
 const TicketLayout = () => {
-
-    const steps = [
+    const location = useLocation();
+    const [steps, setSteps] = useState([
         { number: 1, label: "TICKETS", active: true },
         { number: 2, label: "PASSENGERS", active: false },
         { number: 3, label: "PAYMENT", active: false },
         { number: 4, label: "VALIDATION", active: false },
-    ];
+    ]);
+
+    useEffect(() => {
+        const path = location.pathname;
+        const newSteps = steps.map(step => {
+            switch (step.number) {
+                case 1:
+                    return { ...step, active: path === "/tickets" };
+                case 2:
+                    return { ...step, active: path === "/tickets/passenger" };
+                case 3:
+                    return { ...step, active: path === "/tickets/payment" };
+                case 4:
+                    return { ...step, active: path === "/tickets/validation" };
+                default:
+                    return step;
+            }
+        });
+        setSteps(newSteps);
+    }, [location.pathname]);
 
     return (
         <div className="ticket-layout">
@@ -42,13 +61,13 @@ const TicketLayout = () => {
                             </Form.Group>
                         </Col>
 
-                        <Col md={1}>
+                        <Col md={2}>
                             <Form.Group>
-                                <Form.Label>&nbsp;</Form.Label>
-                                <Form.Control as="select">
+                                <Form.Label>Travelling Type</Form.Label>
+                                <Form.Select>
                                     <option>One Way</option>
                                     <option>Round Trip</option>
-                                </Form.Control>
+                                </Form.Select>
                             </Form.Group>
                         </Col>
 
@@ -103,6 +122,7 @@ const TicketLayout = () => {
                     ))}
                 </div>
             </Row>
+            
             <Outlet />
         </div>
 

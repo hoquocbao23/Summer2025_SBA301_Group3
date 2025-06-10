@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
 import axios from 'axios';
+import axiosInstance from '../../../config/axios';
  
 
 const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
@@ -11,7 +12,7 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     promotionDiscount: Number,
     fromDate: '',
     toDate: '',
-    status: true,
+    status: 'INACTIVE',
     ticketTypeId: ''
   });
 
@@ -33,7 +34,7 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: promotion.promotionDiscount,
         fromDate: promotion.fromDate,
         toDate: promotion.toDate,
-        status: promotion.status,
+        status: promotion.status || 'INACTIVE',
         ticketTypeId: promotion.ticketType.ticketTypeId
       });
     } else {
@@ -44,7 +45,7 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: '',
         fromDate: '',
         toDate: '',
-        status: '',
+        status: 'INACTIVE',
         ticketTypeId: ''
       });
     }
@@ -63,8 +64,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     // Format dates to ISO format with UTC timezone
     const formattedData = {
       ...promotionData,
-      fromDate: promotionData.fromDate ? new Date(promotionData.fromDate + ' 00:00:00').toISOString() : null,
-      toDate: promotionData.toDate ? new Date(promotionData.toDate + ' 23:59:59').toISOString() : null
+      fromDate: promotionData.fromDate ? new Date(promotionData.fromDate + 'T00:00:00Z').toISOString() : null,
+      toDate: promotionData.toDate ? new Date(promotionData.toDate + 'T23:59:59Z').toISOString() : null
     };
     onSubmit(formattedData);
   };

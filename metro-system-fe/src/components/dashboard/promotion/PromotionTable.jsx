@@ -61,33 +61,21 @@ const PromotionTable = () => {
         return;
       }
       if (selectedPromotion) {
-        // Update existing promotion
-        await axiosInstance.patch(
+         await axiosInstance.patch(
           `/promotions/${selectedPromotion.promotionId}`,
           promotionData,
-          {
-            headers: {
-              'Access-Control-Allow-Origin': '*'
-            }
-          }
         );
-      } else {
-        // Add new promotion
-        await axiosInstance.post(
+      }else {
+         await axiosInstance.post(
           '/promotions',
           promotionData,
-          {
-            headers: {
-              'Access-Control-Allow-Origin': '*'
-            }
-          }
         );
       }
       setReload(r => !r);
       setShowModal(false);
       setSelectedPromotion(null);
     } catch (error) {
-      console.error('Error submitting promotion:', error);
+        alert(`${error.response?.data?.message || error.message || 'Failed to submit promotion'}`);
     }
   };
 

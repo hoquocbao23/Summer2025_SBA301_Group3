@@ -37,24 +37,13 @@ const TicketSearchTool = () => {
 
                         {/* Travelling Date */}
                         <Form.Group className="mb-3">
-                        <Form.Label>Travelling Date</Form.Label>
                         <Row>
-                            <Col>
-                            <Form.Control type="date" />
-                            </Col>
                             <Col>
                             <Form.Select>
                                 <option>One Way</option>
                                 <option>Round Trip</option>
                             </Form.Select>
                             </Col>
-                        </Row>
-                        </Form.Group>
-
-                        {/* Travelling Persons */}
-                        <Form.Group className="mb-4">
-                        <Form.Label>Travelling Persons</Form.Label>
-                        <Row>
                             <Col>
                             <Form.Select>
                                 <option>1 Adult</option>
@@ -63,17 +52,8 @@ const TicketSearchTool = () => {
                                 <option>4 Adults</option>
                             </Form.Select>
                             </Col>
-                            <Col>
-                            <Form.Select>
-                                <option>0 Kids</option>
-                                <option>1 Kid</option>
-                                <option>2 Kids</option>
-                                <option>3 Kids</option>
-                            </Form.Select>
-                            </Col>
                         </Row>
                         </Form.Group>
-
                         <Button variant="danger" size="lg" className="w-100">
                         SEARCH TICKETS
                         </Button>
