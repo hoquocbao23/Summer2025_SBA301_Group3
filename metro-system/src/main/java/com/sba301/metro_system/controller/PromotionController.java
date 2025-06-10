@@ -87,8 +87,8 @@ public class PromotionController {
                     description = "Promotion not found"
             )
     })
-    public ResponseApi<?> updatePromotion(@Valid @PathVariable long id,
-                                          @RequestBody PromotionRequestDto promotionRequestDto) {
+    public ResponseApi<?> updatePromotion(@PathVariable long id,
+                                          @RequestBody PromotionRequestDto promotionRequestDto) throws BadRequestException {
         System.out.println(promotionRequestDto);
         return ResponseApi
                 .builder()
