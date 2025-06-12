@@ -21,7 +21,9 @@ public class Route {
     @JoinColumn(name = "rule_id")
     private TicketRule ticketRule;
     
-    private BigDecimal totalDistance;
+    private Double totalDistance;
     private Integer estimatedDuration;
     private Integer frequencyMinutes;
+
+    private boolean isDelete = false;
 }
