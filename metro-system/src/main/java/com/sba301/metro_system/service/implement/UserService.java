@@ -3,6 +3,7 @@ package com.sba301.metro_system.service.implement;
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.LoginRequestDTO;
 import com.sba301.metro_system.dto.request.SignupRequestDTO;
+import com.sba301.metro_system.dto.request.user.UserDTO;
 import com.sba301.metro_system.dto.response.LoginResponse;
 import com.sba301.metro_system.entity.Account;
 import com.sba301.metro_system.entity.OTP;
@@ -25,10 +26,13 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
-import org.springframework.security.core.context.SecurityContext;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 @Service
 public class UserService implements IUserService {
@@ -209,8 +213,87 @@ public class UserService implements IUserService {
                 build();
     }
 
+    @Override
+    public ResponseApi<?> loginGoogle() {
+        return null;
+    }
 
+    @Override
+    public ResponseApi<?> getAllUser() {
+        List<Account> users = userRepository.findAll();
+        List<UserDTO> userDTOs = new ArrayList<>();
 
+        for (Account u : users) {
+            UserDTO dto = new UserDTO();
+            dto.setEmail(u.getEmail());
+            dto.setFullname(u.getFullname());
+            dto.setStatus(u.getStatus());
+            dto.setRole(u.getRole());
+            userDTOs.add(dto);
+        }
 
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userDTOs)
+                .build();
+    }
+
+    @Override
+    public ResponseApi<?> updateUser(Long id, UserDTO user) {
+        Optional<Account> accountOp = userRepository.findById(id);
+
+        if (accountOp.isEmpty()) {
+            return ResponseApi.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message("User not found with id: " + id)
+                    .data(null)
+                    .build();
+        }
+
+        Account account = accountOp.get();
+        account.setEmail(user.getEmail());
+        account.setFullname(user.getFullname());
+        account.setStatus(user.getStatus());
+        account.setRole(user.getRole());
+        Account updatedAccount = userRepository.save(account);
+
+        UserDTO updatedDTO = new UserDTO();
+        updatedDTO.setEmail(updatedAccount.getEmail());
+        updatedDTO.setFullname(updatedAccount.getFullname());
+        updatedDTO.setRole(updatedAccount.getRole());
+        updatedDTO.setStatus(updatedAccount.getStatus());
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(updatedDTO)
+                .build();
+    }
+
+    @Override
+    public ResponseApi<?> getUserById(Long id) {
+        Optional<Account> optionalAccount = userRepository.findById(id);
+
+        if (optionalAccount.isEmpty()) {
+            return ResponseApi.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message("User not found with id: " + id)
+                    .data(null)
+                    .build();
+        }
+
+        Account account = optionalAccount.get();
+        UserDTO userDTO = new UserDTO();
+        userDTO.setFullname(account.getFullname());
+        userDTO.setRole(account.getRole());
+        userDTO.setStatus(account.getStatus());
+        userDTO.setEmail(account.getEmail());
+
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(userDTO)
+                .build();
+    }
 
 }

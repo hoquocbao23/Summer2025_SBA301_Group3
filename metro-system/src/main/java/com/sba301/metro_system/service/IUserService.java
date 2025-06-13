@@ -3,6 +3,7 @@ package com.sba301.metro_system.service;
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.LoginRequestDTO;
 import com.sba301.metro_system.dto.request.SignupRequestDTO;
+import com.sba301.metro_system.dto.request.user.UserDTO;
 import com.sba301.metro_system.entity.Account;
 
 public interface IUserService {
@@ -10,6 +11,11 @@ public interface IUserService {
     ResponseApi<?> register(String mail);
     ResponseApi<?> verify(SignupRequestDTO signupRequestDTO, Integer otp);
 
+    ResponseApi<?> loginGoogle();
 
+    ResponseApi<?> getAllUser();
 
+    ResponseApi<?> updateUser(Long id, UserDTO user);
+
+    ResponseApi<?> getUserById(Long id);
 }
