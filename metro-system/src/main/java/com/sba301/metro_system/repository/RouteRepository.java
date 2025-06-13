@@ -15,14 +15,12 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
 
     Optional<Route> findByRouteName(String routeName);
 
-    List<Route> findByIsDeleteFalse();
-
     List<Route> findByTicketRule(TicketRule ticketRule);
 
-    @Query("SELECT r FROM Route r WHERE LOWER(r.routeName) LIKE LOWER(CONCAT('%', :keyword, '%')) AND r.isDelete = false")
+    @Query("SELECT r FROM Route r WHERE LOWER(r.routeName) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Route> findByRouteNameContaining(@Param("keyword") String keyword);
 
-    @Query("SELECT r FROM Route r WHERE LOWER(r.routeDescription) LIKE LOWER(CONCAT('%', :keyword, '%')) AND r.isDelete = false")
+    @Query("SELECT r FROM Route r WHERE LOWER(r.routeDescription) LIKE LOWER(CONCAT('%', :keyword, '%'))")
     List<Route> findByRouteDescriptionContaining(@Param("keyword") String keyword);
 
     boolean existsByRouteName(String routeName);
@@ -30,9 +28,9 @@ public interface RouteRepository extends JpaRepository<Route, Long> {
     @Query("SELECT COUNT(r) > 0 FROM Route r WHERE r.routeName = :routeName AND r.routeId != :routeId")
     boolean existsByRouteNameAndRouteIdNot(@Param("routeName") String routeName, @Param("routeId") Long routeId);
 
-    @Query("SELECT r FROM Route r WHERE r.estimatedDuration BETWEEN :minDuration AND :maxDuration AND r.isDelete = false")
+    @Query("SELECT r FROM Route r WHERE r.estimatedDuration BETWEEN :minDuration AND :maxDuration")
     List<Route> findByEstimatedDurationBetween(@Param("minDuration") Integer minDuration, @Param("maxDuration") Integer maxDuration);
 
-    @Query("SELECT r FROM Route r WHERE r.frequencyMinutes BETWEEN :minFreq AND :maxFreq AND r.isDelete = false")
+    @Query("SELECT r FROM Route r WHERE r.frequencyMinutes BETWEEN :minFreq AND :maxFreq")
     List<Route> findByFrequencyMinutesBetween(@Param("minFreq") Integer minFreq, @Param("maxFreq") Integer maxFreq);
 }

@@ -8,6 +8,7 @@ import com.sba301.metro_system.entity.Route;
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.StationRoute;
 import com.sba301.metro_system.entity.TicketRule;
+import com.sba301.metro_system.enums.Status;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.mapper.RouteMapper;
 import com.sba301.metro_system.repository.RouteRepository;
@@ -62,11 +63,7 @@ public class RouteService implements IRouteService {
         // Find existing route
         Route existingRoute = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
-        
-        // Check if route is not deleted
-        if (existingRoute.isDelete()) {
-            throw new IllegalStateException("Cannot update deleted route");
-        }
+
         
         // Validate route name uniqueness (exclude current route)
         if (routeRequest.routeName() != null && 
@@ -100,7 +97,7 @@ public class RouteService implements IRouteService {
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
         
         // Soft delete
-        route.setDelete(true);
+        route.setStatus(Status.INACTIVE);
         routeRepository.save(route);
     }
 
@@ -111,10 +108,7 @@ public class RouteService implements IRouteService {
         
         Route route = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
-        
-        if (route.isDelete()) {
-            throw new NotFoundException("Route has been deleted");
-        }
+
         
         // Get station routes for this route
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteIdOrderByStationOrder(id);
@@ -125,7 +119,7 @@ public class RouteService implements IRouteService {
     @Override
     @Transactional(readOnly = true)
     public RouteListResponse getAllRoutes() {
-        List<Route> routes = routeRepository.findByIsDeleteFalse();
+        List<Route> routes = routeRepository.findAll();
         
         List<RouteResponse> routeResponses = routes.stream()
                 .map(route -> {
@@ -149,7 +143,6 @@ public class RouteService implements IRouteService {
         List<Route> routes = routeRepository.findByTicketRule(ticketRule);
         
         return routes.stream()
-                .filter(route -> !route.isDelete())
                 .map(route -> {
                     List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
                     return routeMapper.toResponseWithStations(route, stationRoutes);
@@ -162,10 +155,7 @@ public class RouteService implements IRouteService {
     public RouteResponse getRouteByName(String routeName) {
         Route route = routeRepository.findByRouteName(routeName)
                 .orElseThrow(() -> new NotFoundException("Route not found with name: " + routeName));
-        
-        if (route.isDelete()) {
-            throw new NotFoundException("Route has been deleted");
-        }
+
         
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
         return routeMapper.toResponseWithStations(route, stationRoutes);
@@ -191,10 +181,6 @@ public class RouteService implements IRouteService {
         // Find the route
         Route route = routeRepository.findById(routeStationRequest.routeId())
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeStationRequest.routeId()));
-
-        if (route.isDelete()) {
-            throw new IllegalStateException("Cannot add stations to deleted route");
-        }
 
         // Process each station in the request
         for (RouteStationRequest.StationRoute stationRequest : routeStationRequest.stations()) {
@@ -227,10 +213,6 @@ public class RouteService implements IRouteService {
         // Find the route
         Route route = routeRepository.findById(routeStationRequest.routeId())
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeStationRequest.routeId()));
-        
-        if (route.isDelete()) {
-            throw new IllegalStateException("Cannot update stations for deleted route");
-        }
         
         // Delete existing station routes for this route
         stationRouteRepository.deleteByRoute(route);

@@ -6,6 +6,7 @@ import com.sba301.metro_system.dto.response.route.RouteResponse;
 import com.sba301.metro_system.entity.Route;
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.StationRoute;
+import com.sba301.metro_system.enums.Status;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
@@ -23,8 +24,10 @@ public class RouteMapper {
         route.setRouteDescription(request.routeDescription());
         route.setEstimatedDuration(request.estimatedDuration());
         route.setFrequencyMinutes(request.frequencyMinutes());
+        route.setOperatingHours(request.operatingHours());
+        route.setColor(request.color());
         route.setTotalDistance(0.0); // Default value
-        route.setDelete(false); // Default value
+        route.setStatus(request.status()); // Default value
         
         return route;
     }
@@ -42,6 +45,9 @@ public class RouteMapper {
                 .totalDistance(route.getTotalDistance())
                 .estimatedDuration(route.getEstimatedDuration())
                 .frequencyMinutes(route.getFrequencyMinutes())
+                .operatingHours(route.getOperatingHours())
+                .color(route.getColor())
+                .status(route.getStatus())
                 .build();
     }
 
@@ -65,6 +71,9 @@ public class RouteMapper {
                 .totalDistance(route.getTotalDistance())
                 .estimatedDuration(route.getEstimatedDuration())
                 .frequencyMinutes(route.getFrequencyMinutes())
+                .operatingHours(route.getOperatingHours())
+                .color(route.getColor())
+                .status(route.getStatus())
                 .stations(stationResponses)
                 .build();
     }
@@ -114,6 +123,15 @@ public class RouteMapper {
         }
         if (request.frequencyMinutes() != null) {
             route.setFrequencyMinutes(request.frequencyMinutes());
+        }
+        if (request.operatingHours() != null) {
+            route.setOperatingHours(request.operatingHours());
+        }
+        if (request.color() != null) {
+            route.setColor(request.color());
+        }
+        if (request.status() != null) {
+            route.setStatus(request.status());
         }
     }
 

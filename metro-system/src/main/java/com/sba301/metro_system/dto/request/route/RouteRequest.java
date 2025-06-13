@@ -1,5 +1,6 @@
 package com.sba301.metro_system.dto.request.route;
 
+import com.sba301.metro_system.enums.Status;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.*;
 import lombok.Builder;
@@ -30,6 +31,23 @@ public record RouteRequest(
         @NotNull(message = "Frequency is required")
         @Min(value = 1, message = "Frequency must be at least 1 minute")
         @Max(value = 60, message = "Frequency must not exceed 60 minutes")
-        Integer frequencyMinutes
+        Integer frequencyMinutes,
+
+        @Schema(description = "Operating hours", example = "05:00 - 23:00")
+        @Pattern(
+                regexp = "/^([01]?[0-9]|2[0-3]):[0-5][0-9]\\s*-\\s*([01]?[0-9]|2[0-3]):[0-5][0-9]$/",
+                message = "Operating hours must be in format HH:MM - HH:MM (e.g., 05:00 - 23:00)"
+        )
+        String operatingHours,
+
+        @Schema(description = "Route color", example = "#007bff")
+        @Pattern(
+                regexp = "^#(?:[0-9a-fA-F]{3}){1,2}$",
+                message = "Color must be in hex format #rrggbb (e.g., #007bff)"
+        )
+        String color,
+
+        @Schema(description = "Route status", example = "ACTIVE")
+        Status status
 ) {
 }

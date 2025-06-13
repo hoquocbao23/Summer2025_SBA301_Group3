@@ -2,6 +2,7 @@ package com.sba301.metro_system.dto.response.route;
 
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.TicketRule;
+import com.sba301.metro_system.enums.Status;
 import lombok.Builder;
 
 import java.util.List;
@@ -15,6 +16,9 @@ public record RouteResponse(
         Double totalDistance,
         Integer estimatedDuration,
         Integer frequencyMinutes,
+        String operatingHours,
+        String color,
+        Status status,
         List<RouteStationResponse> stations
 ) {
     @Builder
