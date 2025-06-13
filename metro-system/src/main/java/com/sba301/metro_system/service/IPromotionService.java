@@ -13,7 +13,8 @@ public interface IPromotionService {
     Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException;
     Page<Promotion> findAll(int page, int size);
     Promotion findById(long id);
-    Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) ;
+    Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException ;
     void deletePromotion(long id);
     List<Promotion> findAvailablePromotions(long ticketTypeId );
+
 }

@@ -1,11 +1,14 @@
 package com.sba301.metro_system.service.implement;
 
 import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
+import com.sba301.metro_system.dto.response.TicketTypeResponseDto;
 import com.sba301.metro_system.entity.Promotion;
+import com.sba301.metro_system.entity.TicketType;
 import com.sba301.metro_system.enums.Status;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.repository.PromotionRepository;
 import com.sba301.metro_system.service.IPromotionService;
+import com.sba301.metro_system.utils.Utils;
 import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.data.domain.Page;
@@ -21,11 +24,14 @@ import java.util.List;
 import java.util.NoSuchElementException;
 import java.util.Optional;
 
+
+
 @Service
 @RequiredArgsConstructor
 public class PromotionService implements IPromotionService {
     private final PromotionRepository promotionRepository;
-    private final TicketTypePromotionService ticketTypePromotionService;
+    private final TicketTypeService ticketTypeService;
+
 
     @Override
     public Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {
@@ -41,21 +47,22 @@ public class PromotionService implements IPromotionService {
         }
 
         promotion.setStatus(promotionRequestDto.getStatus());
-        promotionRepository.save(promotion);
-        if (promotionRequestDto.getTicketTypeIds() != null) {
-            ticketTypePromotionService.saveTicketTypePromotion(promotion, promotionRequestDto.getTicketTypeIds() );
+        if (promotionRequestDto.getTicketTypeId() != null) {
+            TicketType ticketType = ticketTypeService.findById(promotionRequestDto.getTicketTypeId());
+            promotion.setTicketType(ticketType);
         }
+        promotionRepository.save(promotion);
 
         return promotion;
     }
 
     public boolean isValidDate(LocalDateTime fromDate, LocalDateTime toDate) throws BadRequestException {
         LocalDateTime now = LocalDateTime.now();
-        if (toDate.isBefore(now)) {
-            throw new BadRequestException("Ngày bắt đầu hoặc kết thúc không được nhỏ hơn ngày hiện tại.");
+        if (fromDate.isBefore(now) || toDate.isBefore(now)) {
+            throw new BadRequestException("Start date or end date should be greater than now");
         }
         if (fromDate.isAfter(toDate)) {
-            throw new BadRequestException("Ngày bắt đầu không được lớn hơn ngày kết thúc.");
+            throw new BadRequestException("Start date cannot be greater than end date");
         }
         return true;
     }
@@ -73,39 +80,33 @@ public class PromotionService implements IPromotionService {
     }
 
     @Override
-    public Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) {
+    public Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException {
         Promotion existPromotion = promotionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Promotion not found"));
 
-        if (promotionRequestDto.getPromotionName() != null) {
+        if (Utils.validateString(promotionRequestDto.getPromotionName())) {
             existPromotion.setPromotionName(promotionRequestDto.getPromotionName());
         }
 
-        if (promotionRequestDto.getPromotionCode() != null) {
+        if (Utils.validateString(promotionRequestDto.getPromotionCode())) {
             existPromotion.setPromotionCode(promotionRequestDto.getPromotionCode());
         }
 
-        if (promotionRequestDto.getPromotionDiscount() != null &&
-                !promotionRequestDto.getPromotionDiscount().equals(existPromotion.getPromotionDiscount())) {
+        if (promotionRequestDto.getPromotionDiscount() != null && promotionRequestDto.getPromotionDiscount().intValue() > 0 ) {
             existPromotion.setPromotionDiscount(promotionRequestDto.getPromotionDiscount());
         }
 
-        if (promotionRequestDto.getFromDate() != null &&
-                !promotionRequestDto.getFromDate().equals(existPromotion.getFromDate())) {
+        if (isValidDate(promotionRequestDto.getFromDate(), promotionRequestDto.getToDate())) {
             existPromotion.setFromDate(promotionRequestDto.getFromDate());
-        }
-
-        if (promotionRequestDto.getToDate() != null &&
-                !promotionRequestDto.getToDate().equals(existPromotion.getToDate())) {
             existPromotion.setToDate(promotionRequestDto.getToDate());
         }
 
-        if (promotionRequestDto.getStatus() != null &&
-                !promotionRequestDto.getStatus().equals(existPromotion.getStatus())) {
-            existPromotion.setStatus(promotionRequestDto.getStatus());
-        }
-        if (promotionRequestDto.getTicketTypeIds() != null ) {}
+        Utils.updateIfNotEqual(promotionRequestDto.getStatus(), existPromotion.getStatus(),
+                existPromotion::setStatus);
 
+        if (promotionRequestDto.getTicketTypeId() != null ) {
+            existPromotion.setTicketType(ticketTypeService.findById(promotionRequestDto.getTicketTypeId()));
+        }
 
         return promotionRepository.save(existPromotion);
 
@@ -121,7 +122,7 @@ public class PromotionService implements IPromotionService {
 
     @Override
     public List<Promotion> findAvailablePromotions(long ticketTypeId) {
-        return promotionRepository.findActivePromotionsByTicketTypeIds(ticketTypeId);
+        return null;
     }
 
 
