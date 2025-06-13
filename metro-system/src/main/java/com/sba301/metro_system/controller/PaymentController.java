@@ -25,7 +25,8 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseApi<?> cancelPayment(@PathVariable("orderId") long orderId, String cancellationReason) throws Exception {
+    public ResponseApi<?> cancelPayment(@PathVariable("id") long orderId, String cancellationReason) throws Exception {
+        System.out.println();
         return ResponseApi
                 .builder()
                 .status(HttpStatus.OK.value())

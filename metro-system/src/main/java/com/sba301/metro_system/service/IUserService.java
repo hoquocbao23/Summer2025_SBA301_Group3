@@ -9,4 +9,7 @@ public interface IUserService {
     ResponseApi<?> login(LoginRequestDTO loginRequestDTO);
     ResponseApi<?> register(String mail);
     ResponseApi<?> verify(SignupRequestDTO signupRequestDTO, Integer otp);
+
+
+
 }

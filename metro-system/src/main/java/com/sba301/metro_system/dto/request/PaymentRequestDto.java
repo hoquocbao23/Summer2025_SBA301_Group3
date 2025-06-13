@@ -6,9 +6,7 @@ import lombok.Data;
 public class PaymentRequestDto {
     private String productName;
     private String description;
-    private String returnUrl;
-    private String cancelUrl;
-    private long price;
+    private double price;
     private int quantity;
 
 }

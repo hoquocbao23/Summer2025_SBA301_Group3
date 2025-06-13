@@ -45,8 +45,8 @@ public class PaymentService implements IPaymentService {
                 .amount(1000)
                 .expiredAt( (Instant.now().getEpochSecond() + 900) )
                 .item(item)
-                .returnUrl(paymentRequestDto.getReturnUrl())
-                .cancelUrl(paymentRequestDto.getCancelUrl())
+                .returnUrl("https://payos.vn/docs/checkout/quick-start-payos-hosted-page/?lang=Java&client=React&code-sample=Server.java&code=00&id=ce315fccfa104fcb847d9dc2d60ba16b&cancel=true&status=CANCELLED&orderCode=498828")
+                .cancelUrl("https://payos.vn/docs/checkout/quick-start-payos-hosted-page/?lang=Java&client=React&code-sample=Server.java&code=00&id=ce315fccfa104fcb847d9dc2d60ba16b&cancel=true&status=CANCELLED&orderCode=498828")
                 .build();
         CheckoutResponseData data = payOS.createPaymentLink(paymentData);
         return data.getCheckoutUrl();
@@ -54,7 +54,7 @@ public class PaymentService implements IPaymentService {
 
 
     public PaymentLinkData cancelOrder(long orderId, String cancellationReason ) throws Exception {
-            PaymentLinkData order = payOS.cancelPaymentLink(orderId, null);
+            PaymentLinkData order = payOS.cancelPaymentLink(orderId, cancellationReason);
             return order;
     }
 }
