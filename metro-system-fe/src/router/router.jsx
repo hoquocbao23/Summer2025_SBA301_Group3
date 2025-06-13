@@ -5,7 +5,7 @@ import TicketSearchOverview from "../components/ticket-search/TicketSearchOvervi
 import Station from "../components/station/Station";
 import StationDetail from "../components/station/StationDetail";
 import PassengerPage from "../pages/passenger/passenger-page";
-import Login from "../pages/login/login";
+import Login from "../pages/login/Login";
 import SignUp from "../pages/login/signin";
 import TicketPage from "../pages/ticket/TicketPage";
 import DashboardLayout from "../pages/dashboard/dashboard-layout";

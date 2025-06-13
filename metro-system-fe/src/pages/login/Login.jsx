@@ -1,33 +1,72 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
 import './Login.scss';
-import { accounts } from '../../data/authentication';
+import axiosInstance from '../../config/axios';
+import axios from 'axios';
 
-const Login = () => {
-  const [email, setEmail] = useState("");
+const Login = () => {  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
+  const [loading, setLoading] = useState(false);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
     setSuccess("");
-    const found = accounts.find(
-      (acc) => acc.email === email && acc.password === password
-    );
-    if (found) {
-      setSuccess("Đăng nhập thành công! Xin chào " + found.fullname);
-      localStorage.setItem("user", JSON.stringify(found));
-      // delay for 3 seconds before redirecting
-      setTimeout(() => {}, 3000);
-      if(found.role === "admin") {
-      window.location.href = "/dashboard";  }  
-        else{
-      window.location.href = "/";
+    setLoading(true);
+    
+    try {
+      const response = await axios.post('http://localhost:8080/api/v1/security/login', {
+        email: email,
+        password: password
+      });
+      
+      const { status, message, data } = response.data;
+      
+      if (status === 200) {
+        // Login successful
+        const { token, fullname, role } = data;
+        
+        // Store token and user info in localStorage
+        localStorage.setItem("token", token);
+        localStorage.setItem("fullName", fullname);
+        localStorage.setItem("role", role);
+        
+        setSuccess(`Login successful! Welcome ${fullname}`);
+        
+        // Redirect based on role
+        setTimeout(() => {
+          if (role === "ADMIN") {
+            window.location.href = "/dashboard";
+          } else {
+            window.location.href = "/";
+          }
+        }, 1500);
+      } else {
+        // Handle other status codes
+        setError(data || "Login failed. Please try again.");
+      }
+    } catch (err) {
+      console.error("Login error:", err);
+      
+      if (err.response) {
+        // Server responded with an error
+        const { status, data } = err.response;
+        if (status === 401) {
+          setError(data?.data || "Incorrect email or password. Please try again.");
+        } else {
+          setError(data?.data || "Login failed. Please try again.");
         }
-    } else {
-      setError("Email hoặc mật khẩu không đúng!");
+      } else if (err.request) {
+        // No response received
+        setError("No response from server. Please check your internet connection.");
+      } else {
+        // Other error
+        setError("Login failed. Please try again later.");
+      }
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -74,10 +113,8 @@ const Login = () => {
                     <a href="#" className="text-danger">
                       Forget password?
                     </a>
-                  </div>
-
-                  <Button variant="danger" type="submit" className="w-100 mb-3">
-                    Login
+                  </div>                  <Button variant="danger" type="submit" className="w-100 mb-3" disabled={loading}>
+                    {loading ? 'Logging in...' : 'Login'}
                   </Button>
 
                   <Button
