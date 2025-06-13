@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Card, Form, Button, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
+import { tickets } from '../../data/tickets';
+
 const TicketSearchOverview = () => {
   const navigate = useNavigate();
   const [priceRange, setPriceRange] = useState([100, 125]);
@@ -8,76 +10,7 @@ const TicketSearchOverview = () => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
-  const tickets = [
-    {
-      routes: [
-        {
-          id: '048A', name: 'North Express',
-          legs: [
-            {
-              depart: '8:30p', dateDepart: 'Feb 14 SUN', from: 'New York', stationFrom: 'Penn Station, NY',
-              arrive: '2:50a', dateArrive: 'Feb 15 SUN', to: 'Los Angeles', stationTo: 'Union Station, CA'
-            },
-            {
-              depart: '10:20p', dateDepart: 'Feb 18 THU', from: 'New York', stationFrom: 'Penn Station, NY',
-              arrive: '9:50a', dateArrive: 'Feb 19 THU', to: 'Los Angeles', stationTo: 'Union Station, CA'
-            }
-          ],
-          duration: '07:25',
-          returnDuration: '11:30'
-        }
-      ],
-      price: 38,
-      icons: ['wifi', 'moon', 'cup', 'rocket']
-    },
-    {
-      routes: [
-        {
-          id: '105A', name: 'Silver Arrow',
-          legs: [
-            {
-              depart: '12:30a', dateDepart: 'Feb 14 SUN', from: 'New York', stationFrom: 'Penn Station, NY',
-              arrive: '3:50p', dateArrive: 'Feb 15 SUN', to: 'Los Angeles', stationTo: 'Union Station, CA'
-            }
-          ],
-          duration: '07:25',
-          returnDuration: '11:30'
-        },
-        {
-          id: '210B', name: 'Coastal Cruiser',
-          legs: [{
-            depart: '6:00a', dateDepart: 'Feb 15 MON', from: 'San Francisco', stationFrom: 'SF Central, CA',
-            arrive: '12:15p', dateArrive: 'Feb 15 MON', to: 'Los Angeles', stationTo: 'Union Station, CA'
-          }
-          ],
-          duration: '15:49',
-          returnDuration: '14:49'
-
-        }
-      ],
-      price: 45,
-      icons: ['wifi', 'cup']
-    },
-    {
-      routes: [
-        {
-          id: '036C', name: 'American Trains',
-          legs: [
-            {
-              depart: '22:45', dateDepart: 'Feb 14 SUN', from: 'New York', stationFrom: 'Penn Station, NY',
-              arrive: '14:34', dateArrive: 'Feb 15 SUN', to: 'Los Angeles', stationTo: 'Union Station, CA'
-            }
-          ],
-          duration: '15:49',
-          returnDuration: '11:55'
-
-        }
-      ],
-      price: 22,
-      icons: ['wifi', 'moon', 'cup']
-    }
-
-  ];
+  
 
   const recentTickets = [
     { from: 'New York', to: 'Los Angeles', stationFrom: 'Penn Station, NY', stationTo: 'Union Station, CA', price: 48, active: false },
@@ -100,7 +33,7 @@ const TicketSearchOverview = () => {
       <Row>
         {/* Sidebar Filters + Recent */}
         <Col md={3}>
-          <Row className="mb-3 bg-dark text-white p-3">
+          {/* <Row className="mb-3 bg-dark text-white p-3">
             <h5 className='mb-3'>Filter by</h5>
             <Form>
               <Form.Group>
@@ -123,7 +56,7 @@ const TicketSearchOverview = () => {
                 <div>{`$${priceRange[0]} - $${priceRange[1]}`}</div>
               </Form.Group>
             </Form>
-          </Row>
+          </Row> */}
           <hr className="border-light my-4" />
           <Row className="mb-3">
 

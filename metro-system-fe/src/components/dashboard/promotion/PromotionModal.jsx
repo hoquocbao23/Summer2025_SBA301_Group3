@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Button } from 'react-bootstrap';
-
+import axios from 'axios';
+import axiosInstance from '../../../config/axios';
  
 
 const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
@@ -11,10 +12,20 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     promotionDiscount: Number,
     fromDate: '',
     toDate: '',
-    status: true
+    status: 'INACTIVE',
+    ticketTypeId: ''
   });
 
+  const [ticketTypes, setTicketTypes] = useState([]);
+
+  const fetchTicketTypes = async () => {
+    const response = await axiosInstance.get('/ticket-types');
+    setTicketTypes(response.data.data);
+  };
+
+
   useEffect(() => {
+    fetchTicketTypes();
     if (promotion) {
       // Convert timestamp to date string for input
       setPromotionData({
@@ -23,7 +34,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: promotion.promotionDiscount,
         fromDate: promotion.fromDate,
         toDate: promotion.toDate,
-        status: promotion.status
+        status: promotion.status || 'INACTIVE',
+        ticketTypeId: promotion.ticketType.ticketTypeId
       });
     } else {
       // Reset form when adding new promotion
@@ -33,7 +45,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         promotionDiscount: '',
         fromDate: '',
         toDate: '',
-        status: true
+        status: 'INACTIVE',
+        ticketTypeId: ''
       });
     }
   }, [promotion]);
@@ -51,8 +64,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     // Format dates to ISO format with UTC timezone
     const formattedData = {
       ...promotionData,
-      fromDate: promotionData.fromDate ? new Date(promotionData.fromDate + ' 00:00:00').toISOString() : null,
-      toDate: promotionData.toDate ? new Date(promotionData.toDate + ' 23:59:59').toISOString() : null
+      fromDate: promotionData.fromDate ? new Date(promotionData.fromDate + 'T00:00:00Z').toISOString() : null,
+      toDate: promotionData.toDate ? new Date(promotionData.toDate + 'T23:59:59Z').toISOString() : null
     };
     onSubmit(formattedData);
   };
@@ -126,12 +139,29 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
           </Form.Group>
 
           <Form.Group className="mb-3">
+            <Form.Label>Ticket Type</Form.Label>
+            <Form.Select
+              name="ticketTypeId"
+              value={promotionData.ticketTypeId}
+              onChange={handleInputChange}
+              required
+            >
+              <option value="">Select ticket type</option>
+              {ticketTypes.map((ticketType) => (
+                <option key={ticketType.ticketTypeId} value={ticketType.ticketTypeId}>
+                  {ticketType.ticketName}
+                </option>
+              ))}
+            </Form.Select>
+          </Form.Group>
+
+          <Form.Group className="mb-3">
             <Form.Check
               type="switch"
               id="status-switch"
               name="status"
               label="Active"
-              checked={promotionData.status === 'ACTIVE'}
+              checked={promotionData.status === 'ACTIVE' }
               onChange={handleInputChange}
             />
           </Form.Group>
