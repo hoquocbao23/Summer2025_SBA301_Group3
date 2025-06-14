@@ -25,7 +25,7 @@ const TicketSearchTool = () => {
                             <Card className="p-4 form-card">
                                 <Tabs defaultActiveKey="singletrip" id="justify-tab-example" className="mb-3">
                                     <Tab eventKey="singletrip" title="Single Trip">
-                                        <SingleTripForm/>
+                                        <SingleTripForm />
                                     </Tab>
 
                                     <Tab eventKey="travelpass" title="Travel Pass">
