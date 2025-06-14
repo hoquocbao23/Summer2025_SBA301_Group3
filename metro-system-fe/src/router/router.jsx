@@ -27,16 +27,16 @@ const router = createBrowserRouter([
       {
         path: "/tickets",
         element: <TicketPage />,
-        children: [
-          {
-            index: true,
-            element: <TicketSearchOverview />,
-          },
-          {
-            path: "passenger",
-            element: <PassengerPage />,
-          },
-        ],
+        // children: [
+        //   {
+        //     index: true,
+        //     element: <TicketSearchOverview />,
+        //   },
+        //   // {
+        //   //   path: "passenger",
+        //   //   element: <PassengerPage />,
+        //   // },
+        // ],
       },
       {
         path: "/stations",

@@ -5,25 +5,25 @@ import './TicketSearchTool.css';
 import { useNavigate } from 'react-router-dom';
 import { availableStations } from '../../data/stations';
 
-const SingleTripForm = () => {
-    
-    const [from, setFrom] = useState();
-    const [to, setTo] = useState();
-    const [numberOfTickets, setNumberOfTickets] = useState(1);
+const SingleTripForm = ({ initialData }) => {
+    const [singleForm, setSingleForm] = useState(initialData || {
+        from: '',
+        fromStation : '',
+        to: '',
+        toStation : '',
+        numberOfTickets: 1,
+    });
+
     const navigate = useNavigate();
 
-    const handlePassengerChange = (operation) => {
-        if (operation === 'add' && numberOfTickets < 10) {
-            setNumberOfTickets(prev => prev + 1);
-        }
-        else if (operation === 'subtract' && numberOfTickets > 1) {
-            setNumberOfTickets(prev => prev - 1);
-        }
-    }
-
     const handleSearch = () => {
-        navigate(`/tickets?from=${from}&to=${to}&numberOfTickets=${numberOfTickets}`);
-    }
+        // Navigate to ticket layout with form data
+        navigate('/tickets', { 
+            state: { 
+                singleForm: singleForm 
+            }
+        });
+    };
 
     return (
         <Form>
@@ -34,8 +34,8 @@ const SingleTripForm = () => {
                         <Form.Label>Route</Form.Label>
                         <InputGroup>
                             <Form.Select
-                                value={from}
-                                onChange={(e) => setFrom(e.target.value)}
+                                value={singleForm.from}
+                                onChange={(e) => setSingleForm({ ...singleForm, from: e.target.value, fromStation: e.target.options[e.target.selectedIndex].text })}
                             >
                                 <option>From station</option>
                                 {availableStations.map((station) => (
@@ -48,8 +48,8 @@ const SingleTripForm = () => {
                             </Button>
 
                             <Form.Select
-                                value={to}
-                                onChange={(e) => setTo(e.target.value)}
+                                value={singleForm.to}
+                                onChange={(e) => setSingleForm({ ...singleForm, to: e.target.value, toStation: e.target.options[e.target.selectedIndex].text })}
                             >
                                 <option value="">To station</option>
                                 {availableStations.map((station) => (
@@ -67,7 +67,7 @@ const SingleTripForm = () => {
                                     <div>
                                         Number of Tickets
                                         <div className="text-muted small">
-                                            {numberOfTickets} {numberOfTickets === 1 ? 'Ticket' : 'Tickets'}
+                                            {singleForm.numberOfTickets} {singleForm.numberOfTickets === 1 ? 'Ticket' : 'Tickets'}
                                         </div>
                                     </div>
                                 </Accordion.Header>
@@ -82,15 +82,15 @@ const SingleTripForm = () => {
                                                 <Button
                                                     variant="outline-secondary"
                                                     size="sm"
-                                                    onClick={() => handlePassengerChange('subtract')}
+                                                    onClick={() => setSingleForm({ ...singleForm, numberOfTickets: Math.max(1, singleForm.numberOfTickets - 1) })}
                                                 >
                                                     <Dash />
                                                 </Button>
-                                                <span className="mx-3 fw-bold">{numberOfTickets}</span>
+                                                <span className="mx-3 fw-bold">{singleForm.numberOfTickets}</span>
                                                 <Button
                                                     variant="outline-secondary"
                                                     size="sm"
-                                                    onClick={() => handlePassengerChange('add')}
+                                                    onClick={() => setSingleForm({ ...singleForm, numberOfTickets: Math.min(10, singleForm.numberOfTickets + 1) })}
                                                 >
                                                     <Plus />
                                                 </Button>
@@ -108,7 +108,7 @@ const SingleTripForm = () => {
                         variant="danger" 
                         size="lg" 
                         className="w-100"
-                        disabled={!from || !to || from === to}
+                        disabled={!singleForm.from || !singleForm.to || singleForm.from === singleForm.to}
                         onClick={handleSearch}
                     >
                         SEARCH TICKETS

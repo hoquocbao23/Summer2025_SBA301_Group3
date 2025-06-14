@@ -1,25 +1,44 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import PassengerForm from '../../components/passenger/PassengerForm';
 // import PaymentMethodList from '../../components/passenger/PaymentMethodList';
 import TicketSummary from '../../components/passenger/TicketSummary';
+import { TicketContext } from '../../pages/layout/TicketLayout';
+
 
 const PassengerPage = () => {
+  const { singleForm, travelPassForm } = useContext(TicketContext);
+
   return (
-    <Container className="py-4">
+    <Container className="py-4 mt-4">
       <Row>
         {/* Left Section */}
         <Col md={8}>
-          <Card className="mb-3">
+          <Card className="passenger-form-card mb-4">
+            <Card.Header className="bg-white border-0">
+              <h4 className="mb-0">
+                <i className="bi bi-person-circle me-2 text-primary"></i>
+                Passenger Information
+              </h4>
+              <p className="text-muted small mb-0 mt-2">
+                Please provide the email addresses for all passengers. The primary contact will receive the booking confirmation.
+              </p>
+            </Card.Header>
             <Card.Body>
-              <PassengerForm />
+              <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} />
             </Card.Body>
           </Card>
         </Col>
 
-        {/* Right Section */}
+        {/* Right Section - Ticket Summary */}
         <Col md={4}>
-          <Card className="sticky-top" style={{ top: '20px' }}>
+          <Card className="ticket-summary-card sticky-top" style={{ top: '20px' }}>
+            <Card.Header className="bg-white border-0">
+              <h4 className="mb-0">
+                <i className="bi bi-receipt me-2 text-primary"></i>
+                Booking Summary
+              </h4>
+            </Card.Header>
             <Card.Body>
               <TicketSummary />
             </Card.Body>

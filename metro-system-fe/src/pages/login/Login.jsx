@@ -4,7 +4,8 @@ import './Login.scss';
 import axiosInstance from '../../config/axios';
 import axios from 'axios';
 
-const Login = () => {  const [email, setEmail] = useState("");
+const Login = () => {  
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
