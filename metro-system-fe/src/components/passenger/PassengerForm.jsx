@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Form, Row, Col, Card } from 'react-bootstrap';
 
-const PassengerForm = ({ numberOfTickets = 1 }) => {
+const PassengerForm = ({ numberOfTickets = 1, onPassengerChange }) => {
   const [passengers, setPassengers] = useState([]);
 
   useEffect(() => {
@@ -20,6 +20,9 @@ const PassengerForm = ({ numberOfTickets = 1 }) => {
       email: value
     };
     setPassengers(updatedPassengers);
+    if (onPassengerChange) {
+      onPassengerChange(updatedPassengers);
+    }
   };
 
   return (

@@ -13,11 +13,12 @@ const TravelPassForm = ({ initialData }) => {
         routeName: '',
         ticketTypeId: '',
         ticketName: '',
+        basePrice: 0,
     });
 
     // const [availableRoutes, setAvailableRoutes] = useState([]);
     const [availableTicketTypes, setAvailableTicketTypes] = useState([]);
-    
+
     // const fetchAvailableRoutes = async () => {
     //     try {
     //         const response = await axiosInstance.get('/routes');
@@ -27,24 +28,42 @@ const TravelPassForm = ({ initialData }) => {
     //     }
     // };
 
-    const fetchAvailableTicketTypes = async () => { 
+
+    const fetchAvailableTicketTypes = async () => {
         try {
             const response = await axiosInstance.get('/ticket-types');
-            console.log("response", response.data.data);
             setAvailableTicketTypes(response.data.data);
         } catch (error) {
             console.error('Error fetching available ticket types:', error);
         }
     };
 
+    const getRouteDetails = async (routeId, ticketType) => {
+        try {
+            const response = await axiosInstance.get(`/rules/detail?routeId=${routeId}&ticketType=${ticketType}`);
+            console.log("response", response.data.data);
+            return {
+                basePrice: response.data.data.ticketRule.basePrice,
+            }
+        } catch (error) {
+            console.error('Error fetching route details:', error);
+        }
+    };
+
+    useEffect(() => {
+        console.log("travelPassForm updated:", travelPassForm);
+    }, [travelPassForm]);
+
     useEffect(() => {
         //fetchAvailableRoutes();
         fetchAvailableTicketTypes();
     }, []);
-    
-    
 
-    const handleSearch = () => {
+
+
+    // Add useEffect to log state changes
+
+    const handleSearch = async () => {
         // Check if user is logged in
         const token = localStorage.getItem('token');
         if (!token) {
@@ -52,13 +71,23 @@ const TravelPassForm = ({ initialData }) => {
             setShowLoginModal(true);
             return;
         }
-        
-        // If logged in, proceed with search
-        navigate('/tickets', { 
-            state: { 
-                travelPassForm: travelPassForm 
+
+
+        const basePrice = await getRouteDetails(travelPassForm.routeId, travelPassForm.ticketName);
+        // Update the form with the base price
+        // Set state là bất đồng bộ, nên phải lưu tạm trong updatedForm
+        const updatedForm = {
+            ...travelPassForm,
+            basePrice: basePrice.basePrice,
+        };
+        setTravelPassForm(updatedForm);
+        // Navigate after the state has been updated
+        navigate('/tickets', {
+            state: {
+                travelPassForm: updatedForm
             }
         });
+
     };
 
     const handleLoginRedirect = () => {
@@ -76,8 +105,10 @@ const TravelPassForm = ({ initialData }) => {
                             <Form.Label>Route</Form.Label>
                             <Form.Select
                                 value={travelPassForm.routeId}
-                                onChange={(e) => setTravelPassForm({ ...travelPassForm, routeId: e.target.value, 
-                                                                                        routeName: e.target.options[e.target.selectedIndex].text })}
+                                onChange={(e) => setTravelPassForm({
+                                    ...travelPassForm, routeId: e.target.value,
+                                    routeName: e.target.options[e.target.selectedIndex].text
+                                })}
                                 className="mb-3"
                             >
                                 <option value="">Select route</option>
@@ -91,8 +122,10 @@ const TravelPassForm = ({ initialData }) => {
                             <Form.Label>Pass Type</Form.Label>
                             <Form.Select
                                 value={travelPassForm.ticketTypeId}
-                                onChange={(e) => setTravelPassForm({ ...travelPassForm, ticketTypeId: e.target.value,
-                                                                                        ticketName: e.target.options[e.target.selectedIndex].text })}
+                                onChange={(e) => setTravelPassForm({
+                                    ...travelPassForm, ticketTypeId: e.target.value,
+                                    ticketName: e.target.options[e.target.selectedIndex].text
+                                })}
                                 className="mb-3"
                             >
                                 <option value="">Select pass type</option>
@@ -104,9 +137,9 @@ const TravelPassForm = ({ initialData }) => {
                     </Col>
 
                     <Col md={4} className="d-flex align-items-center">
-                        <Button 
-                            variant="danger" 
-                            size="lg" 
+                        <Button
+                            variant="danger"
+                            size="lg"
                             className="w-100"
                             disabled={!travelPassForm.routeId || !travelPassForm.ticketTypeId}
                             onClick={handleSearch}
@@ -118,9 +151,9 @@ const TravelPassForm = ({ initialData }) => {
             </Form>
 
             {/* Login Modal */}
-            <Modal 
-                show={showLoginModal} 
-                onHide={() => setShowLoginModal(false)} 
+            <Modal
+                show={showLoginModal}
+                onHide={() => setShowLoginModal(false)}
                 centered
                 className="custom-modal"
             >
@@ -135,18 +168,18 @@ const TravelPassForm = ({ initialData }) => {
                     <p className="text-muted small mt-2">You need to be logged in to view and purchase passes.</p>
                 </Modal.Body>
                 <Modal.Footer className="border-0 pt-0">
-                    <Button 
-                        variant="outline-secondary" 
+                    <Button
+                        variant="outline-secondary"
                         onClick={() => setShowLoginModal(false)}
                         className="px-4"
                     >
                         Cancel
                     </Button>
-                    <Button 
-                        variant="danger" 
+                    <Button
+                        variant="danger"
                         onClick={handleLoginRedirect}
                         className="px-4"
-                        style={{ 
+                        style={{
                             backgroundColor: '#dc3545',
                             borderColor: '#dc3545',
                             boxShadow: '0 2px 4px rgba(220, 53, 69, 0.2)'
