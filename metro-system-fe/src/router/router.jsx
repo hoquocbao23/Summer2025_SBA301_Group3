@@ -15,6 +15,8 @@ import AdminStationManager from "../pages/dashboard/station/station-dashboard";
 import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
+import PaymentSuccess from "../components/payment/PaymentSuccess";
+import PaymentFailed from "../components/payment/PaymentFailed";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -58,6 +60,14 @@ const router = createBrowserRouter([
       {
         path: "/routes",
         element: <MetroServiceStatus />,
+      },
+      {
+        path: "/payment-success",
+        element: <PaymentSuccess />,
+      },
+      {
+        path: "/payment-failed",
+        element: <PaymentFailed />,
       },
     ],
   },

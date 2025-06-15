@@ -7,9 +7,9 @@ import { availableStations } from '../../data/stations';
 
 const SingleTripForm = ({ initialData }) => {
     const [singleForm, setSingleForm] = useState(initialData || {
-        from: '',
+        fromStationId: '',
         fromStation : '',
-        to: '',
+        toStationId: '',
         toStation : '',
         numberOfTickets: 1,
     });
@@ -34,8 +34,8 @@ const SingleTripForm = ({ initialData }) => {
                         <Form.Label>Route</Form.Label>
                         <InputGroup>
                             <Form.Select
-                                value={singleForm.from}
-                                onChange={(e) => setSingleForm({ ...singleForm, from: e.target.value, fromStation: e.target.options[e.target.selectedIndex].text })}
+                                value={singleForm.fromStationId}
+                                onChange={(e) => setSingleForm({ ...singleForm, fromStationId: e.target.value, fromStation: e.target.options[e.target.selectedIndex].text })}
                             >
                                 <option>From station</option>
                                 {availableStations.map((station) => (
@@ -48,8 +48,8 @@ const SingleTripForm = ({ initialData }) => {
                             </Button>
 
                             <Form.Select
-                                value={singleForm.to}
-                                onChange={(e) => setSingleForm({ ...singleForm, to: e.target.value, toStation: e.target.options[e.target.selectedIndex].text })}
+                                value={singleForm.toStationId}
+                                onChange={(e) => setSingleForm({ ...singleForm, toStationId: e.target.value, toStation: e.target.options[e.target.selectedIndex].text })}
                             >
                                 <option value="">To station</option>
                                 {availableStations.map((station) => (
@@ -108,7 +108,7 @@ const SingleTripForm = ({ initialData }) => {
                         variant="danger" 
                         size="lg" 
                         className="w-100"
-                        disabled={!singleForm.from || !singleForm.to || singleForm.from === singleForm.to}
+                        disabled={!singleForm.fromStationId || !singleForm.toStationId || singleForm.fromStationId === singleForm.toStationId}
                         onClick={handleSearch}
                     >
                         SEARCH TICKETS

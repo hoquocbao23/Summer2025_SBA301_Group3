@@ -1,4 +1,4 @@
-import React, { useContext } from 'react';
+import React, { useContext, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import PassengerForm from '../../components/passenger/PassengerForm';
 // import PaymentMethodList from '../../components/passenger/PaymentMethodList';
@@ -8,6 +8,11 @@ import { TicketContext } from '../../pages/layout/TicketLayout';
 
 const PassengerPage = () => {
   const { singleForm, travelPassForm } = useContext(TicketContext);
+  const [passengers, setPassengers] = useState([]);
+
+  const handlePassengerChange = (updatedPassengers) => {
+    setPassengers(updatedPassengers);
+  };
 
   return (
     <Container className="py-4 mt-4">
@@ -25,7 +30,10 @@ const PassengerPage = () => {
               </p>
             </Card.Header>
             <Card.Body>
-              <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} />
+              <PassengerForm 
+                numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} 
+                onPassengerChange={handlePassengerChange}
+              />
             </Card.Body>
           </Card>
         </Col>
@@ -40,7 +48,7 @@ const PassengerPage = () => {
               </h4>
             </Card.Header>
             <Card.Body>
-              <TicketSummary />
+              <TicketSummary passengers={passengers} />
             </Card.Body>
           </Card>
         </Col>
