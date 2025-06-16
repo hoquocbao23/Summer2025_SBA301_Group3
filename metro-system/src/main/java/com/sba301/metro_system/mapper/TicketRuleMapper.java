@@ -21,6 +21,7 @@ public class TicketRuleMapper {
         return TicketRuleResponse.builder()
                 .ruleId(ticketRule.getRuleId())
                 .ruleName(ticketRule.getRuleName())
+                .description(ticketRule.getDescription())
                 .basePrice(ticketRule.getBasePrice())
                 .pricePerKm(ticketRule.getPricePerKm())
                 .status(ticketRule.getStatus())
@@ -34,6 +35,7 @@ public class TicketRuleMapper {
 
         TicketRule ticketRule = new TicketRule();
         ticketRule.setRuleName(request.ruleName());
+        ticketRule.setDescription(request.description());
         ticketRule.setBasePrice(request.basePrice());
         ticketRule.setPricePerKm(request.pricePerKm());
         ticketRule.setStatus(request.status() != null ? request.status() : Status.ACTIVE);
@@ -49,6 +51,9 @@ public class TicketRuleMapper {
 
         if (request.ruleName() != null) {
             ticketRule.setRuleName(request.ruleName());
+        }
+        if (request.description() != null) {
+            ticketRule.setDescription(request.description());
         }
         if (request.basePrice() != null) {
             ticketRule.setBasePrice(request.basePrice());
@@ -94,6 +99,7 @@ public class TicketRuleMapper {
 
         TicketRule ticketRule = new TicketRule();
         ticketRule.setRuleName(request.ruleName());
+        ticketRule.setDescription(request.description());
         ticketRule.setBasePrice(request.basePrice());
         ticketRule.setPricePerKm(request.pricePerKm());
         ticketRule.setStatus(request.status() != null ? request.status() : Status.ACTIVE);

@@ -11,6 +11,10 @@ public record TicketRuleRequest(
         @NotBlank(message = "Rule name is required")
         @Size(min = 3, max = 100, message = "Rule name must be between 3 and 100 characters")
         String ruleName,
+
+        @Schema(description = "Rule description", example = "Main metro line pricing")
+        @Size(max = 500, message = "Route description must not exceed 500 characters")
+        String description,
         
         @Schema(description = "Base price for the ticket", example = "5000.0")
         @NotNull(message = "Base price is required")

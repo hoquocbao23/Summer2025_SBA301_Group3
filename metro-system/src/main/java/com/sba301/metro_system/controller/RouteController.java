@@ -81,24 +81,45 @@ public class RouteController {
                 .build();
     }
 
-    @DeleteMapping("/{routeId}")
-    @Operation(summary = "Delete a route", description = "Soft delete a metro route")
+    @PutMapping("/{routeId}/deactivate")
+    @Operation(summary = "Deactivate a route", description = "Deactivate a metro route")
     @ApiResponses({
             @ApiResponse(
                     responseCode = "200",
-                    description = "Route deleted successfully"
+                    description = "Route deactivate successfully"
             ),
             @ApiResponse(
                     responseCode = "404",
                     description = "Route not found"
             )
     })
-    public ResponseApi<?> deleteRoute(
+    public ResponseApi<?> deactivateRoute(
             @Parameter(description = "Route ID") @PathVariable String routeId) {
-        routeService.deleteRoute(routeId);
+        routeService.deactivateRoute(routeId);
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
-                .message("Route deleted successfully")
+                .message("Route deactivate successfully")
+                .build();
+    }
+
+    @PutMapping("/{routeId}/activate")
+    @Operation(summary = "Activate a route", description = "Activate a metro route")
+    @ApiResponses({
+            @ApiResponse(
+                    responseCode = "200",
+                    description = "Route activate successfully"
+            ),
+            @ApiResponse(
+                    responseCode = "404",
+                    description = "Route not found"
+            )
+    })
+    public ResponseApi<?> activateRoute(
+            @Parameter(description = "Route ID") @PathVariable String routeId) {
+        routeService.activateRoute(routeId);
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message("Route activate successfully")
                 .build();
     }
 

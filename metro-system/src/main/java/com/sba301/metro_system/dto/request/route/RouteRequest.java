@@ -35,7 +35,7 @@ public record RouteRequest(
 
         @Schema(description = "Operating hours", example = "05:00 - 23:00")
         @Pattern(
-                regexp = "/^([01]?[0-9]|2[0-3]):[0-5][0-9]\\s*-\\s*([01]?[0-9]|2[0-3]):[0-5][0-9]$/",
+                regexp = "^([01]?[0-9]|2[0-3]):[0-5][0-9]\\s*-\\s*([01]?[0-9]|2[0-3]):[0-5][0-9]$",
                 message = "Operating hours must be in format HH:MM - HH:MM (e.g., 05:00 - 23:00)"
         )
         String operatingHours,

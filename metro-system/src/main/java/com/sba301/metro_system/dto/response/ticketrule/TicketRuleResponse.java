@@ -9,6 +9,7 @@ import lombok.Builder;
 public record TicketRuleResponse(
         Long ruleId,
         String ruleName,
+        String description,
         Double basePrice,
         Double pricePerKm,
         Status status

@@ -13,7 +13,8 @@ public interface IRouteService {
     // Basic Route CRUD operations
     RouteResponse createRoute(RouteRequest routeRequest);
     void updateRoute(RouteRequest routeRequest, String routeId);
-    void deleteRoute(String routeId);
+    void deactivateRoute(String routeId);
+    void activateRoute(String routeId);
     RouteResponse getRoute(String routeId);
     RouteListResponse getAllRoutes();
     

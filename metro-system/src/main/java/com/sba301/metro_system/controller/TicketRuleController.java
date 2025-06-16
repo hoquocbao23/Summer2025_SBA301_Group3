@@ -79,26 +79,26 @@ public class TicketRuleController {
                 .build();
     }
 
-    @DeleteMapping("/{id}")
-    @Operation(summary = "Delete a ticket rule", description = "Soft delete a ticket rule")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "Ticket rule deleted successfully"
-            ),
-            @ApiResponse(
-                    responseCode = "404",
-                    description = "Ticket rule not found"
-            )
-    })
-    public ResponseApi<?> deleteTicketRule(
-            @Parameter(description = "Ticket Rule ID") @PathVariable Long id) {
-        ticketRuleService.deleteTicketRule(id);
-        return ResponseApi.builder()
-                .status(HttpStatus.OK.value())
-                .message("Ticket rule deleted successfully")
-                .build();
-    }
+//    @DeleteMapping("/{id}")
+//    @Operation(summary = "Delete a ticket rule", description = "Soft delete a ticket rule")
+//    @ApiResponses({
+//            @ApiResponse(
+//                    responseCode = "200",
+//                    description = "Ticket rule deleted successfully"
+//            ),
+//            @ApiResponse(
+//                    responseCode = "404",
+//                    description = "Ticket rule not found"
+//            )
+//    })
+//    public ResponseApi<?> deleteTicketRule(
+//            @Parameter(description = "Ticket Rule ID") @PathVariable Long id) {
+//        ticketRuleService.deleteTicketRule(id);
+//        return ResponseApi.builder()
+//                .status(HttpStatus.OK.value())
+//                .message("Ticket rule deleted successfully")
+//                .build();
+//    }
 
     @GetMapping
     @Operation(summary = "Get all ticket rules", description = "Retrieve all active ticket rules")

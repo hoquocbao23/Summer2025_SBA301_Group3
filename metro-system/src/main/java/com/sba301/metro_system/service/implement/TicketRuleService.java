@@ -86,16 +86,16 @@ public class TicketRuleService implements ITicketRuleService {
         return ticketRuleMapper.toTicketRuleResponse(updatedTicketRule);
     }
 
-    @Override
-    @Transactional
-    public void deleteTicketRule(Long id) {
-        TicketRule ticketRule = ticketRuleRepository.findById(id)
-                .orElseThrow(() -> new NotFoundException("Ticket rule not found with ID: " + id));
-        
-        // Soft delete
-        ticketRule.setDelete(true);
-        ticketRuleRepository.save(ticketRule);
-    }
+//    @Override
+//    @Transactional
+//    public void deleteTicketRule(Long id) {
+//        TicketRule ticketRule = ticketRuleRepository.findById(id)
+//                .orElseThrow(() -> new NotFoundException("Ticket rule not found with ID: " + id));
+//
+//        // Soft delete
+//        ticketRule.setStatus(Status.INACTIVE);
+//        ticketRuleRepository.save(ticketRule);
+//    }
 
     @Override
     @Transactional(readOnly = true)

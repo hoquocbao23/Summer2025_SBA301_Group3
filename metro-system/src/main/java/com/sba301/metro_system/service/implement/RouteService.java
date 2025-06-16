@@ -90,7 +90,7 @@ public class RouteService implements IRouteService {
 
     @Override
     @Transactional
-    public void deleteRoute(String routeId) {
+    public void deactivateRoute(String routeId) {
         Long id = Long.parseLong(routeId);
         
         Route route = routeRepository.findById(id)
@@ -98,6 +98,19 @@ public class RouteService implements IRouteService {
         
         // Soft delete
         route.setStatus(Status.INACTIVE);
+        routeRepository.save(route);
+    }
+
+    @Override
+    @Transactional
+    public void activateRoute(String routeId) {
+        Long id = Long.parseLong(routeId);
+
+        Route route = routeRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
+
+        // Soft delete
+        route.setStatus(Status.ACTIVE);
         routeRepository.save(route);
     }
 

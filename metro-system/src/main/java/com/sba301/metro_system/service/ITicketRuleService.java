@@ -13,7 +13,7 @@ public interface ITicketRuleService {
     TicketRuleListResponse getAllTicketRules();
     TicketRuleResponse createTicketRule(TicketRuleRequest request);
     TicketRuleResponse updateTicketRule(TicketRuleRequest request, Long id);
-    void deleteTicketRule(Long id);
+//    void deleteTicketRule(Long id);
     
     // Search and filter operations
     List<TicketRuleResponse> searchTicketRulesByName(String keyword);

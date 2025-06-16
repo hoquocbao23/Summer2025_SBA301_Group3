@@ -13,6 +13,7 @@ public class TicketRule {
     private Long ruleId;
 
     private String ruleName;
+    private String description;
 
     private Double basePrice;
     private Double pricePerKm;
