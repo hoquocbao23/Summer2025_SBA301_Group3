@@ -22,6 +22,11 @@ public class SecurityController {
         return userService.login(loginRequestDTO);
     }
 
+//    @PostMapping("/login-google")
+//    public ResponseApi<?> loginGoogle(@RequestBody String idToken){
+//        return userService.loginGoogle();
+//    }
+
     @PostMapping("/register")
     public ResponseApi<?> register(@RequestBody String mail){
         return userService.register(mail);
@@ -31,5 +36,6 @@ public class SecurityController {
     public ResponseApi<?> verify(@RequestBody SignupRequestDTO signupRequestDTO, @RequestParam Integer otp){
         return userService.verify(signupRequestDTO,otp);
     }
+
 
 }

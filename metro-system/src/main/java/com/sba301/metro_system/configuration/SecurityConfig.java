@@ -41,8 +41,13 @@ public class SecurityConfig {
             "/security/**"
     };
 
+    private final String[] GET_URLS= {
+            "/stations"
+    };
+
     private final String[] ADMIN_URLS= {
-            "/dashboard/**",
+            "/stations",
+            "/user"
     };
 
     private final String[] USER_URLS= {};
@@ -52,8 +57,12 @@ public class SecurityConfig {
         httpSecurity.cors(Customizer.withDefaults());
         httpSecurity.csrf(AbstractHttpConfigurer::disable);
         httpSecurity.authorizeHttpRequests(request -> request
-//                        .requestMatchers(PUBLIC_URLS).permitAll()
-//                          .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+                        .requestMatchers(PUBLIC_URLS).permitAll()
+                        .requestMatchers(HttpMethod.GET,GET_URLS).permitAll()
+                          .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
 //                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
                         .anyRequest().permitAll())
                 .sessionManagement(session ->

@@ -6,6 +6,8 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.RequiredArgsConstructor;
 
+import java.time.LocalDateTime;
+
 @Data
 @Entity
 @Table(name = "account")
@@ -25,6 +27,5 @@ public class Account {
 
     @Enumerated(EnumType.STRING)
     private AccountStatus status;
-
 
 }
