@@ -4,7 +4,9 @@ import './TicketSearchTool.css'; // file CSS bổ sung
 import SingleTripForm from './SingleTripForm';
 import TravelPassForm from './TravelPassForm';
 
+
 const TicketSearchTool = () => {
+    
     return (
         <div className="hero-container">
             <div className="content-wrapper">
@@ -24,7 +26,7 @@ const TicketSearchTool = () => {
                         <Col md={5} className="offset-md-1">
                             <Card className="p-4 form-card">
                                 <Tabs defaultActiveKey="singletrip" id="justify-tab-example" className="mb-3">
-                                    <Tab eventKey="singletrip" title="Single Trip">
+                                    <Tab eventKey="singletrip" title="Single Trip" >
                                         <SingleTripForm />
                                     </Tab>
 

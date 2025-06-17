@@ -16,7 +16,7 @@ const TicketLayout = () => {
 
     const location = useLocation();
 
-    const [currentStep, setCurrentStep] = useState(1);
+    const [layoutCurrentStep, setLayoutCurrentStep] = useState(1);
 
     // Lấy dữ liệu từ SingleTripForm
     // Lưu dữ liệu vào singleForm
@@ -37,7 +37,7 @@ const TicketLayout = () => {
         }
         if (location.state?.travelPassForm) {
             setTravelPassForm(location.state.travelPassForm);
-            setCurrentStep(2); // Chuyển sang bước Passenger khi có travelPassForm
+            setLayoutCurrentStep(2); // Chuyển sang bước Passenger khi có travelPassForm
         }
     }, [location.state]);
 
@@ -45,24 +45,25 @@ const TicketLayout = () => {
     const steps = [
         { number: 1, label: "TICKETS", active: true },
         { number: 2, label: "PASSENGERS", active: false },
-        { number: 3, label: "PAYMENT", active: false },
-        { number: 4, label: "VALIDATION", active: false },
+        { number: 3, label: "PROMOTION", active: false },
     ];
     
 
     const renderCurrentStep = () => {
-        switch(currentStep) {
+        switch(layoutCurrentStep) {
             case 1:
-                return <TicketSearchOverview onStepChange={setCurrentStep} />;
+                return <TicketSearchOverview onStepChange={setLayoutCurrentStep} />;
             case 2:
-                return <PassengerPage/>;
-            default:
-                return <TicketSearchOverview onStepChange={setCurrentStep} />;
+                return <PassengerPage layoutCurrentStep={layoutCurrentStep} onStepChange={setLayoutCurrentStep} />;
+            case 3:
+                return <PassengerPage layoutCurrentStep={layoutCurrentStep} onStepChange={setLayoutCurrentStep} />;
+            
         }
     };
 
 
     return (
+        
         ///
         <TicketContext.Provider value={{
              singleForm,  
@@ -97,7 +98,7 @@ const TicketLayout = () => {
                             {steps.map((step, index) => (
                                 <div
                                     key={index}
-                                    className={`step-item ${step.number === currentStep ? "active" : ""} 
+                                    className={`step-item ${step.number === layoutCurrentStep ? "active" : ""} 
                                         ${index !== steps.length - 1 ? "arrow-right" : ""}`}
                                     style={{ zIndex: `${steps.length - index}` }}
                                 >

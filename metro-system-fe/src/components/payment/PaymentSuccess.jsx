@@ -1,10 +1,48 @@
 import React from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { FaCheckCircle } from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useSearchParams } from 'react-router-dom';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
+  const [searchParams] = useSearchParams();
+  const [ticketId, setTicketId] = useState(null);
+  const [isProcessing, setIsProcessing] = useState(true);
+
+  useEffect(() => {
+    const updateTicketStatus = async () => {
+      try {
+        const paymentData = JSON.parse(localStorage.getItem('paymentData'));
+        localStorage.removeItem('paymentData');
+        const success = searchParams.get('success');
+        
+        if (success && paymentData?.ticketId) {
+          setTicketId(paymentData.ticketId);
+          // Call API to update ticket status
+          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`);
+          // Clear payment data after successful update
+          
+        }
+      } catch (error) {
+        console.error('Error updating ticket status:', error);
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    updateTicketStatus();
+  }, [searchParams]);
+
+  if (isProcessing) {
+    return (
+      <Container className="text-center py-5">
+        <div className="spinner-border text-primary" role="status">
+          <span className="visually-hidden">Loading...</span>
+        </div>
+        <p className="mt-3">Processing your payment status...</p>
+      </Container>
+    );
+  }
 
   return (
     <Container className="text-center py-5">
@@ -20,7 +58,7 @@ const PaymentSuccess = () => {
         <div className="row text-start">
           <div className="col-md-6 mb-3">
             <small className="text-muted d-block">Ticket ID</small>
-            <span className="fw-bold">#TK-{Math.random().toString(36).substr(2, 9).toUpperCase()}</span>
+            <span className="fw-bold">#{ticketId || 'N/A'}</span>
           </div>
           <div className="col-md-6 mb-3">
             <small className="text-muted d-block">Purchase Date</small>
@@ -44,7 +82,6 @@ const PaymentSuccess = () => {
           View My Tickets
         </Button>
         <Button 
-          variant="primary" 
           onClick={() => navigate('/')}
         >
           Back to Home
