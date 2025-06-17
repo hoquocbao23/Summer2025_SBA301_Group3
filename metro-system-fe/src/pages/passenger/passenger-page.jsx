@@ -4,11 +4,23 @@ import PassengerForm from '../../components/passenger/PassengerForm';
 // import PaymentMethodList from '../../components/passenger/PaymentMethodList';
 import TicketSummary from '../../components/passenger/TicketSummary';
 import { TicketContext } from '../../pages/layout/TicketLayout';
+import PromotionInput from '../../components/promotion/PromotionInput';
 
 
-const PassengerPage = () => {
+
+const PassengerPage = ({layoutCurrentStep, onStepChange}) => {
   const { singleForm, travelPassForm } = useContext(TicketContext);
   const [passengers, setPassengers] = useState([]);
+  const [currentPassengerStep, setCurrentPassengerStep] = useState(1);
+
+  const renderStep = () => {
+    switch (currentPassengerStep) {
+      case 1:
+        return <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} onPassengerChange={handlePassengerChange} />;
+      case 2:
+        return <PromotionInput/>;
+    }
+  };
 
   const handlePassengerChange = (updatedPassengers) => {
     setPassengers(updatedPassengers);
@@ -30,10 +42,7 @@ const PassengerPage = () => {
               </p>
             </Card.Header>
             <Card.Body>
-              <PassengerForm 
-                numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} 
-                onPassengerChange={handlePassengerChange}
-              />
+                {renderStep()}
             </Card.Body>
           </Card>
         </Col>
@@ -48,7 +57,13 @@ const PassengerPage = () => {
               </h4>
             </Card.Header>
             <Card.Body>
-              <TicketSummary passengers={passengers} />
+            <TicketSummary   passengers={passengers} 
+                             onNextStep={setCurrentPassengerStep} 
+                             currentPassengerStep={currentPassengerStep}
+                             layoutCurrentStep={layoutCurrentStep}
+                             onStepChange={onStepChange}
+                             />
+                             
             </Card.Body>
           </Card>
         </Col>

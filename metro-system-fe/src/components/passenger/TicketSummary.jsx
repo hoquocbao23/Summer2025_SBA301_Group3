@@ -1,5 +1,5 @@
-import React, { useState, useContext } from 'react';
-import { Button, Form, InputGroup, Modal } from 'react-bootstrap';
+import React, { useState, useContext, useEffect } from 'react';
+import { Button, Form, InputGroup, Modal, Row, Col } from 'react-bootstrap';
 import axiosInstance from '../../config/axios';
 import { TicketContext } from '../../pages/layout/TicketLayout';
 import { useNavigate } from 'react-router-dom';
@@ -13,8 +13,8 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-const TicketSummary = ({ passengers = [] }) => {
-  const navigate = useNavigate();
+const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layoutCurrentStep, onStepChange }) => {
+  
 
   const { singleForm, travelPassForm } = useContext(TicketContext);
 
@@ -32,12 +32,32 @@ const TicketSummary = ({ passengers = [] }) => {
       total: travelPassForm?.basePrice || 20000,
     }
   );
-  const [voucherCode, setVoucherCode] = useState('');
 
-  const handleApplyVoucher = () => {
-    // Handle voucher application logic here
-    console.log('Applying voucher:', voucherCode);
-  };
+  const handleNextBtn = () => {
+    //update step of passenger page
+    onNextStep(currentPassengerStep + 1)
+
+    //update step of layout page
+    onStepChange(layoutCurrentStep + 1)
+  }
+
+  const handleBackBtn = () => {
+    if (currentPassengerStep > 1) {
+      onNextStep(currentPassengerStep - 1)
+      onStepChange(layoutCurrentStep - 1)
+    }
+    else {
+      onStepChange(layoutCurrentStep - 1)
+    }
+
+
+   
+
+  }
+
+
+
+
 
   const handleProceedToPayment = () => {
     setShowConfirmModal(true);
@@ -48,7 +68,14 @@ const TicketSummary = ({ passengers = [] }) => {
     try {
       console.log("ticketdto", ticket);
       const response = await axiosInstance.post('/tickets/unlimit', ticket);
-      const paymentUrl = response.data.data;
+      const paymentUrl = response.data.data.urlCheckout;
+      // Store payment data in localStorage
+      localStorage.setItem('paymentData', JSON.stringify({
+        ticketId: response.data.data.ticketId,
+        amount: response.data.data.amount,
+        paymentUrl: response.data.data.paymentUrl,
+        ticketDetails: ticket
+      }));
       window.location.href = paymentUrl;
     } catch (error) {
       console.error('Error creating ticket:', error);
@@ -131,7 +158,7 @@ const TicketSummary = ({ passengers = [] }) => {
             <small className="text-muted d-block">Route</small>
             <span className="fw-bold">{travelPassForm.routeName}</span>
           </div>
-        </div>  
+        </div>
       )}
 
       <div className="mb-3">
@@ -152,20 +179,7 @@ const TicketSummary = ({ passengers = [] }) => {
         </div>
       </div>
 
-      <div className="mb-3">
-        <Form.Label>Voucher Code</Form.Label>
-        <InputGroup>
-          <Form.Control
-            type="text"
-            value={voucherCode}
-            onChange={(e) => setVoucherCode(e.target.value)}
-            placeholder="Enter voucher code"
-          />
-          <Button variant="outline-primary" onClick={handleApplyVoucher}>
-            Apply
-          </Button>
-        </InputGroup>
-      </div>
+
 
       <hr className="my-3" />
       <div className="mb-3">
@@ -186,14 +200,42 @@ const TicketSummary = ({ passengers = [] }) => {
         </div>
       </div>
 
-      <Button
-        variant="primary"
-        size="lg"
-        className="w-100"
-        onClick={handleProceedToPayment}
-      >
-        Proceed to Payment
-      </Button>
+      <Row>
+        <Col>
+          <Button variant="secondary" onClick={handleBackBtn}
+            size="lg"
+            className="w-100"
+          >
+            Back
+          </Button>
+        </Col>
+        <Col>
+          {currentPassengerStep === 1 && (
+            <Button variant="primary"
+              onClick={handleNextBtn}
+              size="lg"
+              className="w-100">
+              Next
+            </Button>
+          )}
+          {currentPassengerStep === 2 && (
+
+            <Button variant="primary" onClick={handleProceedToPayment}
+              size="lg"
+              className="w-100"
+            >
+              Confirm & Pay
+            </Button>
+          )}
+        </Col>
+      </Row>
+
+      
+      
+          
+
+      
+
 
       {/* Confirmation Modal */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>

@@ -31,7 +31,7 @@ const TravelPassForm = ({ initialData }) => {
 
     const fetchAvailableTicketTypes = async () => {
         try {
-            const response = await axiosInstance.get('/ticket-types');
+            const response = await axiosInstance.get('/ticket-types/unlimit');
             setAvailableTicketTypes(response.data.data);
         } catch (error) {
             console.error('Error fetching available ticket types:', error);
