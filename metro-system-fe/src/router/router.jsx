@@ -70,10 +70,7 @@ const router = createBrowserRouter([
         path: "/payment-failed",
         element: <PaymentFailed />,
       },
-      {
-        path: "/promotion",
-        element: <PromotionInput/>
-      }
+      
       
     ],
   },
