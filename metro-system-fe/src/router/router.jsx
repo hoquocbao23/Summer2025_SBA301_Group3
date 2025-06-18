@@ -5,7 +5,7 @@ import TicketSearchOverview from "../components/ticket-search/TicketSearchOvervi
 import Station from "../components/station/Station";
 import StationDetail from "../components/station/StationDetail";
 import PassengerPage from "../pages/passenger/passenger-page";
-import Login from "../pages/login/login";
+import Login from "../pages/login/Login";
 import SignUp from "../pages/login/signin";
 import TicketPage from "../pages/ticket/TicketPage";
 import DashboardLayout from "../pages/dashboard/dashboard-layout";
@@ -16,6 +16,9 @@ import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
 import AdminTicketRuleManager from "../pages/dashboard/ticket-rule/ticket-rule-dashboard";
+import PaymentSuccess from "../components/payment/PaymentSuccess";
+import PaymentFailed from "../components/payment/PaymentFailed";
+import CheckinPage from "../components/checkin/CheckinPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -28,16 +31,16 @@ const router = createBrowserRouter([
       {
         path: "/tickets",
         element: <TicketPage />,
-        children: [
-          {
-            index: true,
-            element: <TicketSearchOverview />,
-          },
-          {
-            path: "passenger",
-            element: <PassengerPage />,
-          },
-        ],
+        // children: [
+        //   {
+        //     index: true,
+        //     element: <TicketSearchOverview />,
+        //   },
+        //   // {
+        //   //   path: "passenger",
+        //   //   element: <PassengerPage />,
+        //   // },
+        // ],
       },
       {
         path: "/stations",
@@ -60,6 +63,19 @@ const router = createBrowserRouter([
         path: "/routes",
         element: <MetroServiceStatus />,
       },
+      {
+        path: "/payment-success",
+        element: <PaymentSuccess />,
+      },
+      {
+        path: "/payment-failed",
+        element: <PaymentFailed />,
+      },
+      {
+        path: "/checkin/:ticketId",
+        element: <CheckinPage />,
+      },
+      
     ],
   },
   {

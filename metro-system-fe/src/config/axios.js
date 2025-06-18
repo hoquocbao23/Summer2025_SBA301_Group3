@@ -29,7 +29,16 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
     (response) => response,
     (error) => {
-        // Handle errors globally here
+        // Handle unauthorized errors (401)
+        if (error.response && error.response.status === 401) {
+            // Clear local storage if token is invalid or expired
+            localStorage.clear(); // Sử dụng clear thay vì xóa từng item để đồng bộ với Header.jsx
+            
+            // Redirect to login page if not already there
+            if (window.location.pathname !== '/login') {
+                window.location.href = '/login';
+            }
+        }
         return Promise.reject(error);
     }
 );

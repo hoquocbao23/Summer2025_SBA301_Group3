@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Container, Row, Col, Card, Button, Badge } from 'react-bootstrap';
-import { stations } from '../../data/stationsData'; // Import centralized data
+import axiosInstance from '../../config/axios';
 
 const StationDetail = () => {
   const { id } = useParams();
@@ -10,8 +10,12 @@ const StationDetail = () => {
   const [station, setStation] = useState(null);
 
   useEffect(() => {
-    const stationData = stations.find((s) => s.id === parseInt(id));
-    setStation(stationData);
+    axiosInstance
+      .get(`/stations/${id}`)
+      .then((res) => {
+        if (res.data?.data) setStation(res.data.data);
+      })
+      .catch((err) => console.error("Failed to load station detail:", err));
   }, [id]);
 
   if (!station) {
@@ -31,56 +35,24 @@ const StationDetail = () => {
         Back to Stations
       </Button>
       <Row>
-        <Col xs={12}>
+        <Col xs={12} md={8} className="mx-auto">
           <Card className="border-0 shadow-sm">
-            <div style={{ position: "relative" }}>
-              <Card.Img
-                variant="top"
-                src={station.image}
-                alt={`${station.fromStation} to ${station.toStation}`}
-                style={{ height: '300px', objectFit: 'cover' }}
-              />
-              <div
-                style={{
-                  position: 'absolute',
-                  top: 0,
-                  left: 0,
-                  width: '100%',
-                  height: '300px',
-                  background: station.overlay,
-                }}
-              />
-            </div>
+            <Card.Img
+              variant="top"
+              src={station.url}
+              alt={station.stationName}
+              style={{ height: '300px', objectFit: 'cover' }}
+            />
             <Card.Body>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <h3 className="mb-0">
-                  {station.fromStation} to {station.toStation}
-                </h3>
-                <Badge bg="success">{station.frequency}</Badge>
-              </div>
-              <div className="d-flex justify-content-between align-items-center mb-3">
-                <span className="text-muted">{station.fromCity}</span>
-                <div className="text-end">
-                  <small className="text-muted me-1">From</small>
-                  <span className="text-danger fw-bold">{station.price}</span>
-                </div>
-              </div>
+              <h3 className="mb-2">{station.stationName}</h3>
+              <p className="text-muted mb-3">{station.stationLocation}</p>
+              <Badge bg={station.status === 'ACTIVE' ? 'success' : 'secondary'} className="mb-2">
+                {station.status}
+              </Badge>
               <hr />
-              <h5>Route Description</h5>
+              <h5 className="mt-3">Description</h5>
               <p>{station.description}</p>
-              <h5>Route Map</h5>
-              <div
-                style={{
-                  height: '200px',
-                  backgroundColor: '#f0f0f0',
-                  display: 'flex',
-                  alignItems: 'center',
-                  justifyContent: 'center',
-                  color: '#888',
-                }}
-              >
-                [Map Placeholder]
-              </div>
+              {/* You can add more details here if available */}
             </Card.Body>
           </Card>
         </Col>

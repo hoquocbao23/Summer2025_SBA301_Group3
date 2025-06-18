@@ -1,27 +1,69 @@
-import React from 'react';
+import React, { useContext, useState } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import PassengerForm from '../../components/passenger/PassengerForm';
 // import PaymentMethodList from '../../components/passenger/PaymentMethodList';
 import TicketSummary from '../../components/passenger/TicketSummary';
+import { TicketContext } from '../../pages/layout/TicketLayout';
+import PromotionInput from '../../components/promotion/PromotionInput';
 
-const PassengerPage = () => {
+
+
+const PassengerPage = ({layoutCurrentStep, onStepChange}) => {
+  const { singleForm, travelPassForm } = useContext(TicketContext);
+  const [passengers, setPassengers] = useState([]);
+  const [currentPassengerStep, setCurrentPassengerStep] = useState(1);
+
+  const renderStep = () => {
+    switch (currentPassengerStep) {
+      case 1:
+        return <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} onPassengerChange={handlePassengerChange} />;
+      case 2:
+        return <PromotionInput/>;
+    }
+  };
+
+  const handlePassengerChange = (updatedPassengers) => {
+    setPassengers(updatedPassengers);
+  };
+
   return (
-    <Container className="py-4">
+    <Container className="py-4 mt-4">
       <Row>
         {/* Left Section */}
         <Col md={8}>
-          <Card className="mb-3">
+          <Card className="passenger-form-card mb-4">
+            <Card.Header className="bg-white border-0">
+              <h4 className="mb-0">
+                <i className="bi bi-person-circle me-2 text-primary"></i>
+                Passenger Information
+              </h4>
+              <p className="text-muted small mb-0 mt-2">
+                Please provide the email addresses for all passengers. The primary contact will receive the booking confirmation.
+              </p>
+            </Card.Header>
             <Card.Body>
-              <PassengerForm />
+                {renderStep()}
             </Card.Body>
           </Card>
         </Col>
 
-        {/* Right Section */}
+        {/* Right Section - Ticket Summary */}
         <Col md={4}>
-          <Card className="sticky-top" style={{ top: '20px' }}>
+          <Card className="ticket-summary-card sticky-top" style={{ top: '20px' }}>
+            <Card.Header className="bg-white border-0">
+              <h4 className="mb-0">
+                <i className="bi bi-receipt me-2 text-primary"></i>
+                Booking Summary
+              </h4>
+            </Card.Header>
             <Card.Body>
-              <TicketSummary />
+            <TicketSummary   passengers={passengers} 
+                             onNextStep={setCurrentPassengerStep} 
+                             currentPassengerStep={currentPassengerStep}
+                             layoutCurrentStep={layoutCurrentStep}
+                             onStepChange={onStepChange}
+                             />
+                             
             </Card.Body>
           </Card>
         </Col>

@@ -1,68 +1,115 @@
 import React, { useState, useEffect } from "react";
 import { Container, Row, Col, Form, Button } from "react-bootstrap";
 import "./ticketLayout.css";
-import { Outlet, useLocation } from "react-router-dom";
+import { useLocation } from "react-router-dom";
 import SingleTripForm from "../../components/ticket-search/SingleTripForm";
+import TravelPassForm from "../../components/ticket-search/TravelPassForm";
+import { createContext } from "react";
+import TicketSearchOverview from "../../components/ticket-search/TicketSearchOverview";
+import PassengerPage from "../passenger/passenger-page";
+
+// Context để lưu dữ liệu từ SingleTripForm
+export const TicketContext = createContext();
+
 const TicketLayout = () => {
+
+
     const location = useLocation();
-    const [steps, setSteps] = useState([
+
+    const [layoutCurrentStep, setLayoutCurrentStep] = useState(1);
+
+    // Lấy dữ liệu từ SingleTripForm
+    // Lưu dữ liệu vào singleForm
+    const [singleForm, setSingleForm] = useState(location.state?.singleForm || null);
+
+    // Lấy dữ liệu từ TravelPassForm
+    // Lưu dữ liệu vào travelPassForm
+    const [travelPassForm, setTravelPassForm] = useState(location.state?.travelPassForm || null);
+
+    
+
+    
+
+    // Cập nhật formData khi location.state thay đổi
+    useEffect(() => {
+        if (location.state?.singleForm) {
+            setSingleForm(location.state.singleForm);
+        }
+        if (location.state?.travelPassForm) {
+            setTravelPassForm(location.state.travelPassForm);
+            setLayoutCurrentStep(2); // Chuyển sang bước Passenger khi có travelPassForm
+        }
+    }, [location.state]);
+
+   
+    const steps = [
         { number: 1, label: "TICKETS", active: true },
         { number: 2, label: "PASSENGERS", active: false },
-        { number: 3, label: "PAYMENT", active: false },
-        { number: 4, label: "VALIDATION", active: false },
-    ]);
+        { number: 3, label: "PROMOTION", active: false },
+    ];
+    
 
-    useEffect(() => {
-        const path = location.pathname;
-        const newSteps = steps.map(step => {
-            switch (step.number) {
-                case 1:
-                    return { ...step, active: path === "/tickets" };
-                case 2:
-                    return { ...step, active: path === "/tickets/passenger" };
-                case 3:
-                    return { ...step, active: path === "/tickets/payment" };
-                case 4:
-                    return { ...step, active: path === "/tickets/validation" };
-                default:
-                    return step;
-            }
-        });
-        setSteps(newSteps);
-    }, [location.pathname]);
+    const renderCurrentStep = () => {
+        switch(layoutCurrentStep) {
+            case 1:
+                return <TicketSearchOverview onStepChange={setLayoutCurrentStep} />;
+            case 2:
+                return <PassengerPage layoutCurrentStep={layoutCurrentStep} onStepChange={setLayoutCurrentStep} />;
+            case 3:
+                return <PassengerPage layoutCurrentStep={layoutCurrentStep} onStepChange={setLayoutCurrentStep} />;
+            
+        }
+    };
+
 
     return (
-        <div className="ticket-layout">
-            <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
-                <Container>
-                    <Row className="justify-content-center">
-                        <SingleTripForm/>
-                    </Row>
-                </Container>
-            </div>
-
-            <Row className="mt-4 text-center">
-                <div className="steps-container">
-                    {steps.map((step, index) => (
-                        <div
-                            key={index}
-                            className={
-                                `step-item ${step.active ? "active" : ""} 
-                                    ${index !== steps.length - 1 ? "arrow-right" : ""}`
-                            }
-                            style={{
-                                zIndex: `${steps.length - index}`,
-                            }}
-                        >
-                            <span className="step-number">{step.number}</span>
-                            <span className="step-label">{step.label}</span>
-                        </div>
-                    ))}
+        
+        ///
+        <TicketContext.Provider value={{
+             singleForm,  
+             travelPassForm,
+        }}>
+            { travelPassForm === null  && (
+                
+                    <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
+                        <Container>
+                            <Row className="justify-content-center">
+                                <SingleTripForm initialData={singleForm} />
+                            </Row>
+                        </Container>
+                     
                 </div>
-            </Row>
-            
-            <Outlet />
-        </div>
+            )}
+            {
+                singleForm == null && travelPassForm != null && (
+                    
+                    <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
+                        <Container>
+                            <Row className="justify-content-center">
+                                <TravelPassForm initialData={travelPassForm} />
+                            </Row>
+                        </Container>
+                             
+                </div>
+                )
+            }
+            <Row className="mt-4 text-center">
+                        <div className="steps-container">
+                            {steps.map((step, index) => (
+                                <div
+                                    key={index}
+                                    className={`step-item ${step.number === layoutCurrentStep ? "active" : ""} 
+                                        ${index !== steps.length - 1 ? "arrow-right" : ""}`}
+                                    style={{ zIndex: `${steps.length - index}` }}
+                                >
+                                    <span className="step-number">{step.number}</span>
+                                    <span className="step-label">{step.label}</span>
+                                </div>
+                            ))}
+                        </div>
+            </Row>     
+            {renderCurrentStep()}
+        </TicketContext.Provider>
 
     );
 };

@@ -1,48 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-
-const initialStations = [
-  {
-    id: 1,
-    name: "Ben Thanh",
-    location: { lat: 10.7718, long: 106.6983 },
-    gates: 4,
-    image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    status: "Active",
-  },
-  {
-    id: 2,
-    name: "Ba Son",
-    location: { lat: 10.7805, long: 106.7081 },
-    gates: 3,
-    image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    status: "Inactive",
-  },
-  {
-    id: 3,
-    name: "Hiep Thanh",
-    location: { lat: 10.7902, long: 106.7155 },
-    gates: 2,
-    image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    status: "Active",
-  },
-  {
-    id: 4,
-    name: "Thao Dien",
-    location: { lat: 10.7991, long: 106.7223 },
-    gates: 3,
-    image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    status: "Active",
-  },
-  {
-    id: 5,
-    name: "An Phu",
-    location: { lat: 10.8055, long: 106.7301 },
-    gates: 2,
-    image: "https://media-cdn-v2.laodong.vn/Storage/NewsPortal/2023/5/1/1186900/Z4306702702535_Cfd7b.jpg",
-    status: "Inactive",
-  },
-];
+import axiosInstance from "../../../config/axios";
 
 const AdminStationManager = () => {
   const navigate = useNavigate();
@@ -55,26 +13,24 @@ const AdminStationManager = () => {
     console.error("Lỗi khi phân tích dữ liệu người dùng từ localStorage:", error);
   }
 
-  if (!isAdmin) {
-    return (
-      <div className="container py-4">
-        <div className="alert alert-danger" role="alert">
-          <h4 className="alert-heading">Access Denied</h4>
-          <p>Bạn không có quyền truy cập trang quản lý nhà ga. Vui lòng đăng nhập với tài khoản admin.</p>
-          <hr />
-          <button
-            className="btn btn-primary"
-            onClick={() => navigate("/login")}
-            style={{ borderRadius: "8px" }}
-          >
-            Đi đến trang đăng nhập
-          </button>
-        </div>
-      </div>
-    );
-  }
 
-  const [stations, setStations] = useState(initialStations);
+  // State to hold station list from API
+  const [stations, setStations] = useState([]);
+  // Function to fetch stations from backend
+  const fetchStations = () => {
+    axiosInstance
+      .get("/stations")
+      .then((res) => {
+        if (res.data?.data) setStations(res.data.data);
+      })
+      .catch((err) => console.error("Failed to fetch stations:", err));
+  };
+
+  // Fetch stations once on mount
+  useEffect(() => {
+    fetchStations();
+  }, []);
+
   const [editStation, setEditStation] = useState(null);
   const [showModal, setShowModal] = useState(false);
   const [selectedStations, setSelectedStations] = useState([]);
@@ -82,50 +38,44 @@ const AdminStationManager = () => {
   const handleEditOrAdd = (station = null) => {
     setEditStation(
       station
-        ? { ...station, location: { ...station.location } }
-        : { name: "", location: { lat: "", long: "" }, gates: "", image: "", status: "Active" },
+        ? { ...station }
+        : { stationName: "", stationLocation: "", url: "", status: "ACTIVE", description: "" },
     );
     setShowModal(true);
   };
 
-  const handleSave = () => {
-    if (editStation.id) {
-      setStations(
-        stations.map((s) =>
-          s.id === editStation.id
-            ? {
-                ...editStation,
-                location: {
-                  lat: Number.parseFloat(editStation.location.lat),
-                  long: Number.parseFloat(editStation.location.long),
-                },
-                gates: Number.parseInt(editStation.gates),
-              }
-            : s,
-        ),
-      );
-    } else {
-      const newId = stations.length ? stations[stations.length - 1].id + 1 : 1;
-      setStations([
-        ...stations,
-        {
-          ...editStation,
-          id: newId,
-          location: {
-            lat: Number.parseFloat(editStation.location.lat),
-            long: Number.parseFloat(editStation.location.long),
-          },
-          gates: Number.parseInt(editStation.gates),
-        },
-      ]);
+  const handleSave = async () => {
+    try {
+      const payload = {
+        stationName: editStation.stationName,
+        stationLocation: editStation.stationLocation,
+        url: editStation.url,
+        status: editStation.status,
+        description: editStation.description,
+      };
+      if (editStation.stationId) {
+        // API expects station ID in body as `station`
+        payload.station = editStation.stationId;
+        await axiosInstance.put(`/stations/${editStation.stationId}`, payload);
+      } else {
+        await axiosInstance.post("/stations", payload);
+      }
+      fetchStations();
+      setShowModal(false);
+      setEditStation(null);
+    } catch (err) {
+      console.error("Failed to save station:", err);
     }
-    setShowModal(false);
-    setEditStation(null);
   };
 
-  const handleDelete = (id) => {
+  const handleDelete = async (id) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa ga này không?")) {
-      setStations(stations.filter((s) => s.id !== id));
+      try {
+        await axiosInstance.delete(`/stations/${id}`);
+        setStations((prev) => prev.filter((s) => s.stationId !== id));
+      } catch (err) {
+        console.error("Failed to delete station:", err);
+      }
     }
   };
 
@@ -256,7 +206,6 @@ const AdminStationManager = () => {
                   </th>
                   <th className="border-0 px-4 py-3 fw-semibold text-dark">Nhà ga</th>
                   <th className="border-0 px-4 py-3 fw-semibold text-dark">Vị trí</th>
-                  <th className="border-0 px-4 py-3 fw-semibold text-dark">Số cổng</th>
                   <th className="border-0 px-4 py-3 fw-semibold text-dark">Hình ảnh</th>
                   <th className="border-0 px-4 py-3 fw-semibold text-dark">Trạng thái</th>
                   <th className="border-0 px-4 py-3 fw-semibold text-dark text-end">Hành động</th>
@@ -264,51 +213,39 @@ const AdminStationManager = () => {
               </thead>
               <tbody>
                 {stations.map((station) => (
-                  <tr key={station.id}>
+                  <tr key={station.stationId}>
                     <td className="px-4 py-3">
                       <input
                         type="checkbox"
-                        checked={selectedStations.includes(station.id)}
-                        onChange={() => toggleStationSelection(station.id)}
+                        checked={selectedStations.includes(station.stationId)}
+                        onChange={() => toggleStationSelection(station.stationId)}
                         className="form-check-input"
                       />
                     </td>
                     <td className="px-4 py-3">
-                      <div className="fw-semibold text-dark">{station.name}</div>
+                      <div className="fw-semibold text-dark">{station.stationName}</div>
                     </td>
                     <td className="px-4 py-3">
-                      <div className="d-flex align-items-center text-muted small">
-                        <svg width="14" height="14" fill="currentColor" className="me-2" viewBox="0 0 16 16">
-                          <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
-                        </svg>
-                        {station.location.lat.toFixed(4)}, {station.location.long.toFixed(4)}
-                      </div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <span className="badge bg-secondary bg-opacity-10 text-secondary px-3 py-1 rounded-pill">
-                        {station.gates} cổng
-                      </span>
+                      <div className="fw-semibold text-dark">{station.stationLocation}</div>
                     </td>
                     <td className="px-4 py-3">
                       <img
-                        src={station.image || "/placeholder.svg?height=40&width=60"}
-                        alt={station.name}
+                        src={station.url || "/placeholder.svg?height=40&width=60"}
+                        alt={station.stationName}
                         className="rounded border"
                         style={{ width: "60px", height: "40px", objectFit: "cover" }}
-                        onError={(e) => {
-                          e.target.src = "/placeholder.svg?height=40&width=60";
-                        }}
+                        onError={(e) => { e.target.src = "/placeholder.svg?height=40&width=60"; }}
                       />
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`badge px-3 py-1 rounded-pill ${
-                          station.status === "Active"
+                          station.status === "ACTIVE"
                             ? "bg-success bg-opacity-10 text-success"
                             : "bg-danger bg-opacity-10 text-danger"
                         }`}
                       >
-                        {station.status === "Active" ? "Hoạt động" : "Không hoạt động"}
+                        {station.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
                       </span>
                     </td>
                     <td className="px-4 py-3 text-end">
@@ -323,7 +260,7 @@ const AdminStationManager = () => {
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDelete(station.id)}
+                          onClick={() => handleDelete(station.stationId)}
                           className="btn btn-sm btn-outline-danger border-0"
                           title="Xóa nhà ga"
                         >
@@ -359,7 +296,7 @@ const AdminStationManager = () => {
           <div className="modal-dialog modal-lg modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">{editStation?.id ? "Chỉnh sửa nhà ga" : "Thêm nhà ga mới"}</h5>
+                <h5 className="modal-title fw-bold">{editStation?.stationId ? "Chỉnh sửa nhà ga" : "Thêm nhà ga mới"}</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
               </div>
 
@@ -369,49 +306,22 @@ const AdminStationManager = () => {
                     <label className="form-label fw-semibold">Tên nhà ga</label>
                     <input
                       type="text"
-                      name="name"
-                      value={editStation?.name || ""}
-                      onChange={handleInputChange}
+                      name="stationName"
+                      value={editStation?.stationName || ""}
+                      onChange={(e) => setEditStation({ ...editStation, stationName: e.target.value })}
                       placeholder="Nhập tên nhà ga"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Số cổng</label>
+                    <label className="form-label fw-semibold">Vị trí</label>
                     <input
-                      type="number"
-                      name="gates"
-                      value={editStation?.gates || ""}
-                      onChange={handleInputChange}
-                      placeholder="Số cổng"
-                      min="1"
-                      className="form-control"
-                      style={{ borderRadius: "8px" }}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">Vĩ độ</label>
-                    <input
-                      type="number"
-                      name="lat"
-                      value={editStation?.location?.lat || ""}
-                      onChange={handleInputChange}
-                      placeholder="Vĩ độ"
-                      step="any"
-                      className="form-control"
-                      style={{ borderRadius: "8px" }}
-                    />
-                  </div>
-                  <div className="col-md-6">
-                    <label className="form-label fw-semibold">Kinh độ</label>
-                    <input
-                      type="number"
-                      name="long"
-                      value={editStation?.location?.long || ""}
-                      onChange={handleInputChange}
-                      placeholder="Kinh độ"
-                      step="any"
+                      type="text"
+                      name="stationLocation"
+                      value={editStation?.stationLocation || ""}
+                      onChange={(e) => setEditStation({ ...editStation, stationLocation: e.target.value })}
+                      placeholder="Nhập vị trí nhà ga"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
                     />
@@ -420,9 +330,9 @@ const AdminStationManager = () => {
                     <label className="form-label fw-semibold">URL hình ảnh</label>
                     <input
                       type="text"
-                      name="image"
-                      value={editStation?.image || ""}
-                      onChange={handleInputChange}
+                      name="url"
+                      value={editStation?.url || ""}
+                      onChange={(e) => setEditStation({ ...editStation, url: e.target.value })}
                       placeholder="Nhập URL hình ảnh"
                       className="form-control"
                       style={{ borderRadius: "8px" }}
@@ -432,14 +342,25 @@ const AdminStationManager = () => {
                     <label className="form-label fw-semibold">Trạng thái</label>
                     <select
                       name="status"
-                      value={editStation?.status || "Active"}
-                      onChange={handleInputChange}
+                      value={editStation?.status || "ACTIVE"}
+                      onChange={(e) => setEditStation({ ...editStation, status: e.target.value })}
                       className="form-select"
                       style={{ borderRadius: "8px" }}
                     >
-                      <option value="Active">Hoạt động</option>
-                      <option value="Inactive">Không hoạt động</option>
+                      <option value="ACTIVE">Hoạt động</option>
+                      <option value="INACTIVE">Không hoạt động</option>
                     </select>
+                  </div>
+                  <div className="col-12">
+                    <label className="form-label fw-semibold">Mô tả</label>
+                    <textarea
+                      name="description"
+                      value={editStation?.description || ""}
+                      onChange={(e) => setEditStation({ ...editStation, description: e.target.value })}
+                      placeholder="Nhập mô tả"
+                      className="form-control"
+                      style={{ borderRadius: "8px", minHeight: "100px" }}
+                    />
                   </div>
                 </div>
               </div>
@@ -453,8 +374,13 @@ const AdminStationManager = () => {
                 >
                   Hủy
                 </button>
-                <button type="button" className="btn btn-primary" onClick={handleSave} style={{ borderRadius: "8px" }}>
-                  {editStation?.id ? "Cập nhật nhà ga" : "Thêm nhà ga"}
+                <button
+                  type="button"
+                  className="btn btn-primary"
+                  onClick={handleSave}
+                  style={{ borderRadius: "8px" }}
+                >
+                  {editStation?.stationId ? "Cập nhật nhà ga" : "Thêm nhà ga"}
                 </button>
               </div>
             </div>
