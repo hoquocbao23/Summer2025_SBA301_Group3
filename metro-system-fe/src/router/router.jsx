@@ -15,6 +15,7 @@ import AdminStationManager from "../pages/dashboard/station/station-dashboard";
 import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
+import AdminTicketRuleManager from "../pages/dashboard/ticket-rule/ticket-rule-dashboard";
 import PaymentSuccess from "../components/payment/PaymentSuccess";
 import PaymentFailed from "../components/payment/PaymentFailed";
 import CheckinPage from "../components/checkin/CheckinPage";
@@ -100,6 +101,10 @@ const router = createBrowserRouter([
       {
         path: "ticket-type",
         element: <TicketTypeDashboard/>
+      },
+      {
+        path: "ticket-rule",
+        element: <AdminTicketRuleManager/>
       }
     ],
   },
