@@ -1,4 +1,4 @@
-package com.sba301.metro_system.dto.request;
+package com.sba301.metro_system.dto.request.payment;
 
 import lombok.Data;
 

@@ -1,10 +1,10 @@
-package com.sba301.metro_system.dto.request;
+package com.sba301.metro_system.dto.request.ticket;
 
-import com.sba301.metro_system.entity.Station;
 import lombok.Data;
 
 @Data
 public class TicketRequestDto {
+
     private long departureStation;
     private long arrivalStation;
     private long routeId;

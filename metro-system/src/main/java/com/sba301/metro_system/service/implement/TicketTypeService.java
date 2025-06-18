@@ -81,6 +81,6 @@ public class TicketTypeService implements ITicketTypeService {
 
     @Override
     public List<TicketType> findAllUnlimitTicketTypes() {
-        return ticketTypeRepository.findAllByUsageLimit(true);
+        return ticketTypeRepository.findAllByUsageLimit(false);
     }
 }

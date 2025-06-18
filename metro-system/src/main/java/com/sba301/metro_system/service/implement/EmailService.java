@@ -38,6 +38,11 @@ public class EmailService implements IEmailService {
         }
     }
 
+    @Override
+    public void sendEmail(MailBody body) {
+
+    }
+
     public String buildEmailContent(String text) {
         StringBuilder emailContent = new StringBuilder();
         emailContent.append("""
@@ -67,4 +72,8 @@ public class EmailService implements IEmailService {
 
         return emailContent.toString();
     }
+
+
+
+
 }

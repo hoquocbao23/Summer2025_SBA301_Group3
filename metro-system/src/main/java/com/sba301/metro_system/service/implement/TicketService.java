@@ -1,15 +1,21 @@
 package com.sba301.metro_system.service.implement;
 
-import com.sba301.metro_system.dto.request.PaymentRequestDto;
-import com.sba301.metro_system.dto.request.TicketRequestDto;
+import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
+import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
+import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
+import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.*;
+import com.sba301.metro_system.enums.PaymentMethod;
 import com.sba301.metro_system.enums.TicketStatus;
+import com.sba301.metro_system.enums.TransactionStatus;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.exception.UnAuthorized;
+import com.sba301.metro_system.mapper.TicketMapper;
+import com.sba301.metro_system.mapper.TransactionMapper;
+import com.sba301.metro_system.record.MailBody;
 import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.service.ITicketService;
 import com.sba301.metro_system.utils.AccountHelper;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,13 +30,17 @@ public class TicketService implements ITicketService {
     private final TicketTypeService ticketTypeService;
     private final PromotionService promotionService;
     private final PaymentService paymentService;
-
-
+    private final TransactionService transactionService;
+    private final EmailService emailService;
 
 
     @Override
-    @Transactional
-    public String buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception {
+    public TicketResponseDto getTicketDetails(long ticketId)  {
+        Ticket ticket = ticketRepository.findById(ticketId).get();
+        return TicketMapper.toTicketResponseDto(ticket);
+    }
+
+    public TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception{
         final int NUMBER_OF_TICKETS = 1;
         Ticket ticket = new Ticket();
         Account currentAccount = AccountHelper.getCurrentUser().getUser();
@@ -40,7 +50,7 @@ public class TicketService implements ITicketService {
 
         TicketType ticketType = ticketTypeService.findById(ticketRequestDto.getTicketTypeId());
         RouteRule routeRule = routeRuleService.findByRouteIdAndType(ticketRequestDto.getRouteId(),
-                                                                        ticketType.getTicketName());
+                ticketType.getTicketName());
         if (routeRule == null) {
             throw new NotFoundException("This ticket type does not apply to this route");
         }
@@ -56,8 +66,6 @@ public class TicketService implements ITicketService {
                 ticket.setPromotion(promotion);
             }
         }
-
-
         ticket.setDepartureStation(null);
         ticket.setArrivalStation(null);
         ticket.setOldPrice(oldPrice);
@@ -76,8 +84,14 @@ public class TicketService implements ITicketService {
                 generateDescription(ticketType.getTicketName()),
                 newPrice,
                 NUMBER_OF_TICKETS);
-        return urlCheckout;
+
+        TicketResponseDto responseDto = TicketMapper.toTicketResponseDto(ticket);
+        responseDto.setUrlCheckout(urlCheckout);
+
+        return responseDto;
     }
+
+
 
     public Double calculateDiscountedPrice(Double oldPrice, Promotion promotion) {
         if (promotion != null) {
@@ -98,6 +112,44 @@ public class TicketService implements ITicketService {
     public String generateDescription(String ticketName){
         return String.format("Thanh toan mua %s", ticketName);
     }
+
+    public void paymentTicketSuccess(long ticketId)  {
+        Ticket ticket = ticketRepository.findById(ticketId).get();
+        //update if payment success
+        ticket.setTicketStatus(TicketStatus.UNUSED);
+        ticketRepository.save(ticket);
+
+        // create new transaction
+        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
+                PaymentMethod.PAYOS,
+                TransactionStatus.SUCCESS);
+        transactionService.saveTransaction(transactionRequestDto, ticket);
+
+        String text = "Bạn đã mua vé " + ticket.getTicketType().getTicketName();
+        MailBody mailBody = MailBody.builder()
+                .to(ticket.getAccount().getEmail())
+                .subject("Bạn đã mua vé" + ticket.getTicketType().getTicketName())
+                .text(text)
+                .build();
+        emailService.sendOTP(mailBody);
+    }
+
+    public void paymentTicketFail(long ticketId)  {
+        Ticket ticket = ticketRepository.findById(ticketId).get();
+        //update if payment failed
+        ticket.setTicketStatus(TicketStatus.CANCELLED);
+//        ticketRepository.save(ticket);
+
+        // create new transaction
+        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
+                PaymentMethod.PAYOS,
+                TransactionStatus.FAILED);
+        transactionService.saveTransaction(transactionRequestDto, ticket);
+    }
+
+
+
+
 
 
 

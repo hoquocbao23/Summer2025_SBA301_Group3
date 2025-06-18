@@ -1,7 +1,7 @@
 package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
-import com.sba301.metro_system.dto.request.PaymentRequestDto;
+import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.service.implement.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;

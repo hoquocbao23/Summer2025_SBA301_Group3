@@ -14,13 +14,15 @@ public class TicketResponseDto {
     private Long ticketId;
     private String departureStation;
     private String arrivalStation;
-    private BigDecimal price;
+    private Double oldPrice;
+    private Double newPrice;
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
     private LocalDateTime purchaseTime;
     private String qrUrl;
     private TicketStatus ticketStatus;
     private String ticketName;
-    private Promotion promotion;
+    private String promotionCode;
     private String routeName;
+    private String urlCheckout;
 }

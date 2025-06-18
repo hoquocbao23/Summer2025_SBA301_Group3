@@ -18,7 +18,7 @@ public class TicketTypeDto {
 
     @Schema(example = "30")
     @NotNull(message = "Validity days must be provided")
-    @Min(value = 1, message = "Validity days must be at least 1")
+    @Min(value = 0, message = "Validity days must be at least 0")
     private Integer validityDays;
 
     @Schema(example = "Vé dùng trong tháng")
