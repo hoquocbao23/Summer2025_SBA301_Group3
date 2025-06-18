@@ -11,7 +11,7 @@ const ROUTE_ENDPOINTS = {
 
 export class RouteService {
   // Basic Route Management
-  
+
   /**
    * Get all routes
    * @returns {Promise<Object>} Routes list response
@@ -19,6 +19,7 @@ export class RouteService {
   static async getAllRoutes() {
     try {
       const response = await axiosInstance.get(ROUTE_ENDPOINTS.ROUTES);
+      console.log('All routes fetched successfully:', response);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -71,13 +72,27 @@ export class RouteService {
   }
 
   /**
-   * Delete route (soft delete)
+   * deactivate route
    * @param {number} routeId - Route ID
-   * @returns {Promise<Object>} Delete response
+   * @returns {Promise<Object>} deactivate response
    */
-  static async deleteRoute(routeId) {
+  static async deactivateRoute(routeId) {
     try {
-      const response = await axiosInstance.delete(`${ROUTE_ENDPOINTS.ROUTES}/${routeId}`);
+      const response = await axiosInstance.put(`${ROUTE_ENDPOINTS.ROUTES}/${routeId}/deactivate`);
+      return response.data;
+    } catch (error) {
+      throw this.handleError(error);
+    }
+  }
+
+  /**
+   * activate route
+   * @param {number} routeId - Route ID
+   * @returns {Promise<Object>} activate response
+   */
+  static async activateRoute(routeId) {
+    try {
+      const response = await axiosInstance.put(`${ROUTE_ENDPOINTS.ROUTES}/${routeId}/activate`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -136,7 +151,7 @@ export class RouteService {
         stations: stations.map(station => ({
           stationId: station.stationId,
           stationOrder: station.order,
-          distanceToNext: station.distanceFromPrevious || 0
+          distanceToNext: station.distanceToNext || 0
         }))
       };
       const response = await axiosInstance.put(ROUTE_ENDPOINTS.ROUTE_STATIONS, payload);
@@ -248,18 +263,34 @@ export class RouteService {
    * @returns {Object} Frontend-formatted route data
    */
   static transformFromApiFormat(apiRouteData) {
+    const getTicketRulesArray = (ticketRule) => {
+      if (!ticketRule) return [];
+      if (Array.isArray(ticketRule)) return ticketRule;
+      // If it's a single object, wrap it in an array
+      if (typeof ticketRule === 'object') return [ticketRule];
+      return [];
+    };
+    const ticketRulesArray = getTicketRulesArray(apiRouteData.ticketRule);
+    
     return {
-      id: apiRouteData.routeId,
-      name: apiRouteData.routeName,
-      description: apiRouteData.routeDescription,
-      status: apiRouteData.status || 'Active',
+      routeId: apiRouteData.routeId,
+      routeName: apiRouteData.routeName,
+      routeDescription: apiRouteData.routeDescription,
+      status: apiRouteData.status || 'ACTIVE',
       color: '#007bff', // Default color, can be customized
       totalDistance: apiRouteData.totalDistance || 0,
-      estimatedTime: apiRouteData.estimatedDuration || 0,
-      operatingHours: '05:00 - 23:00', // Default operating hours
-      frequency: `${apiRouteData.frequencyMinutes || 5} minutes`,
-      ticketPrice: apiRouteData.ticketRule?.basePrice || 15000,
-      ruleId: apiRouteData.ticketRule?.ruleId || 1,
+      estimatedDuration: apiRouteData.estimatedDuration || 0,
+      operatingHours: apiRouteData.operatingHours,
+      frequencyMinutes: `${apiRouteData.frequencyMinutes || 5}`,
+      ruleId: ticketRulesArray.length > 0 ? ticketRulesArray[0].ruleId : 1,
+      ticketRule: ticketRulesArray.map(rule => ({
+        ruleId: rule.ruleId,
+        ruleName: rule.ruleName,
+        pricePerKm: rule.pricePerKm,
+        description: rule.basePrice,
+        status: rule.status,
+        isDelete: rule.isDelete
+      })),
       stations: (apiRouteData.stations || []).map(station => ({
         stationId: station.stationId,
         order: station.stationOrder,

@@ -12,6 +12,7 @@ export class StationService {
   static async getAllStations() {
     try {
       const response = await axiosInstance.get(STATION_ENDPOINTS.STATIONS);
+      console.log('Stations response:', response.data);
       return response.data;
     } catch (error) {
       throw this.handleError(error);

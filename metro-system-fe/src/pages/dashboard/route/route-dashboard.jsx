@@ -30,9 +30,8 @@ const AdminRouteManager = () => {
       setLoading(true)
       setApiError(null)
       const response = await RouteService.getAllRoutes()
-      console.log("API Route Response:", response)
       if (response.data.routes && Array.isArray(response.data.routes)) {
-        const transformedRoutes = response.data.routes.map(route => 
+        const transformedRoutes = response.data.routes.map(route =>
           RouteService.transformFromApiFormat(route)
         )
         setRoutes(transformedRoutes)
@@ -52,8 +51,8 @@ const AdminRouteManager = () => {
   const loadStations = async () => {
     try {
       const response = await StationService.getAllStations()
-      if (response.data.stations && Array.isArray(response.data.stations)) {
-        setStations(response.data.stations)
+      if (response.data && Array.isArray(response.data)) {
+        setStations(response.data)
       }
     } catch (error) {
       console.error('Error loading stations:', error)
@@ -91,15 +90,15 @@ const AdminRouteManager = () => {
       try {
         // const nameExists = await RouteService.checkRouteNameExists(editRoute.routeName.trim())
         const isEditingExisting = editRoute.routeId && routes.find(r => r.routeId === editRoute.routeId)?.routeName === editRoute.routeName.trim()
-        
+
         if (isEditingExisting) {
           newErrors.routeName = "Route name already exists"
         }
       } catch (error) {
         console.warn('Could not check route name uniqueness:', error)
         // Fall back to local check
-        const isDuplicateName = routes.some(route => 
-          route.routeId !== editRoute.routeId && 
+        const isDuplicateName = routes.some(route =>
+          route.routeId !== editRoute.routeId &&
           route.routeName.toLowerCase().trim() === editRoute.routeName?.toLowerCase().trim()
         )
         if (isDuplicateName) {
@@ -163,7 +162,7 @@ const AdminRouteManager = () => {
       : {
         routeName: "",
         routeDescription: "",
-        status: "Active",
+        status: "ACTIVE",
         color: "#007bff",
         totalDistance: 0,
         estimatedDuration: 45,
@@ -182,13 +181,11 @@ const AdminRouteManager = () => {
     try {
       setLoading(true)
       setApiError(null)
-      console.log("0")
       const isValid = await validateForm()
       if (!isValid) {
         setLoading(false)
         return // Don't save if validation fails
       }
-      console.log("1")
       // Prepare route data with ruleId
       const routeData = {
         routeName: editRoute.routeName?.trim(),
@@ -200,7 +197,6 @@ const AdminRouteManager = () => {
         color: editRoute.color,
         ruleId: parseInt(editRoute.ruleId)
       }
-      console.log("2")
       if (editRoute.routeId) {
         // Update existing route
         const response = await RouteService.updateRoute(editRoute.routeId, routeData)
@@ -209,27 +205,21 @@ const AdminRouteManager = () => {
           if (editRoute.stations && editRoute.stations.length > 0) {
             await RouteService.updateRouteStations(editRoute.routeId, editRoute.stations)
           }
-          console.log("3")
           // Reload routes to get updated data
           await loadRoutes()
         }
       } else {
         // Create new route
-        console.log("Route Data: ", routeData)
         const response = await RouteService.createRoute(routeData)
-        console.log("3.5")
-        console.log("Response: ", response)
         if (response && response.data.routeId) {
           // Add stations if there are any
           if (editRoute.stations && editRoute.stations.length > 0) {
             await RouteService.addStationsToRoute(response.routeId, editRoute.stations)
           }
-          console.log("4")
           // Reload routes to get updated data
           await loadRoutes()
         }
       }
-      console.log("5")
       setShowModal(false)
       setEditRoute(null)
       setErrors({}) // Clear errors after successful save
@@ -240,20 +230,53 @@ const AdminRouteManager = () => {
       setLoading(false)
     }
   }
-  const handleDelete = async (id) => {
-    if (window.confirm("Are you sure want to delete this route?")) {
-      try {
-        setLoading(true)
-        setApiError(null)
-        
-        await RouteService.deleteRoute(id)
-        await loadRoutes() // Reload routes after deletion
-      } catch (error) {
-        console.error('Error deleting route:', error)
-        setApiError(error.message)
-      } finally {
-        setLoading(false)
+  const handleToggleStatus = async (routeId, currentStatus) => {
+    try {
+      setLoading(true)
+      setApiError(null)
+
+      // const newStatus = currentStatus === "ACTIVE" ? "INACTIVE" : "ACTIVE"
+      const route = routes.find(r => r.routeId === routeId)
+
+      if (!route) {
+        throw new Error('Route not found')
       }
+
+      if (currentStatus === "ACTIVE") {
+        await RouteService.deactivateRoute(routeId)
+      } else if (currentStatus === "INACTIVE") {
+        await RouteService.activateRoute(routeId)
+      }
+
+      setApiError(null)
+      await loadRoutes()
+      // Update route with new status
+      // const updatedRouteData = {
+      //   ...route,
+      //   status: newStatus
+      // }
+
+      // const response = await RouteService.updateRoute(routeId, updatedRouteData)
+
+      // if (response) {
+      //   // Update local state
+      //   setRoutes(prevRoutes =>
+      //     prevRoutes.map(r =>
+      //       r.routeId === routeId
+      //         ? { ...r, status: newStatus }
+      //         : r
+      //     )
+      //   )
+
+      //   // Show success message
+      //   setApiError(null)
+      //   console.log(`Route ${newStatus.toLowerCase()} successfully`)
+      // }
+    } catch (error) {
+      console.error('Error toggling route status:', error)
+      setApiError(`Failed to ${currentStatus === "ACTIVE" ? "deactivate" : "activate"} route: ${error.message}`)
+    } finally {
+      setLoading(false)
     }
   }
   const handleInputChange = (e) => {
@@ -286,7 +309,7 @@ const AdminRouteManager = () => {
     const newOrder = currentRouteStations.length + 1
     setCurrentRouteStations([
       ...currentRouteStations,
-      { stationId: stations[0]?.stationId || 1, order: newOrder, distanceFromPrevious: 0 }
+      { stationId: stations[0]?.stationId || 1, order: newOrder, distanceToNext: 0 }
     ])
   }
 
@@ -299,13 +322,12 @@ const AdminRouteManager = () => {
     }))
     setCurrentRouteStations(updatedStations)
   }
-
   const updateStationInRoute = (index, field, value) => {
     const updated = [...currentRouteStations]
     if (field === 'stationId') {
       updated[index] = { ...updated[index], stationId: parseInt(value) }
-    } else if (field === 'distanceFromPrevious') {
-      updated[index] = { ...updated[index], distanceFromPrevious: parseFloat(value) || 0 }
+    } else if (field === 'distanceToNext') {
+      updated[index] = { ...updated[index], distanceToNext: parseFloat(value) || 0 }
     }
     setCurrentRouteStations(updated)
   }
@@ -331,14 +353,14 @@ const AdminRouteManager = () => {
     try {
       setLoading(true)
       setApiError(null)
-      
+
       if (currentRouteId && currentRouteStations.length > 0) {
         await RouteService.updateRouteStations(currentRouteId, currentRouteStations)
         await loadRoutes() // Reload routes to get updated data
       }
-      
+
       setShowStationModal(false)
-      setCurrentRouteStations([]) 
+      setCurrentRouteStations([])
       setCurrentRouteId(null)
     } catch (error) {
       console.error('Error saving stations:', error)
@@ -348,11 +370,9 @@ const AdminRouteManager = () => {
     }
   }
 
-  const activeRoutes = routes.filter((r) => r.status === "Active").length
-  const planningRoutes = routes.filter((r) => r.status === "Planning").length
-  const inactiveRoutes = routes.filter((r) => r.status === "Inactive").length
+  const activeRoutes = routes.filter((r) => r.status === "ACTIVE").length
+  const inactiveRoutes = routes.filter((r) => r.status === "INACTIVE").length
 
-  console.log("Routes:", editRoute);
   return (
     <div className="route-manager">
       {/* Page Header */}
@@ -391,9 +411,9 @@ const AdminRouteManager = () => {
             </svg>
             <span><strong>Error:</strong> {apiError}</span>
           </div>
-          <button 
-            type="button" 
-            className="btn-close" 
+          <button
+            type="button"
+            className="btn-close"
             onClick={() => setApiError(null)}
             aria-label="Close"
           ></button>
@@ -439,7 +459,7 @@ const AdminRouteManager = () => {
           </div>
         </div>
 
-        <div className="col-md-3 mb-3">
+        {/* <div className="col-md-3 mb-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "12px" }}>
             <div className="card-body p-4">
               <div className="d-flex justify-content-between align-items-center">
@@ -455,7 +475,7 @@ const AdminRouteManager = () => {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
 
         <div className="col-md-3 mb-3">
           <div className="card border-0 shadow-sm h-100" style={{ borderRadius: "12px" }}>
@@ -550,11 +570,9 @@ const AdminRouteManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`badge px-3 py-1 rounded-pill ${route.status === "Active"
-                            ? "bg-success bg-opacity-10 text-success"
-                            : route.status === "Planning"
-                              ? "bg-warning bg-opacity-10 text-warning"
-                              : "bg-danger bg-opacity-10 text-danger"
+                        className={`badge px-3 py-1 rounded-pill ${route.status === "ACTIVE"
+                          ? "bg-success bg-opacity-10 text-success"
+                          : "bg-danger bg-opacity-10 text-danger"
                           }`}
                       >
                         {route.status}
@@ -581,17 +599,24 @@ const AdminRouteManager = () => {
                           </svg>
                         </button>
                         <button
-                          onClick={() => handleDelete(route.routeId)}
-                          className="btn btn-sm btn-outline-danger border-0"
-                          title="Delete route"
+                          onClick={() => handleToggleStatus(route.routeId, route.status)}
+                          className={`btn btn-sm border-0 ${route.status === "ACTIVE"
+                            ? "btn-outline-warning"
+                            : "btn-outline-success"
+                            }`}
+                          title={route.status === "ACTIVE" ? "Deactivate route" : "Activate route"}
                         >
-                          <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
-                            <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
-                            <path
-                              fillRule="evenodd"
-                              d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z"
-                            />
-                          </svg>
+                          {route.status === "ACTIVE" ? (
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M5.5 5.5A.5.5 0 0 1 6 6v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm2.5 0a.5.5 0 0 1 .5.5v6a.5.5 0 0 1-1 0V6a.5.5 0 0 1 .5-.5zm3 .5a.5.5 0 0 0-1 0v6a.5.5 0 0 0 1 0V6z" />
+                              <path fillRule="evenodd" d="M14.5 3a1 1 0 0 1-1 1H13v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V4h-.5a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1H6a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1h3.5a1 1 0 0 1 1 1v1zM4.118 4 4 4.059V13a1 1 0 0 0 1 1h6a1 1 0 0 0 1-1V4.059L11.882 4H4.118zM2.5 3V2h11v1h-11z" />
+                            </svg>
+                          ) : (
+                            <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
+                              <path d="M8 15A7 7 0 1 1 8 1a7 7 0 0 1 0 14zm0 1A8 8 0 1 0 8 0a8 8 0 0 0 0 16z" />
+                              <path d="M10.97 4.97a.235.235 0 0 0-.02.022L7.477 9.417 5.384 7.323a.75.75 0 0 0-1.06 1.06L6.97 11.03a.75.75 0 0 0 1.079-.02l3.992-4.99a.75.75 0 0 0-1.071-1.05z" />
+                            </svg>
+                          )}
                         </button>
                       </div>
                     </td>
@@ -609,12 +634,12 @@ const AdminRouteManager = () => {
             <small className="text-muted">Rows per page: 5</small>
           </div>
         </div>
-      </div>      
+      </div>
       {/* Edit/Add Route Modal */}
       {showModal && (
         <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
           <div className="modal-dialog modal-lg modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>              
+            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>
               <div className="modal-header border-0 pb-0">
                 <h5 className="modal-title fw-bold">{editRoute?.routeId ? "Edit Route" : "Add New Route"}</h5>
                 <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
@@ -656,7 +681,7 @@ const AdminRouteManager = () => {
                       className="form-control form-control-color"
                       style={{ borderRadius: "8px", display: "inline-block", width: "100%" }}
                     />
-                  </div>                  
+                  </div>
                   <div className="col-12" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                     <label className="form-label fw-semibold text-dark">Description</label>
                     <textarea
@@ -669,25 +694,25 @@ const AdminRouteManager = () => {
                       style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
                     />
                     {errors.routeDescription && <div className="invalid-feedback d-block">{errors.routeDescription}</div>}
-                  </div>           
+                  </div>
 
-                  {editRoute?.routeId && 
-                  (<div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Total Distance (km)</label>
-                    <input
-                      type="number"
-                      name="totalDistance"
-                      value={editRoute?.totalDistance || ""}
-                      onChange={handleInputChange}
-                      placeholder="0.0"
-                      step="0.1"
-                      className={`form-control ${errors.totalDistance ? 'is-invalid' : ''}`}
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.totalDistance && <div className="invalid-feedback d-block">{errors.totalDistance}</div>}
-                  </div>)
-                  }    
-                                  
+                  {editRoute?.routeId &&
+                    (<div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                      <label className="form-label fw-semibold text-dark">Total Distance (km)</label>
+                      <input
+                        type="number"
+                        name="totalDistance"
+                        value={editRoute?.totalDistance || ""}
+                        onChange={handleInputChange}
+                        placeholder="0.0"
+                        step="0.1"
+                        className={`form-control ${errors.totalDistance ? 'is-invalid' : ''}`}
+                        style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                      />
+                      {errors.totalDistance && <div className="invalid-feedback d-block">{errors.totalDistance}</div>}
+                    </div>)
+                  }
+
                   <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                     <label className="form-label fw-semibold text-dark">Estimated Time (minutes)</label>
                     <input
@@ -701,7 +726,7 @@ const AdminRouteManager = () => {
                       style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
                     />
                     {errors.estimatedDuration && <div className="invalid-feedback d-block">{errors.estimatedDuration}</div>}
-                  </div>                  
+                  </div>
                   <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                     <label className="form-label fw-semibold text-dark">Operating Hours</label>
                     <input
@@ -714,7 +739,7 @@ const AdminRouteManager = () => {
                       style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
                     />
                     {errors.operatingHours && <div className="invalid-feedback d-block">{errors.operatingHours}</div>}
-                  </div>                  
+                  </div>
                   <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
                     <label className="form-label fw-semibold text-dark">Frequency Minutes</label>
                     <input
@@ -753,19 +778,18 @@ const AdminRouteManager = () => {
                     <label className="form-label fw-semibold text-dark">Status</label>
                     <select
                       name="status"
-                      value={editRoute?.status || "Active"}
+                      value={editRoute?.status || "ACTIVE"}
                       onChange={handleInputChange}
                       className="form-select"
                       style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
                     >
-                      <option value="Active">Active</option>
-                      <option value="Planning">Planning</option>
-                      <option value="Inactive">Inactive</option>
+                      <option value="ACTIVE">ACTIVE</option>
+                      <option value="INACTIVE">INACTIVE</option>
                     </select>
                   </div>
                 </div>
               </div>
-                <div className="modal-footer border-0 pt-0">
+              <div className="modal-footer border-0 pt-0">
                 <button
                   type="button"
                   className="btn btn-secondary"
@@ -820,11 +844,12 @@ const AdminRouteManager = () => {
                       <tr>
                         <th>Order</th>
                         <th>Station</th>
-                        <th>Distance from Previous (km)</th>
+                        <th>Distance to Next (km)</th>
                         <th>Actions</th>
                       </tr>
                     </thead>
                     <tbody>
+                      {console.log("Current Route station: ", currentRouteStations)}
                       {currentRouteStations.map((routeStation, index) => (
                         <tr key={index}>
                           <td className="text-center fw-bold">{routeStation.order}</td>
@@ -833,10 +858,10 @@ const AdminRouteManager = () => {
                               value={routeStation.stationId}
                               onChange={(e) => updateStationInRoute(index, 'stationId', e.target.value)}
                               className="form-select form-select-sm"
-                            >                              
-                            {stations.map(station => (
+                            >
+                              {stations.map(station => (
                                 <option key={station.stationId} value={station.stationId}>
-                                  {station.routeName}
+                                  {station.stationName}
                                 </option>
                               ))}
                             </select>
@@ -844,20 +869,20 @@ const AdminRouteManager = () => {
                           <td>
                             <input
                               type="number"
-                              value={routeStation.distanceFromPrevious}
-                              onChange={(e) => updateStationInRoute(index, 'distanceFromPrevious', e.target.value)}
+                              value={routeStation.distanceToNext}
+                              onChange={(e) => updateStationInRoute(index, 'distanceToNext', e.target.value)}
                               className="form-control form-control-sm"
                               step="0.1"
                               min="0"
-                              disabled={index === 0}
-                              placeholder={index === 0 ? "Starting point" : "0.0"}
+                              disabled={index === currentRouteStations.length - 1}
+                              placeholder={index === currentRouteStations.length - 1 ? "End point" : "0.0"}
                             />
                           </td>
                           <td>
                             <div className="d-flex gap-1">
                               <button
                                 onClick={() => moveStation(index, 'up')}
-                                disabled={index === 0}
+                                disabled={index === currentRouteStations.length - 1 || index === 0}
                                 className="btn btn-sm btn-outline-secondary"
                                 title="Move up"
                               >
@@ -867,7 +892,7 @@ const AdminRouteManager = () => {
                               </button>
                               <button
                                 onClick={() => moveStation(index, 'down')}
-                                disabled={index === currentRouteStations.length - 1}
+                                disabled={index === currentRouteStations.length - 1 || index === currentRouteStations.length - 2}
                                 className="btn btn-sm btn-outline-secondary"
                                 title="Move down"
                               >
@@ -910,7 +935,7 @@ const AdminRouteManager = () => {
                       <div className="col-md-6">
                         <small className="text-muted">Total Distance:</small>
                         <div className="fw-semibold">
-                          {currentRouteStations.reduce((sum, station) => sum + station.distanceFromPrevious, 0).toFixed(1)} km
+                          {currentRouteStations.reduce((sum, station) => sum + station.distanceToNext, 0).toFixed(1)} km
                         </div>
                       </div>
                     </div>

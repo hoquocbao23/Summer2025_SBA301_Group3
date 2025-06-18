@@ -12,6 +12,7 @@ export class TicketRuleService {
   static async getAllTicketRules() {
     try {
       const response = await axiosInstance.get(TICKET_RULE_ENDPOINTS.TICKET_RULES);
+      console.log('Ticket rules response:', response.data);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -66,9 +67,9 @@ export class TicketRuleService {
    * @param {number} ruleId - Ticket rule ID
    * @returns {Promise<Object>} Delete response
    */
-  static async deleteTicketRule(ruleId) {
+  static async deactivateTicketRule(ruleId) {
     try {
-      const response = await axiosInstance.delete(`${TICKET_RULE_ENDPOINTS.TICKET_RULES}/${ruleId}`);
+      const response = await axiosInstance.put(`${TICKET_RULE_ENDPOINTS.TICKET_RULES}/${ruleId}/deactivate`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
@@ -79,9 +80,9 @@ export class TicketRuleService {
    * Get active ticket rules
    * @returns {Promise<Object>} Active ticket rules response
    */
-  static async getActiveTicketRules() {
+  static async activateTicketRule(ruleId) {
     try {
-      const response = await axiosInstance.get(`${TICKET_RULE_ENDPOINTS.TICKET_RULES}/active`);
+      const response = await axiosInstance.put(`${TICKET_RULE_ENDPOINTS.TICKET_RULES}/${ruleId}/activate`);
       return response.data;
     } catch (error) {
       throw this.handleError(error);
