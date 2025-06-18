@@ -2,6 +2,8 @@ import React from 'react';
 import { Button, Container } from 'react-bootstrap';
 import { FaCheckCircle } from 'react-icons/fa';
 import { useNavigate, useSearchParams } from 'react-router-dom';
+import axiosInstance from '../../config/axios';
+import { useState, useEffect } from 'react';
 
 const PaymentSuccess = () => {
   const navigate = useNavigate();
@@ -14,9 +16,11 @@ const PaymentSuccess = () => {
       try {
         const paymentData = JSON.parse(localStorage.getItem('paymentData'));
         localStorage.removeItem('paymentData');
-        const success = searchParams.get('success');
+        console.log("paymentData", paymentData);
+        const success = searchParams.get('status');
+        console.log("success", success);
         
-        if (success && paymentData?.ticketId) {
+        if (success === 'PAID' && paymentData?.ticketId) {
           setTicketId(paymentData.ticketId);
           // Call API to update ticket status
           await axiosInstance.put(`tickets/success/${paymentData.ticketId}`);

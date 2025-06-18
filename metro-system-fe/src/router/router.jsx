@@ -17,7 +17,7 @@ import MetroServiceStatus from "../components/route/RouteOverview";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
 import PaymentSuccess from "../components/payment/PaymentSuccess";
 import PaymentFailed from "../components/payment/PaymentFailed";
-import PromotionInput from "../components/promotion/PromotionInput";
+import CheckinPage from "../components/checkin/CheckinPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -70,7 +70,10 @@ const router = createBrowserRouter([
         path: "/payment-failed",
         element: <PaymentFailed />,
       },
-      
+      {
+        path: "/checkin/:ticketId",
+        element: <CheckinPage />,
+      },
       
     ],
   },
