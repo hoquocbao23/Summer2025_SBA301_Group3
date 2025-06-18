@@ -12,4 +12,5 @@ public interface ITicketTypeService {
     TicketType createTicketType(TicketTypeDto ticketType);
     void deleteTicketType(long id);
     TicketType updateTicketType(long id, TicketTypeDto ticketType);
+    List<TicketType> findAllUnlimitTicketTypes();
 }

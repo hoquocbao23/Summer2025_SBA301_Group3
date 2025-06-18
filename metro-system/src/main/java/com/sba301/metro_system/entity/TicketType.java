@@ -12,7 +12,10 @@ public class TicketType {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ticketTypeId;
 
+    @Column(unique = true, nullable = false)
     private String ticketName;
+
+    @Column(unique = true, nullable = false)
     private Integer validityDays;
     private String description;
     private Boolean usageLimit;

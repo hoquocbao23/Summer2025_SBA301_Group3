@@ -1,16 +1,10 @@
 package com.sba301.metro_system.service.implement;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.fasterxml.jackson.databind.node.ObjectNode;
-import com.sba301.metro_system.dto.request.PaymentRequestDto;
+import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.service.IPaymentService;
-import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.PutMapping;
-import org.springframework.web.bind.annotation.RequestBody;
 import vn.payos.PayOS;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.ItemData;
@@ -26,12 +20,18 @@ public class PaymentService implements IPaymentService {
 
     private final PayOS payOS;
 
+    @Value("${RETURN_URL}")
+    private String RETURN_URL;
+
+    @Value("${CANCEL_URL}")
+    private String CANCEL_URL;
+
     @Override
     public String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception {
         ItemData item = ItemData
                 .builder()
                 .name(paymentRequestDto.getProductName())
-                .price(1000)
+                .price(2000)
                 .quantity(paymentRequestDto.getQuantity())
                 .build();
 
@@ -42,11 +42,11 @@ public class PaymentService implements IPaymentService {
                 .builder()
                 .orderCode(orderCode)
                 .description(paymentRequestDto.getDescription())
-                .amount(1000)
+                .amount(2000)
                 .expiredAt( (Instant.now().getEpochSecond() + 900) )
                 .item(item)
-                .returnUrl(paymentRequestDto.getReturnUrl())
-                .cancelUrl(paymentRequestDto.getCancelUrl())
+                .returnUrl(RETURN_URL)
+                .cancelUrl(CANCEL_URL)
                 .build();
         CheckoutResponseData data = payOS.createPaymentLink(paymentData);
         return data.getCheckoutUrl();
@@ -54,7 +54,7 @@ public class PaymentService implements IPaymentService {
 
 
     public PaymentLinkData cancelOrder(long orderId, String cancellationReason ) throws Exception {
-            PaymentLinkData order = payOS.cancelPaymentLink(orderId, null);
+            PaymentLinkData order = payOS.cancelPaymentLink(orderId, cancellationReason);
             return order;
     }
 }

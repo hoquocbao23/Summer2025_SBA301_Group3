@@ -125,5 +125,12 @@ public class PromotionService implements IPromotionService {
         return null;
     }
 
+    @Override
+    public Promotion findByCode(String promotionCode) {
+        return promotionRepository.findPromotionByPromotionCodeAndStatus(promotionCode, Status.ACTIVE)
+                .orElseThrow(() -> new NotFoundException("Promotion not found"));
+
+    }
+
 
 }

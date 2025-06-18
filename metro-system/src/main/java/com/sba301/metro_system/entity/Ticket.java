@@ -2,13 +2,18 @@ package com.sba301.metro_system.entity;
 
 import com.sba301.metro_system.enums.TicketStatus;
 import jakarta.persistence.*;
+import lombok.AllArgsConstructor;
+import lombok.Builder;
 import lombok.Data;
+import lombok.NoArgsConstructor;
+
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
 @Data
 @Entity
 @Table(name = "ticket")
+@NoArgsConstructor
 public class Ticket {
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -22,7 +27,9 @@ public class Ticket {
     @JoinColumn(name = "arrival_station_id")
     private Station arrivalStation;
 
-    private BigDecimal price;
+//    private BigDecimal price;
+    private Double oldPrice;
+    private Double newPrice;
     private LocalDateTime validFrom;
     private LocalDateTime validTo;
     private LocalDateTime purchaseTime;
@@ -37,7 +44,9 @@ public class Ticket {
 
     @ManyToOne
     @JoinColumn(name = "ticket_type_id")
-    private TicketType ticketType;    @ManyToOne
+    private TicketType ticketType;
+
+    @ManyToOne
     @JoinColumn(name = "promotion_id")
     private Promotion promotion;
     

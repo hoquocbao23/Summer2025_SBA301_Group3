@@ -8,6 +8,7 @@ import com.sba301.metro_system.repository.TicketTypeRepository;
 import com.sba301.metro_system.service.ITicketTypeService;
 import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -18,9 +19,10 @@ public class TicketTypeService implements ITicketTypeService {
     private final TicketTypeRepository ticketTypeRepository;
 
 
+
     @Override
     public TicketType findById(long id) {
-        return ticketTypeRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket type not found")  );
+        return ticketTypeRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket type not found"));
     }
 
     @Override
@@ -73,7 +75,12 @@ public class TicketTypeService implements ITicketTypeService {
             ticketType.setStatus(ticketTypeDto.getStatus());
         }
 
-        // Sau khi cập nhật, lưu lại nếu cần (giả sử bạn dùng JPA)
+
         return ticketTypeRepository.save(ticketType);
+    }
+
+    @Override
+    public List<TicketType> findAllUnlimitTicketTypes() {
+        return ticketTypeRepository.findAllByUsageLimit(false);
     }
 }
