@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Train, Circle, ChevronDown, ChevronUp } from 'lucide-react';
 import './routeOverview.css';
 import { getStationName } from '../../data/stations.js';
@@ -18,6 +19,7 @@ const lineLabels = {
 };
 
 export default function MetroServiceStatus() {
+  const navigate = useNavigate();
   const [selectedStation, setSelectedStation] = useState(null);
   const [expandedLines, setExpandedLines] = useState({});
   const [routes, setRoutes] = useState([]);
@@ -193,13 +195,14 @@ export default function MetroServiceStatus() {
             
             {/* Stations Route */}
             <div className="stations-section">
-              <h4 className="stations-title">Stations Route:</h4>              <div className="stations-route">
+              <h4 className="stations-title">Stations Route:</h4>              
+              <div className="stations-route">
                 {route.stations.map((station, index) => {
                   const stationName = getStationNameById(station.stationId);
                   return (
                     <div key={station.stationId} className="station-container">
                       <button
-                        onClick={() => handleStationClick(station.stationId, stationName)}
+                        onClick={() => navigate(`/stations/${station.stationId}`)}
                         className="station-button"
                       >
                         <div 
@@ -226,13 +229,14 @@ export default function MetroServiceStatus() {
 
         {/* Always visible mini route */}
         {!isExpanded && (
-          <div className="mini-route">            <div className="mini-stations">
+          <div className="mini-route">            
+            <div className="mini-stations">
               {route.stations.map((station, index) => {
                 const stationName = getStationNameById(station.stationId);
                 return (
                   <div key={station.stationId} className="mini-station-container">
                     <button
-                      onClick={() => handleStationClick(station.stationId, stationName)}
+                      onClick={() => navigate(`/stations/${station.stationId}`)}
                       className="station-button"
                     >
                       <div 
@@ -279,7 +283,8 @@ export default function MetroServiceStatus() {
           </div>
         </div>
 
-        {/* Overview Bar */}        <div className="overview-bar">
+        {/* Overview Bar */}        
+        <div className="overview-bar">
           <div className="overview-content">
             {activeRoutes.map((route) => (
               <div key={route.routeId} className="overview-item">
@@ -301,7 +306,8 @@ export default function MetroServiceStatus() {
               </div>
             ))}
           </div>
-        </div>        {/* Line Details */}
+        </div>        
+        {/* Line Details */}
         <div className="lines-container">
           {activeRoutes.length > 0 ? (
             activeRoutes.map((route) => (
