@@ -49,10 +49,6 @@ const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layo
     else {
       onStepChange(layoutCurrentStep - 1)
     }
-
-
-   
-
   }
 
 
