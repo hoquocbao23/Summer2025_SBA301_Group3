@@ -33,24 +33,21 @@ public class SecurityConfig {
     private final String[] PUBLIC_URLS= {
             "/security/**",
             "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/api-docs/**",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/security/**"
+            "/swagger-ui.html"
     };
 
     private final String[] GET_URLS= {
-            "/stations"
+            "/stations/**"
     };
 
     private final String[] ADMIN_URLS= {
-            "/stations",
-            "/user"
+            "/stations/**",
+            "/user/**"
     };
 
-    private final String[] USER_URLS= {};
+    private final String[] USER_URLS= {
+            "/account/**"
+    };
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
@@ -63,7 +60,7 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
-//                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
+                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
                         .anyRequest().permitAll())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)

@@ -76,7 +76,7 @@ public class UserService implements IUserService {
             }
             String token = jwtService.generateToken(user.getEmail(), user.getAccountId());
             System.out.println(user.getRole());
-            LoginResponse response = new LoginResponse(token,user.getFullname(),user.getRole().name());
+            LoginResponse response = new LoginResponse(user.getAccountId(),token,user.getFullname(),user.getRole().name());
              ResponseEntity.ok(response);
             return ResponseApi.
                     builder().
@@ -229,6 +229,7 @@ public class UserService implements IUserService {
             dto.setFullname(u.getFullname());
             dto.setStatus(u.getStatus());
             dto.setRole(u.getRole());
+            dto.setId(u.getAccountId());
             userDTOs.add(dto);
         }
 
@@ -263,6 +264,7 @@ public class UserService implements IUserService {
         updatedDTO.setFullname(updatedAccount.getFullname());
         updatedDTO.setRole(updatedAccount.getRole());
         updatedDTO.setStatus(updatedAccount.getStatus());
+        updatedDTO.setId(updatedAccount.getAccountId());
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
@@ -288,6 +290,7 @@ public class UserService implements IUserService {
         userDTO.setRole(account.getRole());
         userDTO.setStatus(account.getStatus());
         userDTO.setEmail(account.getEmail());
+        userDTO.setId(account.getAccountId());
 
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
