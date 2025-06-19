@@ -18,9 +18,9 @@ public class Route {
     
     private String routeDescription;
 
-    @ManyToOne
-    @JoinColumn(name = "rule_id")
-    private TicketRule ticketRule;
+//    @ManyToOne
+//    @JoinColumn(name = "rule_id")
+//    private TicketRule ticketRule;
     
     private Double totalDistance;
     private Integer estimatedDuration;
