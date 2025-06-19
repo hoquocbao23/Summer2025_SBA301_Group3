@@ -14,6 +14,8 @@ import PromotionDashboard from "../pages/dashboard/promotion/promotion-dashboard
 import AdminStationManager from "../pages/dashboard/station/station-dashboard";
 import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
+import UserProfile from "../pages/user/UserProfile";
+import UserTickets from "../pages/user/UserTicket";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
 const router = createBrowserRouter([
   {
@@ -46,7 +48,7 @@ const router = createBrowserRouter([
         path: "/stations/:id",
         element: <StationDetail />,
       },
-      
+
       {
         path: "/login",
         element: <Login />,
@@ -59,6 +61,14 @@ const router = createBrowserRouter([
         path: "/routes",
         element: <MetroServiceStatus />,
       },
+      {
+        path: "/profile",
+        element: <UserProfile />,
+      },
+      {
+        path: "/bookings",
+        element: <UserTickets />,
+      }
     ],
   },
   {
@@ -75,15 +85,15 @@ const router = createBrowserRouter([
       },
       {
         path: "stations",
-        element: <AdminStationManager/>
+        element: <AdminStationManager />
       },
       {
         path: "routes",
-        element: <AdminRouteManager/>
+        element: <AdminRouteManager />
       },
       {
         path: "ticket-type",
-        element: <TicketTypeDashboard/>
+        element: <TicketTypeDashboard />
       }
     ],
   },
