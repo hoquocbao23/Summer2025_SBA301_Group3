@@ -41,4 +41,22 @@ public interface StationRouteRepository extends JpaRepository<StationRoute, Long
 
     @Query("SELECT sr FROM StationRoute sr WHERE sr.route = :route AND sr.stationOrder BETWEEN :startOrder AND :endOrder ORDER BY sr.stationOrder")
     List<StationRoute> findByRouteAndStationOrderBetween(@Param("route") Route route, @Param("startOrder") Integer startOrder, @Param("endOrder") Integer endOrder);
+    
+    // Tìm tất cả các route chứa cả 2 trạm
+    @Query("SELECT DISTINCT sr1.route FROM StationRoute sr1 " +
+           "INNER JOIN StationRoute sr2 ON sr1.route = sr2.route " +
+           "WHERE sr1.station.stationId = :sourceStationId " +
+           "AND sr2.station.stationId = :destinationStationId " +
+           "AND sr1.route.status = 'ACTIVE'")
+    List<Route> findRoutesBetweenStations(@Param("sourceStationId") Long sourceStationId, 
+                                         @Param("destinationStationId") Long destinationStationId);
+    
+    // Tìm thông tin trạm trong một route cụ thể
+    @Query("SELECT sr FROM StationRoute sr " +
+           "WHERE sr.route = :route " +
+           "AND sr.station.stationId IN (:sourceStationId, :destinationStationId) " +
+           "ORDER BY sr.stationOrder")
+    List<StationRoute> findStationInfoInRoute(@Param("route") Route route,
+                                             @Param("sourceStationId") Long sourceStationId,
+                                             @Param("destinationStationId") Long destinationStationId);
 }

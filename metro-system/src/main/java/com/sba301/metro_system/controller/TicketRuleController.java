@@ -204,7 +204,7 @@ public class TicketRuleController {
 //                .build();
 //    }
 
-    @PatchMapping("/{id}/activate")
+    @PutMapping("/{id}/activate")
     @Operation(summary = "Activate ticket rule", description = "Set ticket rule status to ACTIVE")
     @ApiResponses({
             @ApiResponse(
@@ -225,7 +225,7 @@ public class TicketRuleController {
                 .build();
     }
 
-    @PatchMapping("/{id}/deactivate")
+    @PutMapping("/{id}/deactivate")
     @Operation(summary = "Deactivate ticket rule", description = "Set ticket rule status to INACTIVE")
     @ApiResponses({
             @ApiResponse(
