@@ -14,8 +14,14 @@ public class Promotion {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long promotionId;
 
+    @Column(unique = true, nullable = false)
     private String promotionName;
+
+    @Column(unique = true, nullable = false)
     private String promotionCode;
+
+
+
     private BigDecimal promotionDiscount;
     
     @Column(name = "from_date")

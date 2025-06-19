@@ -17,4 +17,8 @@ public class AccountController {
     public ResponseApi<?> getMyAccount(Long id){
         return userService.getUserById(id);
     }
+    @GetMapping("/ticket")
+    public ResponseApi<?> getMyTicket(){
+        return userService.getMyTicket();
+    }
 }

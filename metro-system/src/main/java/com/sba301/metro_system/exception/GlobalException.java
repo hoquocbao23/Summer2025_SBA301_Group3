@@ -8,6 +8,7 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
+import org.springframework.web.client.HttpClientErrorException;
 import org.springframework.web.server.ResponseStatusException;
 
 import java.util.NoSuchElementException;
@@ -42,6 +43,16 @@ public class GlobalException {
                 .builder()
                 .status(HttpStatus.BAD_REQUEST.value())
                 .message(e.getFieldError().getDefaultMessage())
+                .build();
+    }
+
+    @ExceptionHandler(UnAuthorized.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ResponseApi<?> handleNotValidException(UnAuthorized e) {
+        return ResponseApi
+                .builder()
+                .status(HttpStatus.UNAUTHORIZED.value())
+                .message(e.getMessage())
                 .build();
     }
 

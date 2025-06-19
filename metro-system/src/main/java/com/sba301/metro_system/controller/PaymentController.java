@@ -1,7 +1,7 @@
 package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
-import com.sba301.metro_system.dto.request.PaymentRequestDto;
+import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.service.implement.PaymentService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,7 +25,8 @@ public class PaymentController {
     }
 
     @PutMapping("/{id}")
-    public ResponseApi<?> cancelPayment(@PathVariable("orderId") long orderId, String cancellationReason) throws Exception {
+    public ResponseApi<?> cancelPayment(@PathVariable("id") long orderId, String cancellationReason) throws Exception {
+        System.out.println();
         return ResponseApi
                 .builder()
                 .status(HttpStatus.OK.value())

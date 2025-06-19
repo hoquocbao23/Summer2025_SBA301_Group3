@@ -7,11 +7,13 @@ import com.sba301.metro_system.dto.request.user.UserDTO;
 import com.sba301.metro_system.dto.response.LoginResponse;
 import com.sba301.metro_system.entity.Account;
 import com.sba301.metro_system.entity.OTP;
+import com.sba301.metro_system.entity.Ticket;
 import com.sba301.metro_system.entity.UserPrinciple;
 import com.sba301.metro_system.enums.AccountStatus;
 import com.sba301.metro_system.enums.Role;
 import com.sba301.metro_system.record.MailBody;
 import com.sba301.metro_system.repository.OtpRepository;
+import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.repository.UserRepository;
 import com.sba301.metro_system.service.IEmailService;
 import com.sba301.metro_system.service.IJwtService;
@@ -26,6 +28,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,6 +54,9 @@ public class UserService implements IUserService {
 
     @Autowired
     IEmailService emailService;
+
+    @Autowired
+    TicketRepository ticketRepository;
 
     @Autowired
     private OtpRepository otpRepository;
@@ -296,6 +302,32 @@ public class UserService implements IUserService {
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
                 .data(userDTO)
+                .build();
+    }
+
+    @Override
+    public ResponseApi<?> getMyTicket() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        Account account = (Account) authentication.getPrincipal();
+        if (account==null) {
+            return ResponseApi.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message(HttpStatus.BAD_REQUEST.getReasonPhrase())
+                    .data("Have no permission to access this resource" )
+                    .build();
+        }
+       Ticket ticket = ticketRepository.findByAccount(account);
+            if(ticket == null){
+                return ResponseApi.builder()
+                        .status(HttpStatus.NOT_FOUND.value())
+                        .message(HttpStatus.NOT_FOUND.getReasonPhrase())
+                        .data("Have no ticket")
+                        .build();
+            }
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data("Have no ticket")
                 .build();
     }
 

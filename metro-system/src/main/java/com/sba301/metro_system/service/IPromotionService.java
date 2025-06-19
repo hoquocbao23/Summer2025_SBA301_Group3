@@ -16,5 +16,6 @@ public interface IPromotionService {
     Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException ;
     void deletePromotion(long id);
     List<Promotion> findAvailablePromotions(long ticketTypeId );
+    Promotion findByCode(String promotionCode);
 
 }

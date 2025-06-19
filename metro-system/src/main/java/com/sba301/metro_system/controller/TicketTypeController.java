@@ -65,5 +65,14 @@ public class TicketTypeController {
                 .build();
     }
 
+    @GetMapping("/unlimit")
+    public ResponseApi<?> getUnlimitTicketTypes() {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message("Ticket type deleted successfully")
+                .data(ticketTypeService.findAllUnlimitTicketTypes())
+                .build();
+    }
+
 
 }
