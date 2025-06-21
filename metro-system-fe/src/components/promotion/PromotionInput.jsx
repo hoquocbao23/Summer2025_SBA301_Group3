@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Form } from 'react-bootstrap';
 import './PromotionInput.scss';
+import axiosInstance from '../../config/axios';
 
-const PromotionInput = ({ onPromotionChange }) => {
-    const [promotionCode, setPromotionCode] = useState('');
+const PromotionInput = ({ ticketType, 
+    onPromotionApplied, 
+    promotionCode: initialPromotionCode, 
+    onPromotionCodeChange 
+    }) => {
+    const [promotionCode, setPromotionCode] = useState(initialPromotionCode || '');
     const [isValid, setIsValid] = useState(true);
     const [showPromotions, setShowPromotions] = useState(false);
+
+    // Update local state when prop changes
+    useEffect(() => {
+        setPromotionCode(initialPromotionCode || '');
+    }, [initialPromotionCode]);
+
+    // Auto-apply promotion when component mounts with existing code
+    useEffect(() => {
+        if (initialPromotionCode && initialPromotionCode.trim() !== '') {
+            applyPromotion(initialPromotionCode);
+        }
+    }, []); // Only run once on mount
 
     // Mock data for available promotions
     const availablePromotions = [
@@ -17,23 +34,45 @@ const PromotionInput = ({ onPromotionChange }) => {
     const handlePromotionChange = (e) => {
         const value = e.target.value.toUpperCase();
         setPromotionCode(value);
+        onPromotionCodeChange(value);
         setIsValid(true);
-        onPromotionChange(value);
+        if (!value) {
+            onPromotionApplied(null);
+        }
     };
 
-    const handleApply = () => {
-        if (!promotionCode.trim()) {
-            setIsValid(false);
+    const applyPromotion = async (code) => {
+        if (!code) {
+            onPromotionApplied(null);
+            setIsValid(true);
             return;
         }
-        // Here you can add your promotion validation logic
-        onPromotionChange(promotionCode);
+        try {
+            const response = await axiosInstance.get('/promotions/active', { params: { code, ticketTypeId: ticketType } });
+            if (response.status === 200 && response.data) {
+                setIsValid(true);
+                onPromotionApplied(response.data.data);
+            } else {
+                setIsValid(false);
+                onPromotionApplied(null);
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || 'Invalid promotion code');
+            setIsValid(false);
+            onPromotionApplied(null);
+        }
+    };
+
+    const handleApply = (promotionCode) => {
+        setPromotionCode(promotionCode);
+        applyPromotion(promotionCode);
     };
 
     const handlePromotionSelect = (code) => {
         setPromotionCode(code);
+        onPromotionCodeChange(code);
         setIsValid(true);
-        onPromotionChange(code);
+        applyPromotion(code);
     };
 
     return (
@@ -53,7 +92,7 @@ const PromotionInput = ({ onPromotionChange }) => {
                         />
                         <button 
                             className="apply-btn"
-                            onClick={handleApply}
+                            onClick={() => handleApply(promotionCode)}
                         >
                             Apply
                         </button>

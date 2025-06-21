@@ -12,13 +12,29 @@ const PassengerPage = ({layoutCurrentStep, onStepChange}) => {
   const { singleForm, travelPassForm } = useContext(TicketContext);
   const [passengers, setPassengers] = useState([]);
   const [currentPassengerStep, setCurrentPassengerStep] = useState(1);
+  const [appliedPromotion, setAppliedPromotion] = useState(null);
+  const [promotionCode, setPromotionCode] = useState('');
+
+  const handlePromotionApplied = (promotion) => {
+    setAppliedPromotion(promotion);
+  };
+
+  const handlePromotionCodeChange = (code) => {
+    setPromotionCode(code);
+  };
 
   const renderStep = () => {
     switch (currentPassengerStep) {
       case 1:
-        return <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} onPassengerChange={handlePassengerChange} />;
+        return <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1} 
+        onPassengerChange={handlePassengerChange} />;
       case 2:
-        return <PromotionInput/>;
+        return <PromotionInput 
+          ticketType={singleForm?.ticketTypeId || travelPassForm?.ticketTypeId} 
+          onPromotionApplied={handlePromotionApplied}
+          promotionCode={promotionCode}
+          onPromotionCodeChange={handlePromotionCodeChange}
+        />;
     }
   };
 
@@ -62,6 +78,7 @@ const PassengerPage = ({layoutCurrentStep, onStepChange}) => {
                              currentPassengerStep={currentPassengerStep}
                              layoutCurrentStep={layoutCurrentStep}
                              onStepChange={onStepChange}
+                             promotion={appliedPromotion}
                              />
                              
             </Card.Body>
