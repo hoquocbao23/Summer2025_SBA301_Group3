@@ -13,9 +13,14 @@ const formatCurrency = (amount) => {
   }).format(amount);
 };
 
-const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layoutCurrentStep, onStepChange }) => {
+const TicketSummary = ({ passengers = [], 
+  onNextStep, 
+  currentPassengerStep, 
+  layoutCurrentStep, 
+  onStepChange, 
+  promotion }) => {
   
-
+console.log("promotion", promotion);
   const { singleForm, travelPassForm } = useContext(TicketContext);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -25,13 +30,28 @@ const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layo
       departureStation: singleForm?.fromStationId,
       arrivalStation: singleForm?.toStationId,
       routeId: travelPassForm?.routeId,
-      ticketName: travelPassForm?.ticketName,
       ticketTypeId: travelPassForm?.ticketTypeId,
-      numberOfPassengers: singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1,
-      salePrice: 10000,
-      total: travelPassForm?.basePrice || 20000,
+      promotionId: promotion?.promotionId,
+
+      ticketName: travelPassForm?.ticketName,
+      numberOfPassengers: singleForm?.numberOfTickets || 1,
+      total: travelPassForm?.basePrice * (singleForm?.numberOfTickets || 1) || 20000,
+      salePercent: 0,
+      saleAmount: 0,
+      paymentAmount: travelPassForm?.basePrice || 1
+      
     }
   );
+  
+
+  useEffect(() => {
+    if (promotion) {
+      setTicket({ ...ticket, 
+        salePercent: promotion?.promotionDiscount,
+        saleAmount: ticket.total * ( promotion?.promotionDiscount / 100),
+        paymentAmount: ticket.total - (ticket.total * ( promotion?.promotionDiscount / 100)) });
+    }
+  }, [promotion]);
 
   const handleNextBtn = () => {
     //update step of passenger page
@@ -167,7 +187,7 @@ const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layo
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
           <span>Ticket Price</span>
-          <span>{formatCurrency(travelPassForm?.basePrice || 20000)}</span>
+          <span>{formatCurrency(travelPassForm?.basePrice  || 20000)}</span>
         </div>
         <div className="d-flex justify-content-between mb-2">
           <span>Number of Passengers</span>
@@ -181,18 +201,21 @@ const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layo
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
           <span>Total</span>
-          <span>{formatCurrency(travelPassForm?.basePrice || 20000)}</span>
+          <span>{formatCurrency(travelPassForm?.basePrice * ticket.numberOfPassengers || 20000)}</span>
         </div>
-        <div className="d-flex justify-content-between mb-2">
-          <span>Promotion</span>
-          <span>{formatCurrency(ticket.salePrice)}</span>
-        </div>
+        {promotion && (
+          <div className="d-flex justify-content-between mb-2">
+            <span>Promotion</span>
+            <span>{formatCurrency(ticket.saleAmount)}</span>
+          </div>
+        )}
       </div>
 
       <div className="mb-4">
         <div className="d-flex justify-content-between">
           <h5>Payment</h5>
-          <h5>{formatCurrency(travelPassForm?.basePrice - ticket.salePrice)}</h5>
+          <h5>{formatCurrency(ticket.paymentAmount)}</h5>
+          {console.log("ticket.salePercent", ticket.salePercent)}
         </div>
       </div>
 
@@ -252,7 +275,7 @@ const TicketSummary = ({ passengers = [], onNextStep, currentPassengerStep, layo
             <hr />
             <div className="d-flex justify-content-between">
               <span>Total Amount:</span>
-              <span className="fw-bold">{formatCurrency(ticket.total - ticket.salePrice)}</span>
+              <span className="fw-bold">{formatCurrency(ticket.paymentAmount)}</span>
             </div>
           </div>
           <p className="text-muted mb-0">Please confirm the details above before proceeding to payment.</p>
