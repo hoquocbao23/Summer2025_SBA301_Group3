@@ -12,6 +12,7 @@ import java.time.LocalDateTime;
 public class TicketResponseDto {
 
     private Long ticketId;
+    private String userName;
     private String departureStation;
     private String arrivalStation;
     private Double oldPrice;
