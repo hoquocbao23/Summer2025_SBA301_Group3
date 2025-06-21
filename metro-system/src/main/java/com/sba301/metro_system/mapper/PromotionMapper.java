@@ -8,6 +8,8 @@ public class PromotionMapper {
         PromotionResponseDto promotionResponseDto = new PromotionResponseDto();
         promotionResponseDto.setPromotionId(promotion.getPromotionId());
         promotionResponseDto.setPromotionName(promotion.getPromotionName());
+        promotionResponseDto.setPromotionCode(promotion.getPromotionCode());
+        promotionResponseDto.setPromotionDiscount(promotion.getPromotionDiscount());
         promotionResponseDto.setFromDate(promotion.getFromDate());
         promotionResponseDto.setToDate(promotion.getToDate());
         promotionResponseDto.setStatus(promotion.getStatus());

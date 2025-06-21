@@ -130,7 +130,9 @@ public class PromotionService implements IPromotionService {
     @Override
     public PromotionResponseDto isEligiblePromotion(String promotionCode, long ticketTypeId) {
         TicketType ticketType = ticketTypeService.findById(ticketTypeId);
-        Promotion promotion = promotionRepository.findPromotionByPromotionCodeAndTicketTypeAndStatus(promotionCode, ticketType, Status.ACTIVE)
+        Promotion promotion = promotionRepository.findPromotionByPromotionCodeAndTicketTypeAndStatus(promotionCode,
+                        ticketType,
+                        Status.ACTIVE)
                 .orElseThrow(() -> new NotFoundException("Promotion is not eligible"));
         return PromotionMapper.toPromotionResponseDto(promotion);
     }

@@ -17,10 +17,14 @@ import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.service.ITicketService;
 import com.sba301.metro_system.utils.AccountHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -128,7 +132,7 @@ public class TicketService implements ITicketService {
         String text = "Bạn đã mua vé " + ticket.getTicketType().getTicketName();
         MailBody mailBody = MailBody.builder()
                 .to(ticket.getAccount().getEmail())
-                .subject("Bạn đã mua vé" + ticket.getTicketType().getTicketName())
+                .subject("Bạn đã mua " + ticket.getTicketType().getTicketName())
                 .text(text)
                 .build();
         emailService.sendOTP(mailBody);
@@ -147,10 +151,30 @@ public class TicketService implements ITicketService {
         transactionService.saveTransaction(transactionRequestDto, ticket);
     }
 
+    @Override
+    public boolean checkUnusedTicket(long ticketTypeId) {
+        Account currentAccount = AccountHelper.getCurrentUser().getUser();
+        return ticketRepository.existsTicket(currentAccount,
+                ticketTypeId,
+                TicketStatus.UNUSED);
+    }
 
+    @Override
+    public List<TicketResponseDto> getUserTickets() {
+        Account currentAccount = AccountHelper.getCurrentUser().getUser();
+        List<Ticket> tickets = ticketRepository.findTicketByAccount(currentAccount);
+        return tickets
+                .stream()
+                .map(TicketMapper::toTicketResponseDto)
+                .collect(Collectors.toList());
+    }
 
-
-
+    @Override
+    public Page<TicketResponseDto> getAllTickets(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Ticket> ticketPage = ticketRepository.findAll(pageable);
+        return ticketPage.map(TicketMapper::toTicketResponseDto);
+    }
 
 
 }

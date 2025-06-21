@@ -56,5 +56,37 @@ public class TicketController {
 
     }
 
+    @GetMapping("/user")
+    public ResponseApi<?> getUserTicketHistory()  {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(ticketService.getUserTickets())
+                .build();
+    }
+
+    @GetMapping("/check")
+    public ResponseApi<?> checkTicketExist(@RequestParam(name = "ticketTypeId") long ticketTypeId)  {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(ticketService.checkUnusedTicket(ticketTypeId))
+                .build();
+    }
+
+    @GetMapping()
+    public ResponseApi<?> getAllTickets(@RequestParam(defaultValue = "0") int page,
+                                        @RequestParam(defaultValue = "5") int size)  {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(ticketService.getAllTickets(page, size))
+                .build();
+    }
+
+
+
+
+
 
 }

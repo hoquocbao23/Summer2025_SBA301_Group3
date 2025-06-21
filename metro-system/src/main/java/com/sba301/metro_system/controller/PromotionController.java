@@ -130,16 +130,16 @@ public class PromotionController {
     }
 
     @GetMapping("/active")
-    public ResponseApi<?> getActivePromotions(@RequestParam String code,
-                                              @RequestParam(name = "tickettype") long ticketTypeId) {
-
-
+    public ResponseApi<?> getActivePromotions(@RequestParam(name = "code") String code,
+                                              @RequestParam(name = "ticketTypeId") long ticketTypeId) {
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
                 .data(promotionService.isEligiblePromotion(code, ticketTypeId ))
                 .build();
     }
+
+
 
 
 
