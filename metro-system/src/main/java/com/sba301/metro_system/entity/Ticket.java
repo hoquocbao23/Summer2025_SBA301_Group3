@@ -6,6 +6,7 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -53,4 +54,6 @@ public class Ticket {
     @ManyToOne
     @JoinColumn(name = "route_id")
     private Route route;
+
+    private Boolean isCheckin;
 }
