@@ -35,6 +35,7 @@ public class TicketMapper {
         ticketResponseDto.setUserName(ticket.getAccount().getEmail());
         ticketResponseDto.setQrUrl(ticket.getQrUrl());
         ticketResponseDto.setTicketStatus(ticket.getTicketStatus());
+        ticketResponseDto.setIsCheckIn(ticket.getIsCheckin());
 
         if (ticket.getPromotion() != null) {
             ticketResponseDto.setPromotionCode(ticket.getPromotion().getPromotionCode());

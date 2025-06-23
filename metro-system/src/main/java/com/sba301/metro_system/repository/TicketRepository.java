@@ -8,7 +8,9 @@ import com.sba301.metro_system.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 
+import java.util.Collection;
 import java.util.List;
+import java.util.Optional;
 
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
 
@@ -20,4 +22,6 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     boolean existsTicket(Account account, long ticketTypeId, TicketStatus ticketStatus);
 
     List<Ticket> findTicketByAccount(Account account);
+
+    Optional<Ticket> findByTicketIdAndTicketStatusIn(Long ticketId, Collection<TicketStatus> ticketStatuses);
 }

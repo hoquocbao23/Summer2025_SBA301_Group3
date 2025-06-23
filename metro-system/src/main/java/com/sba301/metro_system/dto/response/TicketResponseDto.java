@@ -26,4 +26,5 @@ public class TicketResponseDto {
     private String promotionCode;
     private String routeName;
     private String urlCheckout;
+    private Boolean isCheckIn;
 }
