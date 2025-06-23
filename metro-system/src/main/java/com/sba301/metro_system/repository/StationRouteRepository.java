@@ -47,7 +47,7 @@ public interface StationRouteRepository extends JpaRepository<StationRoute, Long
            "INNER JOIN StationRoute sr2 ON sr1.route = sr2.route " +
            "WHERE sr1.station.stationId = :sourceStationId " +
            "AND sr2.station.stationId = :destinationStationId " +
-           "AND sr1.route.status = 'ACTIVE'")
+           "AND sr1.route.status = com.sba301.metro_system.enums.Status.ACTIVE")
     List<Route> findRoutesBetweenStations(@Param("sourceStationId") Long sourceStationId, 
                                          @Param("destinationStationId") Long destinationStationId);
     
