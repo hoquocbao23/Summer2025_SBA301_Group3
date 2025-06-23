@@ -2,6 +2,7 @@ package com.sba301.metro_system.controller;
 
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
+import com.sba301.metro_system.dto.response.PromotionResponseDto;
 import com.sba301.metro_system.entity.Promotion;
 import com.sba301.metro_system.service.IPromotionService;
 import io.swagger.v3.oas.annotations.media.Content;
@@ -119,7 +120,7 @@ public class PromotionController {
 
     @GetMapping("/active/{id}")
     public ResponseApi getActivePromotionsByTicketTypes(@PathVariable long id) {
-        List<Promotion> promotions = promotionService.findAvailablePromotions(id);
+        List<PromotionResponseDto> promotions = promotionService.findAvailablePromotions(id);
 
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
@@ -127,6 +128,20 @@ public class PromotionController {
                 .data(promotions)
                 .build();
     }
+
+    @GetMapping("/active")
+    public ResponseApi<?> getActivePromotions(@RequestParam(name = "code") String code,
+                                              @RequestParam(name = "ticketTypeId") long ticketTypeId) {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(promotionService.isEligiblePromotion(code, ticketTypeId ))
+                .build();
+    }
+
+
+
+
 
 
 }

@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Vé tàu điện tử</title>
+    <style>
+        /* CSS để tạo kiểu cho nút bấm */
+        .button {
+            display: inline-block; /* Để nút có thể có padding và margin */
+            padding: 10px 20px; /* Kích thước nút */
+            margin-top: 20px; /* Khoảng cách với nội dung phía trên */
+            background-color: #007bff; /* Màu nền xanh dương */
+            color: white; /* Màu chữ trắng */
+            text-decoration: none; /* Bỏ gạch chân link */
+            border-radius: 5px; /* Bo góc */
+            font-weight: bold; /* Chữ đậm */
+            text-align: center;
+        }
+        /* Hover effect (tùy chọn) */
+        .button:hover {
+            background-color: #0056b3;
+        }
+    </style>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
+<div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; padding: 20px; border: 1px solid #ddd;">
+    <h2 style="color: #2c3e50;">🎟️ Xác nhận mua vé tàu thành công</h2>
+    <p>Xin chào <strong th:text="${userName}"></strong>,</p>
+    <p>Bạn đã mua vé tàu thành công. Thông tin chi tiết như sau:</p>
+
+    <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
+<!--        <tr>-->
+<!--            <td style="padding: 8px; font-weight: bold;">Tên vé:</td>-->
+<!--            <td style="padding: 8px;" th:text="${ticketName}">Vé tàu Hà Nội - Sài Gòn</td>-->
+<!--        </tr>-->
+        <tr style="background-color: #f9f9f9;">
+            <td style="padding: 8px; font-weight: bold;">Mã vé: </td>
+            <td style="padding: 8px;" th:text="${userName}"></td>
+        </tr>
+    </table>
+
+    <p style="margin-top: 20px;">Vào đây để sử dụng vé</p>
+    <div style="text-align: center; margin: 20px 0;">
+<!--        <img th:src="${qrCode}"-->
+<!--             alt="QR Code" style="border: 1px solid #ccc; padding: 5px;">-->
+        <a th:href="${ticketDetailsUrl}" class="button">Xem chi tiết vé của bạn</a>
+
+    </div>
+
+
+
+
+
+    <p>Chúc bạn có một chuyến đi an toàn và vui vẻ!</p>
+    <p style="color: #888; font-size: 12px;">Đây là email tự động, vui lòng không trả lời.</p>
+</div>
+</body>
+</html>
