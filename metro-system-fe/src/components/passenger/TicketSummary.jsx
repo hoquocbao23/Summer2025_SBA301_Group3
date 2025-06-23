@@ -32,6 +32,7 @@ console.log("promotion", promotion);
       routeId: travelPassForm?.routeId,
       ticketTypeId: travelPassForm?.ticketTypeId,
       promotionId: promotion?.promotionId,
+      promotionCode: promotion?.promotionCode,
 
       ticketName: travelPassForm?.ticketName,
       numberOfPassengers: singleForm?.numberOfTickets || 1,
@@ -47,6 +48,8 @@ console.log("promotion", promotion);
   useEffect(() => {
     if (promotion) {
       setTicket({ ...ticket, 
+        promotionId: promotion?.promotionId,
+        promotionCode: promotion?.promotionCode,
         salePercent: promotion?.promotionDiscount,
         saleAmount: ticket.total * ( promotion?.promotionDiscount / 100),
         paymentAmount: ticket.total - (ticket.total * ( promotion?.promotionDiscount / 100)) });
@@ -76,6 +79,7 @@ console.log("promotion", promotion);
 
 
   const handleProceedToPayment = () => {
+    console.log("ticketdto", ticket);
     setShowConfirmModal(true);
   };
 
