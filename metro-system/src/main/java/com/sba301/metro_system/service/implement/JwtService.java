@@ -6,6 +6,7 @@ import io.jsonwebtoken.JwtException;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -18,17 +19,16 @@ import java.util.function.Function;
 
 @Service
 public class JwtService implements IJwtService {
-
     @Value("${token.expire}")
     private int tokenExpire;
 
-    @Value("${jwt.secret}")
+    @Value("9c9d7cc5c9fe5579d1b7b0b0d4ff4b951da90529a7859ac17a6cb0ec63290fcb")
     private String secretKey;
 
     private final SecretKey cachedKey;
 
-
-    public JwtService(@Value("${jwt.secret}") String secretKey) {
+    @Autowired
+    public JwtService(@Value("9c9d7cc5c9fe5579d1b7b0b0d4ff4b951da90529a7859ac17a6cb0ec63290fcb") String secretKey) {
         this.secretKey = secretKey;
         this.cachedKey = generateSecretKey(secretKey);
     }

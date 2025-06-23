@@ -1,5 +1,6 @@
 package com.sba301.metro_system.entity;
 
+import com.sba301.metro_system.enums.Status;
 import jakarta.persistence.*;
 import lombok.Data;
 import java.math.BigDecimal;
@@ -17,11 +18,15 @@ public class Route {
     
     private String routeDescription;
 
-//    @ManyToOne
-//    @JoinColumn(name = "rule_id")
-//    private TicketRule ticketRule;
+    @ManyToOne
+    @JoinColumn(name = "rule_id")
+    private TicketRule ticketRule;
     
-    private BigDecimal totalDistance;
+    private Double totalDistance;
     private Integer estimatedDuration;
     private Integer frequencyMinutes;
+    private String operatingHours;
+    private String color;
+
+    private Status status;
 }
