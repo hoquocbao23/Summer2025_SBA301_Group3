@@ -62,7 +62,7 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers(HttpMethod.GET,GET_URLS).permitAll()
-                          .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+                        .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
