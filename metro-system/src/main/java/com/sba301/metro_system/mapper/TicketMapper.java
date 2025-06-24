@@ -31,8 +31,11 @@ public class TicketMapper {
         ticketResponseDto.setValidFrom(ticket.getValidFrom());
         ticketResponseDto.setValidTo(ticket.getValidTo());
         ticketResponseDto.setPurchaseTime(ticket.getPurchaseTime());
+        ticketResponseDto.setTicketName(ticket.getTicketType().getTicketName());
+        ticketResponseDto.setUserName(ticket.getAccount().getEmail());
         ticketResponseDto.setQrUrl(ticket.getQrUrl());
         ticketResponseDto.setTicketStatus(ticket.getTicketStatus());
+        ticketResponseDto.setIsCheckIn(ticket.getIsCheckin());
 
         if (ticket.getPromotion() != null) {
             ticketResponseDto.setPromotionCode(ticket.getPromotion().getPromotionCode());
@@ -41,6 +44,7 @@ public class TicketMapper {
         if (ticket.getRoute() != null) {
             ticketResponseDto.setRouteName(ticket.getRoute().getRouteName());
         }
+
 
         return ticketResponseDto;
     }

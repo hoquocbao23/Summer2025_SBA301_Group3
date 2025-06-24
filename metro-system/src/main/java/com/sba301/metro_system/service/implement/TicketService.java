@@ -1,5 +1,6 @@
 package com.sba301.metro_system.service.implement;
 
+import com.google.zxing.WriterException;
 import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
 import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
@@ -17,10 +18,17 @@ import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.service.ITicketService;
 import com.sba301.metro_system.utils.AccountHelper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.ui.Model;
 
+import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.List;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -40,7 +48,11 @@ public class TicketService implements ITicketService {
         return TicketMapper.toTicketResponseDto(ticket);
     }
 
+    @Value("${CHECK_IN}")
+    private String CHECK_IN;
+
     public TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception{
+        System.out.println(ticketRequestDto);
         final int NUMBER_OF_TICKETS = 1;
         Ticket ticket = new Ticket();
         Account currentAccount = AccountHelper.getCurrentUser().getUser();
@@ -60,9 +72,9 @@ public class TicketService implements ITicketService {
         Double newPrice = basePrice;
 
         if (ticketRequestDto.getPromotionCode() != null) {
-            Promotion promotion = promotionService.findByCode(ticketRequestDto.getPromotionCode());
+            Promotion promotion = promotionService.findById(ticketRequestDto.getRouteId());
             if (promotion != null) {
-                newPrice = calculateDiscountedPrice(oldPrice, promotion);
+                newPrice -= calculateDiscountedPrice(oldPrice, promotion);
                 ticket.setPromotion(promotion);
             }
         }
@@ -77,8 +89,8 @@ public class TicketService implements ITicketService {
         ticket.setAccount(currentAccount);
         ticket.setTicketType(ticketType);
         ticket.setRoute(routeRule.getRoute());
+        ticket.setIsCheckin(false);
         ticketRepository.save(ticket);
-
         // create payment qr
         String urlCheckout = paymentTicket(ticketType.getTicketName(),
                 generateDescription(ticketType.getTicketName()),
@@ -113,7 +125,7 @@ public class TicketService implements ITicketService {
         return String.format("Thanh toan mua %s", ticketName);
     }
 
-    public void paymentTicketSuccess(long ticketId)  {
+    public void paymentTicketSuccess(long ticketId, Model model)  {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment success
         ticket.setTicketStatus(TicketStatus.UNUSED);
@@ -125,16 +137,21 @@ public class TicketService implements ITicketService {
                 TransactionStatus.SUCCESS);
         transactionService.saveTransaction(transactionRequestDto, ticket);
 
-        String text = "Bạn đã mua vé " + ticket.getTicketType().getTicketName();
+
+        model.addAttribute("ticketId", ticketId);
+        model.addAttribute("userName", ticket.getAccount().getFullname());
+        //String qrCodeBase64 = emailService.generateQrCodeAsBase64(CHECK_IN+"/"+ticketId, 100, 100);
+        model.addAttribute("ticketDetailsUrl", CHECK_IN+"/"+ticketId);
+        //  model.addAttribute("qrCode", "data:image/png;base64,"+qrCodeBase64);
         MailBody mailBody = MailBody.builder()
                 .to(ticket.getAccount().getEmail())
-                .subject("Bạn đã mua vé" + ticket.getTicketType().getTicketName())
-                .text(text)
+                .subject("Bạn đã mua " + ticket.getTicketType().getTicketName())
+                .templateName("buy-ticket.html")
                 .build();
-        emailService.sendOTP(mailBody);
+        emailService.sendEmail(mailBody, model);
     }
 
-    public void paymentTicketFail(long ticketId)  {
+    public void paymentTicketFail(long ticketId, Model model) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment failed
         ticket.setTicketStatus(TicketStatus.CANCELLED);
@@ -145,12 +162,34 @@ public class TicketService implements ITicketService {
                 PaymentMethod.PAYOS,
                 TransactionStatus.FAILED);
         transactionService.saveTransaction(transactionRequestDto, ticket);
+
+
     }
 
+    @Override
+    public boolean checkUnusedTicket(long ticketTypeId) {
+        Account currentAccount = AccountHelper.getCurrentUser().getUser();
+        return ticketRepository.existsTicket(currentAccount,
+                ticketTypeId,
+                TicketStatus.UNUSED);
+    }
 
+    @Override
+    public List<TicketResponseDto> getUserTickets() {
+        Account currentAccount = AccountHelper.getCurrentUser().getUser();
+        List<Ticket> tickets = ticketRepository.findTicketByAccount(currentAccount);
+        return tickets
+                .stream()
+                .map(TicketMapper::toTicketResponseDto)
+                .collect(Collectors.toList());
+    }
 
-
-
+    @Override
+    public Page<TicketResponseDto> getAllTickets(int page, int size) {
+        Pageable pageable = PageRequest.of(page, size);
+        Page<Ticket> ticketPage = ticketRepository.findAll(pageable);
+        return ticketPage.map(TicketMapper::toTicketResponseDto);
+    }
 
 
 }

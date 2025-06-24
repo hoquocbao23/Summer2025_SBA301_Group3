@@ -21,5 +21,5 @@ public class StationRoute {
     private Route route;
 
     private Integer stationOrder;
-    private BigDecimal distanceToNext;
+    private Double distanceToNext;
 }

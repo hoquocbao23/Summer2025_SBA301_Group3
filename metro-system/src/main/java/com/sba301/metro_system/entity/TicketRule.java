@@ -12,9 +12,13 @@ public class TicketRule {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ruleId;
 
+    private String ruleName;
+    private String description;
+
     private Double basePrice;
     private Double pricePerKm;
 
     @Enumerated(EnumType.STRING)
     private Status status;
+    private boolean isDelete = false;
 }

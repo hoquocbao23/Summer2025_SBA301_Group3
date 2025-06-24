@@ -6,6 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.http.HttpMethod;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -33,21 +34,26 @@ public class SecurityConfig {
     private final String[] PUBLIC_URLS= {
             "/security/**",
             "/swagger-ui/**",
-            "/swagger-ui.html"
+            "/swagger-ui.html",
+            "/v3/api-docs/**",
+            "/api-docs/**",
+            "/swagger-resources/**",
+            "/webjars/**",
+            "/security/**"
     };
 
     private final String[] GET_URLS= {
-            "/stations/**"
+            "/stations",
+            "/promotions",
+            "/ticket-types"
     };
 
     private final String[] ADMIN_URLS= {
-            "/stations/**",
-            "/user/**"
+            "/stations",
+            "/user"
     };
 
-    private final String[] USER_URLS= {
-            "/account/**"
-    };
+    private final String[] USER_URLS= {};
 
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
@@ -60,13 +66,30 @@ public class SecurityConfig {
                         .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
-                        .requestMatchers("/security/**").permitAll()
+
+                        .requestMatchers(HttpMethod.PUT, "/promotions/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/promotions/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.DELETE, "/promotions/**").hasRole(Role.ADMIN.name())
+
+                        .requestMatchers(HttpMethod.PUT, "/ticket-types/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.POST, "/ticket-types/**").hasRole(Role.ADMIN.name())
+                        .requestMatchers(HttpMethod.DELETE, "/ticket-types/**").hasRole(Role.ADMIN.name())
+//                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
                         .anyRequest().permitAll())
                 .sessionManagement(session ->
                         session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                 )
-                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class);
+                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .exceptionHandling(exceptions -> exceptions
+                        // 401 for unauthenticated users trying to access protected resources
+                        .authenticationEntryPoint((request, response, authException) ->
+                                response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized")
+                        )
+                        // 403 for authenticated users without enough permissions
+                        .accessDeniedHandler((request, response, accessDeniedException) ->
+                                response.sendError(HttpStatus.FORBIDDEN.value(), "Forbidden")
+                        )
+                );
         return httpSecurity.build();
     }
 
