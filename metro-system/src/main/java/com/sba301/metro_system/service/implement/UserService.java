@@ -320,7 +320,7 @@ public class UserService implements IUserService {
                     .build();
         }
         Account account = userPrinciple.getUser();
-        List<Ticket> ticket = ticketRepository.findByAccount(account);
+        List<Ticket> ticket = ticketRepository.findTicketByAccount(account);
         if (ticket == null) {
             return ResponseApi.builder()
                     .status(HttpStatus.NOT_FOUND.value())
