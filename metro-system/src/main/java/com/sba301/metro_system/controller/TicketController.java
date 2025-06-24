@@ -3,6 +3,7 @@ package com.sba301.metro_system.controller;
 import com.google.zxing.WriterException;
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
+import com.sba301.metro_system.dto.request.user.UserEmailDto;
 import com.sba301.metro_system.service.implement.TicketDetailService;
 import com.sba301.metro_system.service.implement.TicketService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -14,6 +15,7 @@ import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
 import java.io.IOException;
+import java.util.HashSet;
 
 @RestController
 @RequestMapping("/tickets")
@@ -43,7 +45,8 @@ public class TicketController {
     }
 
     @PutMapping("/success/{id}")
-    public ResponseApi<?> updateSuccesStatus(@PathVariable long id, Model model)  {
+    public ResponseApi<?> updateSuccesStatus(@PathVariable long id,
+                                             Model model)  {
         ticketService.paymentTicketSuccess(id, model);
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())

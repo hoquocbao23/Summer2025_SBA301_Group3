@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
 import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
+import com.sba301.metro_system.dto.request.user.UserEmailDto;
 import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.*;
 import com.sba301.metro_system.enums.PaymentMethod;
@@ -23,10 +24,13 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -51,6 +55,8 @@ public class TicketService implements ITicketService {
     @Value("${CHECK_IN}")
     private String CHECK_IN;
 
+    @Override
+    @Transactional
     public TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception{
         System.out.println(ticketRequestDto);
         final int NUMBER_OF_TICKETS = 1;
@@ -112,6 +118,8 @@ public class TicketService implements ITicketService {
         return oldPrice;
     }
 
+
+    @Transactional
     public String paymentTicket(String ticketName,String description, Double price, int quantity) throws Exception {
         PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
         paymentRequestDto.setProductName(ticketName);
@@ -125,6 +133,8 @@ public class TicketService implements ITicketService {
         return String.format("Thanh toan mua %s", ticketName);
     }
 
+    @Transactional
+    @Override
     public void paymentTicketSuccess(long ticketId, Model model)  {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment success
@@ -151,6 +161,8 @@ public class TicketService implements ITicketService {
         emailService.sendEmail(mailBody, model);
     }
 
+    @Transactional
+    @Override
     public void paymentTicketFail(long ticketId, Model model) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment failed
@@ -162,6 +174,7 @@ public class TicketService implements ITicketService {
                 PaymentMethod.PAYOS,
                 TransactionStatus.FAILED);
         transactionService.saveTransaction(transactionRequestDto, ticket);
+
 
 
     }

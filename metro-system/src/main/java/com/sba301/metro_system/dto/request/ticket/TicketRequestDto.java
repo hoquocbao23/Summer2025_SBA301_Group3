@@ -5,7 +5,8 @@ import com.sba301.metro_system.enums.TicketStatus;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.time.LocalDateTime;
+
+import java.util.HashSet;
 
 @Data
 public class TicketRequestDto {
@@ -15,5 +16,6 @@ public class TicketRequestDto {
     private long routeId;
     private long ticketTypeId;
     private String promotionCode;
+
 
 }
