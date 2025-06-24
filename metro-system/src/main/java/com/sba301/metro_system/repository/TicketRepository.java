@@ -5,6 +5,8 @@ import com.sba301.metro_system.entity.Account;
 import com.sba301.metro_system.entity.Ticket;
 import org.springframework.data.jpa.repository.JpaRepository;
 
+import java.util.List;
+
 public interface TicketRepository extends JpaRepository<Ticket, Long> {
-    Ticket findByAccount(Account account);
+    List<Ticket> findByAccount(Account account);
 }

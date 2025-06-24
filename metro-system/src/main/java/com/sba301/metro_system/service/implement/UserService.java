@@ -5,6 +5,7 @@ import com.sba301.metro_system.dto.request.LoginRequestDTO;
 import com.sba301.metro_system.dto.request.SignupRequestDTO;
 import com.sba301.metro_system.dto.request.user.UserDTO;
 import com.sba301.metro_system.dto.response.LoginResponse;
+import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.Account;
 import com.sba301.metro_system.entity.OTP;
 import com.sba301.metro_system.entity.Ticket;
@@ -72,7 +73,7 @@ public class UserService implements IUserService {
 
             UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
             Account user = userPrinciple.getUser();
-            if(user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE){
+            if (user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE) {
                 return ResponseApi.
                         builder().
                         status(HttpStatus.UNAUTHORIZED.value()).
@@ -82,8 +83,8 @@ public class UserService implements IUserService {
             }
             String token = jwtService.generateToken(user.getEmail(), user.getAccountId());
             System.out.println(user.getRole());
-            LoginResponse response = new LoginResponse(user.getAccountId(),token,user.getFullname(),user.getRole().name());
-             ResponseEntity.ok(response);
+            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name());
+            ResponseEntity.ok(response);
             return ResponseApi.
                     builder().
                     status(HttpStatus.OK.value()).
@@ -159,9 +160,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public ResponseApi<?> verify(SignupRequestDTO signupRequestDTO,Integer otp) {
+    public ResponseApi<?> verify(SignupRequestDTO signupRequestDTO, Integer otp) {
         OTP otp1 = otpService.findByOtpToken(otp);
-        if(otp1 == null){
+        if (otp1 == null) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.NOT_FOUND.value()).
@@ -169,7 +170,7 @@ public class UserService implements IUserService {
                     data("Otp not found").
                     build();
         }
-        if(otp1.isExpired()){
+        if (otp1.isExpired()) {
             otpRepository.delete(otp1);
             return ResponseApi.
                     builder().
@@ -178,7 +179,7 @@ public class UserService implements IUserService {
                     data("Otp has expired").
                     build();
         }
-        if(!otp1.getOtpToken().equals(otp)){
+        if (!otp1.getOtpToken().equals(otp)) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.BAD_REQUEST.value()).
@@ -186,7 +187,7 @@ public class UserService implements IUserService {
                     data("Otp does not match expected value.").
                     build();
         }
-        if(otp1.getMail().equals(signupRequestDTO.getEmail())){
+        if (otp1.getMail().equals(signupRequestDTO.getEmail())) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.BAD_REQUEST.value()).
@@ -195,7 +196,7 @@ public class UserService implements IUserService {
                     build();
         }
         Account user = userRepository.findByEmail(signupRequestDTO.getEmail());
-        if(user !=null) {
+        if (user != null) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.CONFLICT.value()).
@@ -307,28 +308,69 @@ public class UserService implements IUserService {
 
     @Override
     public ResponseApi<?> getMyTicket() {
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-        Account account = (Account) authentication.getPrincipal();
-        if (account==null) {
+        UserPrinciple userPrinciple = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (userPrinciple == null || userPrinciple.getUser() == null) {
+            throw new IllegalStateException("User not authenticated or user data is missing");
+        }
+        if (userPrinciple == null) {
             return ResponseApi.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message(HttpStatus.BAD_REQUEST.getReasonPhrase())
-                    .data("Have no permission to access this resource" )
+                    .status(HttpStatus.UNAUTHORIZED.value())
+                    .message(HttpStatus.UNAUTHORIZED.getReasonPhrase())
+                    .data("Have no permission to access this resource")
                     .build();
         }
-       Ticket ticket = ticketRepository.findByAccount(account);
-            if(ticket == null){
-                return ResponseApi.builder()
-                        .status(HttpStatus.NOT_FOUND.value())
-                        .message(HttpStatus.NOT_FOUND.getReasonPhrase())
-                        .data("Have no ticket")
-                        .build();
-            }
-        return ResponseApi.builder()
-                .status(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data("Have no ticket")
-                .build();
-    }
+        Account account = userPrinciple.getUser();
+        List<Ticket> ticket = ticketRepository.findByAccount(account);
+        if (ticket == null) {
+            return ResponseApi.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
+                    .data("Have no ticket")
+                    .build();
+        }
+        List<TicketResponseDto> ticketResponseDtoList = new ArrayList<>();
 
+        for (Ticket t : ticket) {
+            TicketResponseDto dto = new TicketResponseDto();
+
+            dto.setTicketId(t.getTicketId());
+            dto.setDepartureStation(
+                    t.getDepartureStation() != null ? t.getDepartureStation().getStationLocation() : null
+            );
+            dto.setArrivalStation(
+                    t.getArrivalStation() != null ? t.getArrivalStation().getStationName() : null
+            );
+            dto.setOldPrice(t.getOldPrice());
+            dto.setNewPrice(t.getNewPrice());
+            dto.setValidFrom(t.getValidFrom());
+            dto.setValidTo(t.getValidTo());
+            dto.setPurchaseTime(t.getPurchaseTime());
+            dto.setQrUrl(t.getQrUrl());
+            dto.setTicketStatus(t.getTicketStatus());
+
+            if (t.getTicketType() != null) {
+                dto.setTicketName(t.getTicketType().getTicketName());
+            }
+
+            if (t.getPromotion() != null) {
+                dto.setPromotionCode(t.getPromotion().getPromotionCode());
+            }
+
+            if (t.getRoute() != null) {
+                dto.setRouteName(t.getRoute().getRouteName());
+            }
+
+            dto.setUrlCheckout("https://localhost:5173/checkout/" + t.getTicketId());
+
+            ticketResponseDtoList.add(dto);
+        }
+
+        return ResponseApi.builder()
+                    .status(HttpStatus.OK.value())
+                    .message(HttpStatus.OK.getReasonPhrase())
+                    .data(ticketResponseDtoList)
+                    .build();
+
+
+    }
 }
