@@ -18,4 +18,6 @@ public interface IUserService {
     ResponseApi<?> updateUser(Long id, UserDTO user);
 
     ResponseApi<?> getUserById(Long id);
+
+    ResponseApi<?> getMyTicket();
 }
