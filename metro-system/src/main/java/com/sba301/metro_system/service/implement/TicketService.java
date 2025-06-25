@@ -26,6 +26,8 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
+import vn.payos.type.CheckoutResponseData;
+import vn.payos.type.PaymentLinkData;
 
 import java.io.IOException;
 import java.time.LocalDateTime;
@@ -44,6 +46,9 @@ public class TicketService implements ITicketService {
     private final PaymentService paymentService;
     private final TransactionService transactionService;
     private final EmailService emailService;
+
+    @Value("${CHECK_IN}")
+    private String CHECK_IN_URL;
 
 
     @Override
@@ -65,6 +70,8 @@ public class TicketService implements ITicketService {
         if (currentAccount == null) {
             throw new UnAuthorized("Login before to use this service");
         }
+
+
 
         TicketType ticketType = ticketTypeService.findById(ticketRequestDto.getTicketTypeId());
         RouteRule routeRule = routeRuleService.findByRouteIdAndType(ticketRequestDto.getRouteId(),
@@ -98,13 +105,14 @@ public class TicketService implements ITicketService {
         ticket.setIsCheckin(false);
         ticketRepository.save(ticket);
         // create payment qr
-        String urlCheckout = paymentTicket(ticketType.getTicketName(),
+        CheckoutResponseData checkOut = paymentTicket(ticketType.getTicketName(),
                 generateDescription(ticketType.getTicketName()),
                 newPrice,
                 NUMBER_OF_TICKETS);
 
         TicketResponseDto responseDto = TicketMapper.toTicketResponseDto(ticket);
-        responseDto.setUrlCheckout(urlCheckout);
+        responseDto.setUrlCheckout(checkOut.getCheckoutUrl());
+        responseDto.setPayOrderCode(checkOut.getOrderCode());
 
         return responseDto;
     }
@@ -120,7 +128,7 @@ public class TicketService implements ITicketService {
 
 
     @Transactional
-    public String paymentTicket(String ticketName,String description, Double price, int quantity) throws Exception {
+    public CheckoutResponseData paymentTicket(String ticketName, String description, Double price, int quantity) throws Exception {
         PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
         paymentRequestDto.setProductName(ticketName);
         paymentRequestDto.setDescription(description);
@@ -135,23 +143,33 @@ public class TicketService implements ITicketService {
 
     @Transactional
     @Override
-    public void paymentTicketSuccess(long ticketId, Model model)  {
+    public void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment success
         ticket.setTicketStatus(TicketStatus.UNUSED);
         ticketRepository.save(ticket);
 
+        PaymentLinkData paymentInfor = paymentService.getPaymentInform(orderId);
+
         // create new transaction
-        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
-                PaymentMethod.PAYOS,
-                TransactionStatus.SUCCESS);
+//        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
+//                PaymentMethod.PAYOS,
+//                TransactionStatus.SUCCESS);
+        TransactionRequestDto transactionRequestDto = new TransactionRequestDto();
+        transactionRequestDto.setTicketId(ticketId);
+        transactionRequestDto.setPaymentMethod(PaymentMethod.PAYOS);
+        transactionRequestDto.setTransactionStatus(TransactionStatus.SUCCESS);
+        transactionRequestDto.setPayOrderId(orderId);
+        transactionRequestDto.setCounterAccountName(paymentInfor.getTransactions().get(0).getCounterAccountName());
+        transactionRequestDto.setCounterAccountNumber(paymentInfor.getTransactions().get(0).getCounterAccountNumber());
+        transactionRequestDto.setCounterAccountBankId(paymentInfor.getTransactions().get(0).getCounterAccountBankId());
         transactionService.saveTransaction(transactionRequestDto, ticket);
 
 
         model.addAttribute("ticketId", ticketId);
         model.addAttribute("userName", ticket.getAccount().getFullname());
         //String qrCodeBase64 = emailService.generateQrCodeAsBase64(CHECK_IN+"/"+ticketId, 100, 100);
-        model.addAttribute("ticketDetailsUrl", CHECK_IN+"/"+ticketId);
+        model.addAttribute("ticketDetailsUrl", CHECK_IN_URL+"/"+ticketId);
         //  model.addAttribute("qrCode", "data:image/png;base64,"+qrCodeBase64);
         MailBody mailBody = MailBody.builder()
                 .to(ticket.getAccount().getEmail())

@@ -4,6 +4,7 @@ import com.google.zxing.WriterException;
 import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
 import com.sba301.metro_system.dto.request.user.UserEmailDto;
+import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.service.implement.TicketDetailService;
 import com.sba301.metro_system.service.implement.TicketService;
 import io.swagger.v3.oas.annotations.tags.Tag;
@@ -46,8 +47,9 @@ public class TicketController {
 
     @PutMapping("/success/{id}")
     public ResponseApi<?> updateSuccesStatus(@PathVariable long id,
-                                             Model model)  {
-        ticketService.paymentTicketSuccess(id, model);
+                                             Model model,
+                                             @RequestBody TicketResponseDto ticket) throws Exception  {
+        ticketService.paymentTicketSuccess(id, model, ticket.getPayOrderCode());
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
@@ -112,6 +114,18 @@ public class TicketController {
                 .message(HttpStatus.OK.getReasonPhrase())
                 .build();
     }
+
+    @GetMapping("history/{ticketId}")
+    public ResponseApi<?> getUserTicketHistory(@PathVariable long ticketId)  {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(ticketDetailService.getAllTicketDetailsByTicketId(ticketId))
+                .build();
+    }
+
+
+
 
 
 

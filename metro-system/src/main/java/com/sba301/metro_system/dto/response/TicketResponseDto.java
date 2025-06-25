@@ -27,4 +27,5 @@ public class TicketResponseDto {
     private String routeName;
     private String urlCheckout;
     private Boolean isCheckIn;
+    private Long payOrderCode;
 }
