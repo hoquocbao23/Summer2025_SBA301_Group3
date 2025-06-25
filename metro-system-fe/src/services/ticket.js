@@ -14,6 +14,15 @@ export default function useTicket() {
     }
   };
 
+  const getTicketHistory = async (ticketId) => {
+    try {
+      const response = await axiosInstance.get(`${TICKET_ENDPOINTS.TICKETS}/history/${ticketId}`);
+      return response.data.data;
+    } catch (error) {
+      throw error;
+    }
+  };
+
   const checkInTicket = async (ticketId) => {
     try {
       const response = await axiosInstance.post(`${TICKET_ENDPOINTS.TICKETS}/check-in?ticketId=${ticketId}`);
@@ -32,5 +41,5 @@ export default function useTicket() {
     }
   };
 
-  return { getTicketById, checkInTicket, checkOutTicket };
+  return { getTicketById, getTicketHistory, checkInTicket, checkOutTicket };
 }

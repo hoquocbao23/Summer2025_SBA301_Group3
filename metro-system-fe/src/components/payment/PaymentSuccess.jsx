@@ -23,9 +23,8 @@ const PaymentSuccess = () => {
         if (success === 'PAID' && paymentData?.ticketId) {
           setTicketId(paymentData.ticketId);
           // Call API to update ticket status
-          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`);
+          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`, paymentData);
           // Clear payment data after successful update
-          
         }
       } catch (error) {
         console.error('Error updating ticket status:', error);

@@ -34,6 +34,7 @@ console.log("promotion", promotion);
       promotionId: promotion?.promotionId,
       promotionCode: promotion?.promotionCode,
 
+
       ticketName: travelPassForm?.ticketName,
       numberOfPassengers: singleForm?.numberOfTickets || 1,
       total: travelPassForm?.basePrice * (singleForm?.numberOfTickets || 1) || 20000,
@@ -89,13 +90,7 @@ console.log("promotion", promotion);
       console.log("ticketdto", ticket);
       const response = await axiosInstance.post('/tickets/unlimit', ticket);
       const paymentUrl = response.data.data.urlCheckout;
-      // Store payment data in localStorage
-      localStorage.setItem('paymentData', JSON.stringify({
-        ticketId: response.data.data.ticketId,
-        amount: response.data.data.amount,
-        paymentUrl: response.data.data.paymentUrl,
-        ticketDetails: ticket
-      }));
+      localStorage.setItem('paymentData', JSON.stringify(response.data.data));
       window.location.href = paymentUrl;
     } catch (error) {
       console.error('Error creating ticket:', error);
