@@ -1,9 +1,15 @@
 package com.sba301.metro_system.entity;
 
 import jakarta.persistence.*;
+import lombok.Data;
+import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Cascade;
+import org.hibernate.annotations.Fetch;
 
 @Entity
 @Table(name = "train")
+@Data
+@NoArgsConstructor
 public class Train {
 
     @Id
@@ -14,7 +20,8 @@ public class Train {
 
     private String trainModel;
 
-    @ManyToOne
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "route_id")
     private Route route;
+
 }

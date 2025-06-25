@@ -309,15 +309,8 @@ public class UserService implements IUserService {
     @Override
     public ResponseApi<?> getMyTicket() {
         UserPrinciple userPrinciple = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (userPrinciple == null || userPrinciple.getUser() == null) {
+        if (userPrinciple.getUser() == null) {
             throw new IllegalStateException("User not authenticated or user data is missing");
-        }
-        if (userPrinciple == null) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .message(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                    .data("Have no permission to access this resource")
-                    .build();
         }
         Account account = userPrinciple.getUser();
         List<Ticket> ticket = ticketRepository.findTicketByAccount(account);
