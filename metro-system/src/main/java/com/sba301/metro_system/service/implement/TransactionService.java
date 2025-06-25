@@ -33,6 +33,10 @@ public class TransactionService implements ITransactionService {
         transaction.setStatus(transactionDto.getTransactionStatus());
         transaction.setTicket(ticket);
         transaction.setAccount(ticket.getAccount());
+        transaction.setPayOrderId(transactionDto.getPayOrderId());
+        transaction.setCounterAccountNumber(transactionDto.getCounterAccountNumber());
+        transaction.setCounterAccountName(transactionDto.getCounterAccountName());
+        transaction.setCounterAccountBankId(transactionDto.getCounterAccountBankId());
         transactionRepository.save(transaction);
     }
 }

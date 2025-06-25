@@ -16,7 +16,7 @@ import java.util.List;
 public interface ITicketService {
      TicketResponseDto getTicketDetails(long ticketId) ;
      TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception;
-     void paymentTicketSuccess(long ticketId, Model model);
+     void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception;
      void paymentTicketFail(long ticketId, Model model) throws Exception;
 
      boolean checkUnusedTicket(long ticketTypeId);
