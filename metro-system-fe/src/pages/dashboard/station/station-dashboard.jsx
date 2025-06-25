@@ -230,7 +230,7 @@ const AdminStationManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <img
-                        src={station.url || "/placeholder.svg?height=40&width=60"}
+                        src={station.url || "https://cdn.tuoitre.vn/471584752817336320/2024/11/29/base64-1732874424910536364892.jpeg?height=40&width=60"}
                         alt={station.stationName}
                         className="rounded border"
                         style={{ width: "60px", height: "40px", objectFit: "cover" }}

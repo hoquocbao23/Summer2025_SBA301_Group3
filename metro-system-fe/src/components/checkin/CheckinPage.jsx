@@ -1,8 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Container, Spinner, Alert } from 'react-bootstrap';
+import { Button, Container, Spinner, Alert, Row, Col } from 'react-bootstrap';
 import './checkinPage.css';
 import  useTicket  from '../../services/ticket';
+import HistoryTable from './HistoryTable';  
 
 const CheckinPage = () => {
   const { ticketId } = useParams();
@@ -12,6 +13,7 @@ const CheckinPage = () => {
   const [actionLoading, setActionLoading] = useState(false);
   const [actionError, setActionError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
+  const [reloadTrigger, setReloadTrigger] = useState(0);
   const { getTicketById, checkInTicket, checkOutTicket } = useTicket();
 
   
@@ -54,8 +56,10 @@ const CheckinPage = () => {
           console.log(response);
           setSuccessMsg('Check-out thành công!');
         }
-        // Reload ticket data after successful API call
+        // Reload ticket data and trigger history reload
         await fetchTicket();
+        setReloadTrigger(prev => prev + 1);
+        
       } catch (error) {
         setActionError('Có lỗi xảy ra khi thực hiện thao tác.');
         console.error('Error:', error);
@@ -83,39 +87,80 @@ const CheckinPage = () => {
 
   return (
     <Container className="py-5 checkin-container">
-      <div className="checkin-card mx-auto">
-        <h2 className="mb-4 text-center checkin-title">Check-in Vé</h2>
-          <div className="text-center checkin-ticket-info">
-            <div className="ticket-id"><strong>Mã vé:</strong> #{ticketId}</div>
-             {/* <div className="ticket-status"><strong>Trạng thái:</strong> <span className={`status-badge status-${isCheckIn ? 'true' : 'false'}`}>{isCheckIn ? 'Đã check-in' : 'Đã check-out'}</span></div>  */}
-            <div><strong>Ngày mua:</strong> {new Date(ticket.purchaseTime).toLocaleString()}</div> 
-            <div><strong>Hành khách:</strong> {ticket.userName}</div>
-            <div><strong>Tuyến:</strong> {ticket.routeName}</div>
-            <div><strong>Loại vé:</strong> {ticket.ticketName}</div>
+      <Row className="g-4 checkin-row-equal align-items-start">
+        {/* Left Column - Check-in Card */}
+        <Col lg={5} md={12}>
+          <div className="checkin-card">
+            <h2 className="mb-4 text-center checkin-title">Check-in Vé</h2>
+            <div className="text-center checkin-ticket-info">
+              <div className="ticket-id"><strong>Mã vé:</strong> #{ticketId}</div>
+               {/* <div className="ticket-status"><strong>Trạng thái:</strong> <span className={`status-badge status-${isCheckIn ? 'true' : 'false'}`}>{isCheckIn ? 'Đã check-in' : 'Đã check-out'}</span></div>  */}
+              <div><strong>Ngày mua:</strong> {new Date(ticket.purchaseTime).toLocaleString()}</div> 
+              <div><strong>Hành khách:</strong> {ticket.userName}</div>
+              <div><strong>Tuyến:</strong> {ticket.routeName}</div>
+              <div><strong>Loại vé:</strong> {ticket.ticketName}</div>
+            </div>
+            {actionError && <Alert variant="danger">{actionError}</Alert>}
+            {successMsg && <Alert variant="success">{successMsg}</Alert>}
+            <div className="d-flex justify-content-center gap-4 checkin-btn-group">
+
+              {ticket.isCheckIn === false && (
+                <Button 
+                  className="checkin-btn"
+                  size="lg"
+                  variant="success" 
+                  onClick={() => handleAction('checkin')}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? (
+                    <>
+                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-in...
+                    </>
+                  ) : 'Check-in'}
+                </Button>
+              )}
+              {ticket.isCheckIn === true && (
+                <Button 
+                  className="checkin-btn"
+                  size="lg"
+                  variant="warning" 
+                  onClick={() => handleAction('checkout')}
+                  disabled={actionLoading}
+                >
+                  {actionLoading ? (
+                    <>
+                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-out...
+                    </>
+                  ) : 'Check-out'}
+                </Button>
+              )}
+              {/* <Button 
+                className="checkin-btn"
+                size="lg"
+                variant="success" 
+                disabled={actionLoading || ticket.isCheckIn === true}
+                onClick={() => handleAction('checkin')}
+              >
+                {actionLoading ? 'Đang check-in...' : 'Check-in'}
+              </Button>
+              <Button 
+                className="checkin-btn"
+                size="lg"
+                variant="warning" 
+                disabled={actionLoading || ticket.isCheckIn === false}
+                onClick={() => handleAction('checkout')}
+              >
+                {actionLoading ? 'Đang check-out...' : 'Check-out'}
+              </Button> */}
+            </div>
           </div>
-        {actionError && <Alert variant="danger">{actionError}</Alert>}
-        {successMsg && <Alert variant="success">{successMsg}</Alert>}
-        <div className="d-flex justify-content-center gap-4 checkin-btn-group">
-          <Button 
-            className="checkin-btn"
-            size="lg"
-            variant="success" 
-             disabled={actionLoading || ticket.isCheckIn === true}
-            onClick={() => handleAction('checkin')}
-          >
-            {actionLoading ? 'Đang check-in...' : 'Check-in'}
-          </Button>
-          <Button 
-            className="checkin-btn"
-            size="lg"
-            variant="warning" 
-            disabled={actionLoading || ticket.isCheckIn === false}
-            onClick={() => handleAction('checkout')}
-          >
-            {actionLoading ? 'Đang check-out...' : 'Check-out'}
-          </Button>
-        </div>
-      </div>
+        </Col>
+
+        {/* Right Column - History Table */}
+        <Col lg={7} md={12}>
+          <HistoryTable ticketId={ticketId} reloadTrigger={reloadTrigger} />
+        </Col>
+      </Row>
     </Container>
   );
 };

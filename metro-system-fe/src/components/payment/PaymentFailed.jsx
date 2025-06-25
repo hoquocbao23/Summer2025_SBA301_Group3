@@ -20,7 +20,9 @@ const PaymentFailed = () => {
         if (failed && paymentData?.ticketId) {
           setTicketId(paymentData.ticketId);
           // Call API to update ticket status
-          await axiosInstance.put(`tickets/failed/${paymentData.ticketId}`);
+          await axiosInstance.put(`tickets/failed/${paymentData.ticketId}`, {
+            userEmails: paymentData.userEmails
+          });
           // Clear payment data after successful update
           
         }
