@@ -16,13 +16,15 @@ const PaymentFailed = () => {
         const paymentData = JSON.parse(localStorage.getItem('paymentData'));
         localStorage.removeItem('paymentData');
         const failed = searchParams.get('cancel');
-        
+
         if (failed && paymentData?.ticketId) {
           setTicketId(paymentData.ticketId);
           // Call API to update ticket status
-          await axiosInstance.put(`tickets/failed/${paymentData.ticketId}`);
+          await axiosInstance.put(`tickets/failed/${paymentData.ticketId}`, {
+            userEmails: paymentData.userEmails
+          });
           // Clear payment data after successful update
-          
+
         }
       } catch (error) {
         console.error('Error updating ticket status:', error);
@@ -68,14 +70,14 @@ const PaymentFailed = () => {
         </div>
       </div>
       <div className="d-flex justify-content-center gap-3">
-        <Button 
-          variant="outline-primary" 
+        <Button
+          variant="outline-primary"
           onClick={() => navigate('/tickets')}
         >
           View My Tickets
         </Button>
-        <Button 
-          variant="primary" 
+        <Button
+          variant="primary"
           onClick={() => navigate('/')}
         >
           Back to Home

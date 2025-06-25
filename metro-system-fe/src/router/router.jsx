@@ -84,9 +84,8 @@ const router = createBrowserRouter([
       {
         path: "/checkin/:ticketId",
         element: <CheckinPage />,
-      },
-
-    ],
+      }
+    ]
   },
   {
     path: "/dashboard",
@@ -110,7 +109,6 @@ const router = createBrowserRouter([
       },
       {
         path: "ticket-type",
-
         element: <TicketTypeDashboard />
       },
       {

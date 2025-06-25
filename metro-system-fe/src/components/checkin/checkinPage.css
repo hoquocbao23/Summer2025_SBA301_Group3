@@ -3,9 +3,13 @@
 .checkin-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #e3f2fd 0%, #fff 100%);
+<<<<<<< HEAD
   display: flex;
   align-items: center;
   justify-content: center;
+=======
+  padding: 2rem 0;
+>>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 }
 
 .checkin-card {
@@ -13,9 +17,14 @@
   border-radius: 24px;
   box-shadow: 0 6px 32px 0 rgba(30,136,229,0.10), 0 1.5px 6px 0 rgba(30,136,229,0.08);
   padding: 40px 32px 32px 32px;
+<<<<<<< HEAD
   max-width: 420px;
   width: 100%;
   margin: 0 auto;
+=======
+  height: fit-content;
+  margin-bottom: 1rem;
+>>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 }
 
 .checkin-title {
@@ -92,4 +101,75 @@
 }
 .checkin-btn:active {
   transform: scale(0.97);
+<<<<<<< HEAD
+=======
+}
+
+/* History Table Styles */
+.history-table-container {
+  width: 100%;
+}
+
+.history-table {
+  background: #fff;
+  border-radius: 16px;
+  box-shadow: 0 4px 20px 0 rgba(30,136,229,0.08);
+  overflow: hidden;
+  height: fit-content;
+}
+
+.history-table .table {
+  margin-bottom: 0;
+}
+
+.history-table .table th {
+  background: #f8f9fa;
+  border-bottom: 2px solid #e9ecef;
+  font-weight: 600;
+  color: #495057;
+  padding: 1rem;
+}
+
+.history-table .table td {
+  padding: 1rem;
+  vertical-align: middle;
+  border-bottom: 1px solid #f1f3f4;
+}
+
+.history-table .table tbody tr:hover {
+  background-color: #f8f9fa;
+}
+
+.history-table .badge {
+  font-size: 0.85rem;
+  padding: 0.5rem 0.75rem;
+  border-radius: 8px;
+}
+
+/* Responsive adjustments */
+@media (max-width: 991px) {
+  .checkin-container {
+    padding: 1rem;
+  }
+  
+  .checkin-card {
+    margin-bottom: 2rem;
+  }
+}
+
+@media (max-width: 768px) {
+  .checkin-container {
+    padding: 1rem;
+  }
+  
+  .checkin-card {
+    padding: 30px 20px 20px 20px;
+  }
+  
+  .history-table .table th,
+  .history-table .table td {
+    padding: 0.75rem 0.5rem;
+    font-size: 0.9rem;
+  }
+>>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 } 

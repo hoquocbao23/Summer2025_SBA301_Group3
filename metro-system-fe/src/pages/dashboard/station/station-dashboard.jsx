@@ -227,6 +227,7 @@ const AdminStationManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="fw-semibold text-dark">{station.stationLocation}</div>
+
                     </td>                    <td className="px-4 py-3">
                       {station.url && (
                         <img
@@ -237,12 +238,13 @@ const AdminStationManager = () => {
                           onError={(e) => { e.target.style.display = 'none'; }}
                         />
                       )}
+
                     </td>
                     <td className="px-4 py-3">
                       <span
                         className={`badge px-3 py-1 rounded-pill ${station.status === "ACTIVE"
-                            ? "bg-success bg-opacity-10 text-success"
-                            : "bg-danger bg-opacity-10 text-danger"
+                          ? "bg-success bg-opacity-10 text-success"
+                          : "bg-danger bg-opacity-10 text-danger"
                           }`}
                       >
                         {station.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
