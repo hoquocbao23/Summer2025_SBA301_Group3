@@ -17,6 +17,10 @@ import MetroServiceStatus from "../components/route/RouteOverview";
 import UserProfile from "../pages/user/UserProfile";
 import UserTickets from "../pages/user/UserTicket";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
+import AdminTicketRuleManager from "../pages/dashboard/ticket-rule/ticket-rule-dashboard";
+import PaymentSuccess from "../components/payment/PaymentSuccess";
+import PaymentFailed from "../components/payment/PaymentFailed";
+import CheckinPage from "../components/checkin/CheckinPage";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -29,16 +33,16 @@ const router = createBrowserRouter([
       {
         path: "/tickets",
         element: <TicketPage />,
-        children: [
-          {
-            index: true,
-            element: <TicketSearchOverview />,
-          },
-          {
-            path: "passenger",
-            element: <PassengerPage />,
-          },
-        ],
+        // children: [
+        //   {
+        //     index: true,
+        //     element: <TicketSearchOverview />,
+        //   },
+        //   // {
+        //   //   path: "passenger",
+        //   //   element: <PassengerPage />,
+        //   // },
+        // ],
       },
       {
         path: "/stations",
@@ -68,7 +72,20 @@ const router = createBrowserRouter([
       {
         path: "/bookings",
         element: <UserTickets />,
-      }
+      },
+      {
+        path: "/payment-success",
+        element: <PaymentSuccess />,
+      },
+      {
+        path: "/payment-failed",
+        element: <PaymentFailed />,
+      },
+      {
+        path: "/checkin/:ticketId",
+        element: <CheckinPage />,
+      },
+
     ],
   },
   {
@@ -93,7 +110,12 @@ const router = createBrowserRouter([
       },
       {
         path: "ticket-type",
+
         element: <TicketTypeDashboard />
+      },
+      {
+        path: "ticket-rule",
+        element: <AdminTicketRuleManager />
       }
     ],
   },

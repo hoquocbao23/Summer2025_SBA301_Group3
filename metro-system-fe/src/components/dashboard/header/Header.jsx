@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Navbar, Container, Form, FormControl, Nav, Dropdown, Image } from 'react-bootstrap';
-
+import { useNavigate } from 'react-router-dom';
 const user = {
   name: "Sofia Rivers",
   email: "sofia.rivers@devias.io",
@@ -8,6 +8,18 @@ const user = {
 };
 
 const Header = () => {
+  const navigate = useNavigate();
+  const handleLogout = () => {
+    // Clear ALL data from localStorage
+    localStorage.clear();
+    
+    
+    // Show logout notification
+    alert('Đăng xuất thành công!');
+    
+    // Navigate to home page
+    navigate('/');
+};
   return (
     <Navbar bg="light" expand="lg"  className="border-bottom" style={{ minHeight: 60 }}>
       <Container fluid>
@@ -39,7 +51,7 @@ const Header = () => {
               <Dropdown.Divider />
               <Dropdown.Item>Settings</Dropdown.Item>
               <Dropdown.Item>Profile</Dropdown.Item>
-              <Dropdown.Item>Sign out</Dropdown.Item>
+              <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>
         </Nav>

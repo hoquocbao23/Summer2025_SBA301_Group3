@@ -1,15 +1,20 @@
-import React, { useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { Container, Row, Col, Card, Form, Button, Pagination } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 import { tickets } from '../../data/tickets';
+import { useLocation } from 'react-router-dom';
+import { TicketContext } from '../../pages/layout/TicketLayout';
 
-const TicketSearchOverview = () => {
-  const navigate = useNavigate();
-  const [priceRange, setPriceRange] = useState([100, 125]);
-  const [departureTime, setDepartureTime] = useState([9, 19]);
+const TicketSearchOverview = ({ onStepChange }) => {
+
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const handleBuyNow = () => {
+    onStepChange(2);
+  }
+
+  const { singleForm} = useContext(TicketContext);
   
 
   const recentTickets = [
@@ -18,10 +23,6 @@ const TicketSearchOverview = () => {
     { from: 'New York', to: 'Los Angeles', stationFrom: 'Penn Station, NY', stationTo: 'Union Station, CA', price: 36, active: false }
   ];
 
-  const handleDepartureMinChange = (e) => setDepartureTime([Number(e.target.value), departureTime[1]]);
-  const handleDepartureMaxChange = (e) => setDepartureTime([departureTime[0], Number(e.target.value)]);
-  const handlePriceMinChange = (e) => setPriceRange([Number(e.target.value), priceRange[1]]);
-  const handlePriceMaxChange = (e) => setPriceRange([priceRange[0], Number(e.target.value)]);
 
   const ticketsPerPage = 1;
   const totalPages = Math.ceil(tickets.length / ticketsPerPage);
@@ -33,30 +34,6 @@ const TicketSearchOverview = () => {
       <Row>
         {/* Sidebar Filters + Recent */}
         <Col md={3}>
-          {/* <Row className="mb-3 bg-dark text-white p-3">
-            <h5 className='mb-3'>Filter by</h5>
-            <Form>
-              <Form.Group>
-                <Form.Label style={{ display: 'flex', justifyContent: 'start' }}>Coach type</Form.Label>
-                {['Third class sleeping', 'Second class sleeping', 'First class sleeping', 'Comfortable', 'Third class non reserved', 'Sedentary carriage'].map((type, i) => (
-                  <Form.Check type="switch" id={`coach-${i}`} label={type} key={i} />
-                ))}
-                <Form.Check type="switch" label="All" defaultChecked />
-              </Form.Group>
-              <Form.Group className="mt-3">
-                <Form.Label>Departure / Arrive time</Form.Label>
-                <Form.Control type="range" min={0} max={24} value={departureTime[0]} onChange={handleDepartureMinChange} className="mb-2" />
-                <Form.Control type="range" min={0} max={24} value={departureTime[1]} onChange={handleDepartureMaxChange} />
-                <div>{`${departureTime[0]}:00 - ${departureTime[1]}:00`}</div>
-              </Form.Group>
-              <Form.Group className="mt-3">
-                <Form.Label>Price</Form.Label>
-                <Form.Control type="range" min={50} max={300} value={priceRange[0]} onChange={handlePriceMinChange} className="mb-2" />
-                <Form.Control type="range" min={50} max={300} value={priceRange[1]} onChange={handlePriceMaxChange} />
-                <div>{`$${priceRange[0]} - $${priceRange[1]}`}</div>
-              </Form.Group>
-            </Form>
-          </Row> */}
           <hr className="border-light my-4" />
           <Row className="mb-3">
 
@@ -99,7 +76,7 @@ const TicketSearchOverview = () => {
             >
               <Card.Body>
                 <Row>
-                  <Col md={9}>
+                  <Col md={9} className="d-flex flex-column justify-content-center">
                     {ticket.routes.map((route, routeIdx) => (
                       <>
                         {routeIdx > 0 ? <hr /> : null}
@@ -113,19 +90,15 @@ const TicketSearchOverview = () => {
                             {route.legs.map((leg, i) => (
                               <Row key={i} className="mb-2">
                                 <Col>
-                                  <div><strong>{leg.depart}</strong></div>
-                                  <div className="text-muted small">{leg.dateDepart}</div>
-                                  <div className="small">{leg.from}</div>
-                                  <div className="small text-muted">{leg.stationFrom}</div>
+                                  <div className=" text-muted fw-bold  ">{leg.stationFrom}</div>
                                 </Col>
                                 <Col className="d-flex align-items-center justify-content-center small text-muted">
                                   {(i === 0 ? <span><p style={{ fontSize: '30px', margin: '0' }}>→</p> {route.duration}</span> : <span><p style={{ fontSize: '30px', margin: '0' }}>←</p> {route.returnDuration}</span>)}
                                 </Col>
                                 <Col>
-                                  <div><strong>{leg.arrive}</strong></div>
-                                  <div className="text-muted small">{leg.dateArrive}</div>
-                                  <div className="small">{leg.to}</div>
-                                  <div className="small text-muted">{leg.stationTo}</div>
+                                  
+                                  
+                                  <div className=" text-muted fw-bold">{leg.stationTo}</div>
                                 </Col>
                               </Row>
                             ))}
@@ -139,12 +112,21 @@ const TicketSearchOverview = () => {
                     <div className="mb-2 small">
                       {ticket.icons.map((icon, i) => <i key={i} className={`bi bi-${icon} me-2`}></i>)}
                     </div>
-                    {(idx === selectedIndex) && <Button variant="danger" onClick={() => navigate('/tickets/passenger')}>Buy Now</Button>}
+                    {(idx === selectedIndex) && (
+                      <Button 
+                        variant="danger" 
+                          onClick={() => handleBuyNow()}
+                      >
+                        Buy Now
+                      </Button>
+                    )}
                   </Col>
                 </Row>
               </Card.Body>
             </Card>
           ))}
+
+          {/* Pagination */}
           <div className="d-flex justify-content-center mt-3">
             <Button variant="outline-secondary mx-2" disabled={currentPage === 1} onClick={() => setCurrentPage(prev => prev - 1)}>&lt;</Button>
             {[...Array(totalPages)].map((_, i) => (

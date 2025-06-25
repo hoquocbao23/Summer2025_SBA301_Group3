@@ -11,8 +11,10 @@ const navItems = [
   { to: 'ticket-type', icon: <ExclamationTriangle className="me-2" />, label: 'Ticket Type' },
   { to: 'stations', icon: <Gear className="me-2" />, label: 'Stations' },
   { to: 'routes', icon: <Person className="me-2" />, label: 'Routes' },
+  { to: 'trains', icon: <Gear className="me-2" />, label: 'Trains' },
   { to: 'account', icon: <ExclamationTriangle className="me-2" />, label: 'Account' },
-  
+  { to: 'ticket-rule', icon: <ExclamationTriangle className="me-2" />, label: 'Ticket Rule' },
+
 ];
 
 const SideNav = () => {

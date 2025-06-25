@@ -227,23 +227,23 @@ const AdminStationManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="fw-semibold text-dark">{station.stationLocation}</div>
-                    </td>
-                    <td className="px-4 py-3">
-                      <img
-                        src={station.url || "/placeholder.svg?height=40&width=60"}
-                        alt={station.stationName}
-                        className="rounded border"
-                        style={{ width: "60px", height: "40px", objectFit: "cover" }}
-                        onError={(e) => { e.target.src = "/placeholder.svg?height=40&width=60"; }}
-                      />
+                    </td>                    <td className="px-4 py-3">
+                      {station.url && (
+                        <img
+                          src={station.url}
+                          alt={station.stationName}
+                          className="rounded border"
+                          style={{ width: "60px", height: "40px", objectFit: "cover" }}
+                          onError={(e) => { e.target.style.display = 'none'; }}
+                        />
+                      )}
                     </td>
                     <td className="px-4 py-3">
                       <span
-                        className={`badge px-3 py-1 rounded-pill ${
-                          station.status === "ACTIVE"
+                        className={`badge px-3 py-1 rounded-pill ${station.status === "ACTIVE"
                             ? "bg-success bg-opacity-10 text-success"
                             : "bg-danger bg-opacity-10 text-danger"
-                        }`}
+                          }`}
                       >
                         {station.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
                       </span>

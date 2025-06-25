@@ -12,7 +12,9 @@ const TicketTypeModal = ({ show, onHide, onSubmit, ticketType }) => {
 
   useEffect(() => {
     if (ticketType) {
+      console.log("ticketType", ticketType);
       setTicketTypeData({
+        
         ticketName: ticketType.ticketName ,
         validityDays: ticketType.validityDays ,
         description: ticketType.description ,
@@ -20,6 +22,7 @@ const TicketTypeModal = ({ show, onHide, onSubmit, ticketType }) => {
         status: ticketType.status || 'ACTIVE'
       });
     } else {
+      console.log("ticketTypenull", ticketType);
       setTicketTypeData({
         ticketName: '',
         validityDays: '',

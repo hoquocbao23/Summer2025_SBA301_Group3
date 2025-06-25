@@ -1,35 +1,109 @@
-import React from 'react';
-import { Form, Row, Col } from 'react-bootstrap';
+import React, { useState, useEffect } from 'react';
+import { Form, Row, Col, Card } from 'react-bootstrap';
+import './PassengerForm.css';
 
-const PassengerForm = () => {
+const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail = '' }) => {
+  const [passengers, setPassengers] = useState([]);
+  const [isBuyingForSelf, setIsBuyingForSelf] = useState(true);
+
+  useEffect(() => {
+    // Initialize passengers array based on number of tickets
+    const initialPassengers = Array(numberOfTickets).fill('').map((_, index) => ({
+      id: index + 1,
+      email: isBuyingForSelf ? userEmail : ''
+    }));
+    setPassengers(initialPassengers);
+  }, [numberOfTickets, isBuyingForSelf, userEmail]);
+
+  const handleEmailChange = (index, value) => {
+    const updatedPassengers = [...passengers];
+    updatedPassengers[index] = {
+      ...updatedPassengers[index],
+      email: value
+    };
+    setPassengers(updatedPassengers);
+    if (onPassengerChange) {
+      onPassengerChange(updatedPassengers);
+    }
+  };
+
+  const handleModeChange = (e) => {
+    const mode = e.target.checked;
+    setIsBuyingForSelf(mode);
+    const updatedPassengers = Array(numberOfTickets).fill('').map((_, index) => ({
+      id: index + 1,
+      email: mode ? userEmail : ''
+    }));
+    setPassengers(updatedPassengers);
+    if (onPassengerChange) {
+      onPassengerChange(updatedPassengers);
+    }
+  };
+
   return (
-    <div>
-      <h5 className="mb-3">Passenger Information</h5>
-      <Form>
-        <Row className="mb-3">
-          {/* <Col md={6}>
-            <Form.Group controlId="firstName">
-              <Form.Label>First Name</Form.Label>
-              <Form.Control type="text" required />
-            </Form.Group>
-          </Col>
-          <Col md={6}>
-            <Form.Group controlId="lastName">
-              <Form.Label>Last Name</Form.Label>
-              <Form.Control type="text" required />
-            </Form.Group>
-          </Col> */}
-        </Row>
-        <Row className="mb-3">
-          <Col>
-            <Form.Group controlId="email">
-              <Form.Label>Email</Form.Label>
-              <Form.Control type="email" required />
-            </Form.Group>
-          </Col>
-        </Row>
-      </Form>
-    </div>
+    <Card className="passenger-form-card shadow-sm border-0">
+      <Card.Body className="p-4">
+        <h4 className="mb-4 text-primary fw-bold">Passenger Information</h4>
+        
+        <div className="booking-mode-section mb-4">
+          <Form.Check 
+            type="switch"
+            id="booking-mode"
+            label="Buy tickets for myself"
+            checked={isBuyingForSelf}
+            onChange={handleModeChange}
+            className="custom-switch mb-3"
+          />
+          {isBuyingForSelf && (
+            <div className="text-muted small mode-description">
+              Your account email will be used for all tickets
+            </div>
+          )}
+        </div>
+
+        <Form>
+          {passengers.map((passenger, index) => (
+            <div key={passenger.id} className="passenger-section mb-4">
+              <div className="d-flex align-items-center mb-3">
+                <h6 className="mb-0 text-muted fw-semibold">Passenger {index + 1}</h6>
+                {index === 0 && (
+                  <span className="badge bg-primary ms-2 rounded-pill">Primary Contact</span>
+                )}
+              </div>
+              
+              <Row>
+                <Col>
+                  <Form.Group controlId={`email-${index}`}>
+                    <Form.Label className="text-muted small">
+                      Email Address
+                      {index === 0 && <span className="text-danger ms-1">*</span>}
+                    </Form.Label>
+                    <Form.Control
+                      type="email"
+                      required={index === 0}
+                      placeholder="Enter email address"
+                      value={passenger.email}
+                      onChange={(e) => handleEmailChange(index, e.target.value)}
+                      className="form-control-custom"
+                      disabled={isBuyingForSelf}
+                    />
+                    {index === 0 && (
+                      <Form.Text className="text-muted small">
+                        Booking confirmation will be sent to this email
+                      </Form.Text>
+                    )}
+                  </Form.Group>
+                </Col>
+              </Row>
+              
+              {index < passengers.length - 1 && (
+                <hr className="my-4" />
+              )}
+            </div>
+          ))}
+        </Form>
+      </Card.Body>
+    </Card>
   );
 };
 
