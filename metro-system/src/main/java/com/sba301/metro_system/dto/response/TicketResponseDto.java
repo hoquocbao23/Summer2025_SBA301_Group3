@@ -7,6 +7,7 @@ import lombok.Data;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Data
 public class TicketResponseDto {
@@ -28,4 +29,6 @@ public class TicketResponseDto {
     private String urlCheckout;
     private Boolean isCheckIn;
     private Long payOrderCode;
+    private int numberOfPassengers;
+    private List<String> userEmails;
 }

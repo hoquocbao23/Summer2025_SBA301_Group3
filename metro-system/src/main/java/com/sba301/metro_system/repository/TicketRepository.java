@@ -6,8 +6,11 @@ import com.sba301.metro_system.entity.Ticket;
 import com.sba301.metro_system.entity.TicketType;
 import com.sba301.metro_system.enums.TicketStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
@@ -24,4 +27,8 @@ public interface TicketRepository extends JpaRepository<Ticket, Long> {
     List<Ticket> findTicketByAccount(Account account);
 
     Optional<Ticket> findByTicketIdAndTicketStatusIn(Long ticketId, Collection<TicketStatus> ticketStatuses);
+
+    @Modifying
+    @Query("UPDATE Ticket t SET t.ticketStatus = 'EXPIRED' WHERE t.ticketStatus = 'ACTIVE' AND t.validTo < :now")
+    int markTicketsAsExpired(@Param("now") LocalDateTime now);
 }
