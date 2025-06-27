@@ -11,6 +11,11 @@ public class TicketDetailMapper {
         ticketDetailResponseDto.setCheckIn(ticketDetail.getCheckIn());
         ticketDetailResponseDto.setCheckOut(ticketDetail.getCheckOut());
         ticketDetailResponseDto.setRouteName(ticketDetail.getTicket().getRoute().getRouteName());
+
+        if (ticketDetail.getTicket().getDepartureStation() != null && ticketDetail.getTicket().getArrivalStation() != null ) {
+            ticketDetailResponseDto.setCheckinStation(ticketDetail.getTicket().getDepartureStation().getStationName());
+            ticketDetailResponseDto.setCheckinStation(ticketDetail.getTicket().getArrivalStation().getStationName());
+        }
         return ticketDetailResponseDto;
     }
 }

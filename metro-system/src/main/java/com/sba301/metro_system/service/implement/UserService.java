@@ -83,7 +83,7 @@ public class UserService implements IUserService {
             }
             String token = jwtService.generateToken(user.getEmail(), user.getAccountId());
             System.out.println(user.getRole());
-            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name());
+            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name(), user.getEmail() );
             ResponseEntity.ok(response);
             return ResponseApi.
                     builder().

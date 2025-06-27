@@ -16,11 +16,14 @@ import java.util.List;
 public interface ITicketService {
      TicketResponseDto getTicketDetails(long ticketId) ;
      TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception;
-     void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception;
+//     void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception;
+     void paymentTicketSuccess(long ticketId, Model model, TicketResponseDto ticketDto) throws Exception;
      void paymentTicketFail(long ticketId, Model model) throws Exception;
 
      boolean checkUnusedTicket(long ticketTypeId);
 
      List<TicketResponseDto> getUserTickets();
      Page<TicketResponseDto> getAllTickets(int page, int size);
+
+     //void checkExpiredTicket();
 }

@@ -4,7 +4,6 @@ import com.google.zxing.WriterException;
 import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
 import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
 import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
-import com.sba301.metro_system.dto.request.user.UserEmailDto;
 import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.*;
 import com.sba301.metro_system.enums.PaymentMethod;
@@ -29,10 +28,9 @@ import org.springframework.ui.Model;
 import vn.payos.type.CheckoutResponseData;
 import vn.payos.type.PaymentLinkData;
 
-import java.io.IOException;
+
 import java.time.LocalDateTime;
-import java.util.HashMap;
-import java.util.HashSet;
+
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -113,7 +111,7 @@ public class TicketService implements ITicketService {
         TicketResponseDto responseDto = TicketMapper.toTicketResponseDto(ticket);
         responseDto.setUrlCheckout(checkOut.getCheckoutUrl());
         responseDto.setPayOrderCode(checkOut.getOrderCode());
-
+        responseDto.setUserEmails(ticketRequestDto.getUserEmails());
         return responseDto;
     }
 
@@ -141,15 +139,53 @@ public class TicketService implements ITicketService {
         return String.format("Thanh toan mua %s", ticketName);
     }
 
+//    @Transactional
+//    @Override
+//    public void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception {
+//        Ticket ticket = ticketRepository.findById(ticketId).get();
+//        //update if payment success
+//        ticket.setTicketStatus(TicketStatus.UNUSED);
+//        ticketRepository.save(ticket);
+//
+//        PaymentLinkData paymentInfor = paymentService.getPaymentInform(orderId);
+//
+//        // create new transaction
+////        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
+////                PaymentMethod.PAYOS,
+////                TransactionStatus.SUCCESS);
+//        TransactionRequestDto transactionRequestDto = new TransactionRequestDto();
+//        transactionRequestDto.setTicketId(ticketId);
+//        transactionRequestDto.setPaymentMethod(PaymentMethod.PAYOS);
+//        transactionRequestDto.setTransactionStatus(TransactionStatus.SUCCESS);
+//        transactionRequestDto.setPayOrderId(orderId);
+//        transactionRequestDto.setCounterAccountName(paymentInfor.getTransactions().get(0).getCounterAccountName());
+//        transactionRequestDto.setCounterAccountNumber(paymentInfor.getTransactions().get(0).getCounterAccountNumber());
+//        transactionRequestDto.setCounterAccountBankId(paymentInfor.getTransactions().get(0).getCounterAccountBankId());
+//        transactionService.saveTransaction(transactionRequestDto, ticket);
+//
+//
+//        model.addAttribute("ticketId", ticketId);
+//        model.addAttribute("userName", ticket.getAccount().getFullname());
+//        //String qrCodeBase64 = emailService.generateQrCodeAsBase64(CHECK_IN+"/"+ticketId, 100, 100);
+//        model.addAttribute("ticketDetailsUrl", CHECK_IN_URL+"/"+ticketId);
+//        //  model.addAttribute("qrCode", "data:image/png;base64,"+qrCodeBase64);
+//        MailBody mailBody = MailBody.builder()
+//                .to(ticket.getAccount().getEmail())
+//                .subject("Bạn đã mua " + ticket.getTicketType().getTicketName())
+//                .templateName("buy-ticket.html")
+//                .build();
+//        emailService.sendEmail(mailBody, model);
+//    }
+
     @Transactional
     @Override
-    public void paymentTicketSuccess(long ticketId, Model model, long orderId) throws Exception {
+    public void paymentTicketSuccess(long ticketId, Model model, TicketResponseDto ticketDto) throws Exception {
         Ticket ticket = ticketRepository.findById(ticketId).get();
         //update if payment success
         ticket.setTicketStatus(TicketStatus.UNUSED);
         ticketRepository.save(ticket);
 
-        PaymentLinkData paymentInfor = paymentService.getPaymentInform(orderId);
+        PaymentLinkData paymentInfor = paymentService.getPaymentInform(ticketDto.getPayOrderCode());
 
         // create new transaction
 //        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
@@ -159,25 +195,29 @@ public class TicketService implements ITicketService {
         transactionRequestDto.setTicketId(ticketId);
         transactionRequestDto.setPaymentMethod(PaymentMethod.PAYOS);
         transactionRequestDto.setTransactionStatus(TransactionStatus.SUCCESS);
-        transactionRequestDto.setPayOrderId(orderId);
+        transactionRequestDto.setPayOrderId(ticketDto.getPayOrderCode());
         transactionRequestDto.setCounterAccountName(paymentInfor.getTransactions().get(0).getCounterAccountName());
         transactionRequestDto.setCounterAccountNumber(paymentInfor.getTransactions().get(0).getCounterAccountNumber());
         transactionRequestDto.setCounterAccountBankId(paymentInfor.getTransactions().get(0).getCounterAccountBankId());
         transactionService.saveTransaction(transactionRequestDto, ticket);
 
-
+        List<String> userEmails = ticketDto.getUserEmails();
         model.addAttribute("ticketId", ticketId);
         model.addAttribute("userName", ticket.getAccount().getFullname());
-        //String qrCodeBase64 = emailService.generateQrCodeAsBase64(CHECK_IN+"/"+ticketId, 100, 100);
-        model.addAttribute("ticketDetailsUrl", CHECK_IN_URL+"/"+ticketId);
-        //  model.addAttribute("qrCode", "data:image/png;base64,"+qrCodeBase64);
-        MailBody mailBody = MailBody.builder()
-                .to(ticket.getAccount().getEmail())
-                .subject("Bạn đã mua " + ticket.getTicketType().getTicketName())
-                .templateName("buy-ticket.html")
-                .build();
-        emailService.sendEmail(mailBody, model);
-    }
+        model.addAttribute("ticketDetailsUrl", CHECK_IN_URL+"/"+ ticketId);
+
+        userEmails.stream().forEach(email -> {
+            MailBody mailBody = MailBody.builder()
+                    .to(email)
+                    .subject("Bạn đã mua " + ticket.getTicketType().getTicketName())
+                    .templateName("buy-ticket.html")
+                    .build();
+            emailService.sendEmail(mailBody, model);
+        });
+
+        }
+
+
 
     @Transactional
     @Override
@@ -221,6 +261,16 @@ public class TicketService implements ITicketService {
         Page<Ticket> ticketPage = ticketRepository.findAll(pageable);
         return ticketPage.map(TicketMapper::toTicketResponseDto);
     }
+
+//    @Scheduled(fixedRate = 60 * 60 * 1000)
+//    public void checkExpiredTicket() {
+//        LocalDateTime now = LocalDateTime.now();
+//        int updatedCount = ticketRepository.markTicketsAsExpired(now);
+//        System.out.println("Expired tickets updated: " + updatedCount + " at: " + now);
+//    }
+
+
+
 
 
 }

@@ -49,7 +49,7 @@ public class TicketController {
     public ResponseApi<?> updateSuccesStatus(@PathVariable long id,
                                              Model model,
                                              @RequestBody TicketResponseDto ticket) throws Exception  {
-        ticketService.paymentTicketSuccess(id, model, ticket.getPayOrderCode());
+        ticketService.paymentTicketSuccess(id, model, ticket);
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
