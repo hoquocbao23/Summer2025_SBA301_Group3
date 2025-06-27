@@ -80,7 +80,7 @@ const PaymentSuccess = () => {
       <div className="d-flex justify-content-center gap-3">
         <Button
           variant="outline-primary"
-          onClick={() => navigate('/tickets')}
+          onClick={() => navigate('/bookings')}
         >
           View My Tickets
         </Button>

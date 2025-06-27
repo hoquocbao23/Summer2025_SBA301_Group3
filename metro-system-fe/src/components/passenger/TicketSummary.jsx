@@ -20,7 +20,6 @@ const TicketSummary = ({ passengers = [],
   onStepChange,
   promotion }) => {
 
-  console.log("promotion", promotion);
   const { singleForm, travelPassForm } = useContext(TicketContext);
 
   const [showConfirmModal, setShowConfirmModal] = useState(false);
@@ -33,6 +32,7 @@ const TicketSummary = ({ passengers = [],
       ticketTypeId: travelPassForm?.ticketTypeId,
       promotionId: promotion?.promotionId,
       promotionCode: promotion?.promotionCode,
+      userEmails: passengers.map(passenger => passenger.email),
 
 
       ticketName: travelPassForm?.ticketName,
@@ -45,8 +45,14 @@ const TicketSummary = ({ passengers = [],
     }
   );
 
+  
 
   useEffect(() => {
+    setTicket({
+      ...ticket,
+      paymentAmount: travelPassForm?.basePrice || 1,
+      userEmails: passengers.map(passenger => passenger.email),
+    });
     if (promotion) {
       setTicket({
         ...ticket,
@@ -57,7 +63,7 @@ const TicketSummary = ({ passengers = [],
         paymentAmount: ticket.total - (ticket.total * (promotion?.promotionDiscount / 100))
       });
     }
-  }, [promotion]);
+  }, [promotion, travelPassForm, singleForm, passengers]);
 
   const handleNextBtn = () => {
     //update step of passenger page
@@ -216,7 +222,6 @@ const TicketSummary = ({ passengers = [],
         <div className="d-flex justify-content-between">
           <h5>Payment</h5>
           <h5>{formatCurrency(ticket.paymentAmount)}</h5>
-          {console.log("ticket.salePercent", ticket.salePercent)}
         </div >
       </div >
 

@@ -1,8 +1,8 @@
-
 import { useState, useEffect } from "react"
 import { format } from "date-fns"
 import axiosInstance from "../../config/axios"
 import { useNavigate } from 'react-router-dom';
+import useTicket from "../../services/ticket";
 import {
     Container,
     Row,
@@ -40,6 +40,7 @@ import {
     BsClockHistory,
 } from "react-icons/bs"
 import { FaTrain } from "react-icons/fa"
+import HistoryTable from "../../components/checkin/HistoryTable"
 
 export default function UserTickets() {
     const [tickets, setTickets] = useState([])
@@ -54,6 +55,8 @@ export default function UserTickets() {
     const ticketsPerPage = 5
     const [error, setError] = useState(null)
     const navigate = useNavigate();
+    const { getTicketHistory } = useTicket();
+    //const [history, setHistory] = useState([]);
     useEffect(() => {
         const fetchTickets = async () => {
             setLoading(true)
@@ -77,11 +80,22 @@ export default function UserTickets() {
         fetchTickets()
     }, [])
 
+    // useEffect(() => {
+    //     if (selectedTicket) {
+    //         const fetchHistory = async () => {
+    //             const history = await getTicketHistory(selectedTicket.ticketId);
+    //             console.log("history", history);
+    //             setHistory(history);
+    //         };
+    //         fetchHistory();
+    //     }
+    // }, [selectedTicket]);
+
     const handleViewTicketDetails = (ticket) => {
-        // setSelectedTicket(ticket)
-        // setShowModal(true)
-        // setActiveTab("info")
-        navigator(`/checkin/${ticket.ticketId}`);
+        setSelectedTicket(ticket)
+        setShowModal(true)
+        setActiveTab("info")
+        //navigate(`/checkin/${ticket.ticketId}`);
     }
 
     const handleCloseModal = () => {
@@ -104,6 +118,7 @@ export default function UserTickets() {
 
     const getStatusBadge = (status) => {
         const statusConfig = {
+            UNUSED: { variant: "danger", icon: BsCheck, text: "Chưa sử dụng" },
             ACTIVE: { variant: "danger", icon: BsCheck, text: "Còn hiệu lực" },
             USED: { variant: "dark", icon: BsCheck, text: "Đã sử dụng" },
             EXPIRED: { variant: "danger", icon: BsClock, text: "Hết hạn" },
@@ -284,8 +299,8 @@ export default function UserTickets() {
                                         className="border"
                                     >
                                         <option value="all">Tất cả trạng thái</option>
-                                        <option value="VALID">Còn hiệu lực</option>
-                                        <option value="USED">Đã sử dụng</option>
+                                        <option value="UNUSED">Chưa sử dụng</option>
+                                        <option value="ACTIVE">Đang sử dụng</option>
                                         <option value="EXPIRED">Hết hạn</option>
                                         <option value="CANCELLED">Đã hủy</option>
                                     </Form.Select>
@@ -450,17 +465,34 @@ export default function UserTickets() {
                                                     )}
                                                 </div>
                                             </div>
-                                            <Button variant="outline-dark"
+                                            {/* <Button variant="outline-dark"
                                                 className="rounded-pill px-4 py-2 fw-bold"
                                                 onClick={() => handleViewTicketDetails(ticket)}
                                             >
                                                 Chi tiết vé
-                                            </Button>
+                                            </Button> */}
+                                            {ticket.ticketStatus === "UNUSED" || ticket.ticketStatus === "ACTIVE" || ticket.ticketStatus === "EXPIRED" ? (
+                                                <Button variant="outline-dark"
+                                                    className="rounded-pill px-4 py-2 fw-bold"
+                                                    onClick={() => handleViewTicketDetails(ticket)}
+                                                >
+                                                    Chi tiết vé
+                                                </Button>
+                                            ) : (
+                                                <Button variant="outline-dark"
+                                                    className="rounded-pill px-4 py-2 fw-bold"
+                                                    // onClick={() =>()}
+                                                >
+                                                    Thanh toán lại
+                                                </Button>
+                                            )}
+
                                         </div>
                                     </Card.Body>
                                 </Col>
 
                                 {/* QR Code Section */}
+                                {ticket.ticketStatus === "UNUSED" || ticket.ticketStatus === "ACTIVE" && (
                                 <Col lg={3}>
                                     <div
                                         className="h-100 d-flex flex-column justify-content-center align-items-center bg-light p-4"
@@ -484,6 +516,7 @@ export default function UserTickets() {
                                         </div>
                                     </div>
                                 </Col>
+                                )}
                             </Row>
                         </Card>
                     ))}
@@ -524,7 +557,9 @@ export default function UserTickets() {
                                 </Col>
                             </Row>
                         </Card.Body>
-                    </Card>)}                {/* Modal */}
+                    </Card>)}
+
+                {/* Modal */}
                 <Modal show={showModal} onHide={handleCloseModal} size="lg" centered>
                     <div className="border" style={{ borderRadius: "8px" }}>
                         <Modal.Header className="border-bottom pb-3" style={{ borderRadius: "8px 8px 0 0" }}>
@@ -545,154 +580,162 @@ export default function UserTickets() {
                         </Modal.Header>
                         <Modal.Body className="p-4">
                             {selectedTicket && (
-                                <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4" fill>                                    <Tab
-                                    eventKey="info"
-                                    title={
-                                        <span className="d-flex align-items-center">
-                                            <BsInfoCircle size={16} className="me-2" />
-                                            Thông tin vé
-                                        </span>
-                                    }
-                                >
-                                    <div className="py-3">
-                                        {/* Status */}
-                                        <Card className="border mb-4" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
-                                            <Card.Body className="p-4">
-                                                <Row className="align-items-center">
-                                                    <Col>
-                                                        <small className="text-muted fw-bold">Trạng thái vé</small>
-                                                        <div className="mt-2">{getStatusBadge(selectedTicket.ticketStatus)}</div>
-                                                    </Col>
-                                                    <Col xs="auto" className="text-end">
-                                                        <small className="text-muted fw-bold">Ngày mua</small>
-                                                        <div className="fw-bold text-dark mt-1">
-                                                            {formatDateTime(selectedTicket.purchaseTime)}
-                                                        </div>
-                                                    </Col>
-                                                </Row>
-                                            </Card.Body>
-                                        </Card>
-
-                                        {/* Route Information */}
-                                        <div className="mb-4">
-                                            <h6 className="d-flex align-items-center mb-3 text-dark">
-                                                <div className="rounded-circle p-2 me-3 bg-light">
-                                                    <FaTrain className="text-danger" size={20} />
-                                                </div>
-                                                Thông tin hành trình
-                                            </h6>
-                                            <Card className="border" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>                                                    <Card.Body className="p-4">
-                                                <div className="text-center mb-4">                                                    <small className="fw-bold text-danger">
-                                                    Tuyến
-                                                </small>
-                                                    <div className="h5 fw-bold text-dark mb-1">{selectedTicket.routeName}</div>
-                                                    <small className="text-muted">{selectedTicket.ticketName}</small>
-                                                </div>
-                                                <div className="d-flex align-items-center justify-content-between">
-                                                    <div className="text-center">
-                                                        <div
-                                                            className="rounded-circle p-3 mb-2 mx-auto d-inline-block bg-light"
-                                                        >                                                            <BsGeoAlt className="text-danger" size={20} />
-                                                        </div>
-                                                        <small className="fw-bold text-dark">
-                                                            Ga đi
-                                                        </small>
-                                                        <div className="fw-bold text-dark">{selectedTicket.departureStation?.stationName || 'N/A'}</div>
-                                                        <small className="text-muted">{selectedTicket.departureStation?.address || 'Không có thông tin'}</small>
-                                                    </div>
-                                                    <div
-                                                        className="rounded-circle p-2 bg-light"
-                                                    >
-                                                        <BsArrowRight className="text-danger" size={20} />
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <div
-                                                            className="rounded-circle p-3 mb-2 mx-auto d-inline-block bg-light"
-                                                        >                                                            <BsGeoAlt className="text-danger" size={20} />
-                                                        </div>
-                                                        <small className="fw-bold text-dark">
-                                                            Ga đến
-                                                        </small>
-                                                        <div className="fw-bold text-dark">{selectedTicket.arrivalStation?.stationName || 'N/A'}</div>
-                                                        <small className="text-muted">{selectedTicket.arrivalStation?.address || 'Không có thông tin'}</small>
-                                                    </div>
-                                                </div>
-                                            </Card.Body>
+                                <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4" fill>
+                                    <Tab
+                                        eventKey="info"
+                                        title={
+                                            <span className="d-flex align-items-center">
+                                                <BsInfoCircle size={16} className="me-2" />
+                                                Thông tin vé
+                                            </span>
+                                        }
+                                    >
+                                        <div className="py-3">
+                                            {/* Status */}
+                                            <Card className="border mb-4" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+                                                <Card.Body className="p-4">
+                                                    <Row className="align-items-center">
+                                                        <Col>
+                                                            <small className="text-muted fw-bold">Trạng thái vé</small>
+                                                            <div className="mt-2">{getStatusBadge(selectedTicket.ticketStatus)}</div>
+                                                        </Col>
+                                                        <Col xs="auto" className="text-end">
+                                                            <small className="text-muted fw-bold">Ngày mua</small>
+                                                            <div className="fw-bold text-dark mt-1">
+                                                                {formatDateTime(selectedTicket.purchaseTime)}
+                                                            </div>
+                                                        </Col>
+                                                    </Row>
+                                                </Card.Body>
                                             </Card>
-                                        </div>
 
-                                        {/* Details */}                                            <Row>
-                                            <Col md={6}>
-                                                <Card
-                                                    className="border h-100"
-                                                    style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
-                                                >
+                                            {/* Route Information */}
+                                            <div className="mb-4">
+                                                <h6 className="d-flex align-items-center mb-3 text-dark">
+                                                    <div className="rounded-circle p-2 me-3 bg-light">
+                                                        <FaTrain className="text-danger" size={20} />
+                                                    </div>
+                                                    Thông tin hành trình
+                                                </h6>
+                                                <Card className="border" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
                                                     <Card.Body className="p-4">
-                                                        <h6 className="d-flex align-items-center mb-3 text-dark">
-                                                            <div className="rounded-circle p-2 me-3 bg-light">
-                                                                <BsCalendar className="text-danger" size={16} />
-                                                            </div>
-                                                            Thời gian hiệu lực
-                                                        </h6>
-                                                        <div className="d-flex justify-content-between mb-2">
-                                                            <small className="text-muted fw-medium">Từ:</small>
-                                                            <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validFrom)}</span>
+                                                        <div className="text-center mb-4">
+                                                            <small className="fw-bold text-danger">
+                                                                Tuyến
+                                                            </small>
+                                                            <div className="h5 fw-bold text-dark mb-1">{selectedTicket.routeName}</div>
+                                                            <small className="text-muted">{selectedTicket.ticketName}</small>
                                                         </div>
-                                                        <div className="d-flex justify-content-between">
-                                                            <small className="text-muted fw-medium">Đến:</small>
-                                                            <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validTo)}</span>
+                                                        <div className="d-flex align-items-center justify-content-between">
+                                                            <div className="text-center">
+                                                                <div
+                                                                    className="rounded-circle p-3 mb-2 mx-auto d-inline-block bg-light"
+                                                                >
+                                                                    <BsGeoAlt className="text-danger" size={20} />
+                                                                </div>
+                                                                <small className="fw-bold text-dark">
+                                                                    Ga đi
+                                                                </small>
+                                                                <div className="fw-bold text-dark">{selectedTicket.departureStation?.stationName || 'N/A'}</div>
+                                                                <small className="text-muted">{selectedTicket.departureStation?.address || 'Không có thông tin'}</small>
+                                                            </div>
+                                                            <div
+                                                                className="rounded-circle p-2 bg-light"
+                                                            >
+                                                                <BsArrowRight className="text-danger" size={20} />
+                                                            </div>
+                                                            <div className="text-center">
+                                                                <div
+                                                                    className="rounded-circle p-3 mb-2 mx-auto d-inline-block bg-light"
+                                                                >
+                                                                    <BsGeoAlt className="text-danger" size={20} />
+                                                                </div>
+                                                                <small className="fw-bold text-dark">
+                                                                    Ga đến
+                                                                </small>
+                                                                <div className="fw-bold text-dark">{selectedTicket.arrivalStation?.stationName || 'N/A'}</div>
+                                                                <small className="text-muted">{selectedTicket.arrivalStation?.address || 'Không có thông tin'}</small>
+                                                            </div>
                                                         </div>
                                                     </Card.Body>
                                                 </Card>
-                                            </Col>
-                                            <Col md={6}>
-                                                <Card
-                                                    className="border h-100"
-                                                    style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
-                                                >
-                                                    <Card.Body className="p-4">
-                                                        <h6 className="d-flex align-items-center mb-3 text-dark">
-                                                            <div className="rounded-circle p-2 me-3 bg-light">
-                                                                <BsCreditCard className="text-danger" size={16} />
+                                            </div>
+
+                                            {/* Details */}
+                                            <Row>
+                                                <Col md={6}>
+                                                    <Card
+                                                        className="border h-100"
+                                                        style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
+                                                    >
+                                                        <Card.Body className="p-4">
+                                                            <h6 className="d-flex align-items-center mb-3 text-dark">
+                                                                <div className="rounded-circle p-2 me-3 bg-light">
+                                                                    <BsCalendar className="text-danger" size={16} />
+                                                                </div>
+                                                                Thời gian hiệu lực
+                                                            </h6>
+                                                            <div className="d-flex justify-content-between mb-2">
+                                                                <small className="text-muted fw-medium">Từ:</small>
+                                                                <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validFrom)}</span>
                                                             </div>
-                                                            Thông tin giá vé
-                                                        </h6>
-                                                        <div className="d-flex justify-content-between mb-2">
-                                                            <small className="text-muted fw-medium">Loại vé:</small>
-                                                            <span className="fw-bold text-dark">{selectedTicket.ticketName}</span>
-                                                        </div>
-                                                        <div className="d-flex justify-content-between mb-2">
-                                                            <small className="text-muted fw-medium">Giá vé:</small>
-                                                            <span className="fw-bold text-dark">
-                                                                {formatPrice(selectedTicket.newPrice)}
-                                                            </span>
-                                                        </div>
-                                                        {selectedTicket.oldPrice !== selectedTicket.newPrice && (
                                                             <div className="d-flex justify-content-between">
-                                                                <small className="text-muted fw-medium">Giá gốc:</small>
-                                                                <Badge bg="light" text="dark" className="rounded-pill border">
-                                                                    {formatPrice(selectedTicket.oldPrice)}
-                                                                </Badge>
+                                                                <small className="text-muted fw-medium">Đến:</small>
+                                                                <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validTo)}</span>
                                                             </div>
-                                                        )}
-                                                    </Card.Body>
-                                                </Card>
-                                            </Col>
-                                        </Row>
-                                    </div>
-                                </Tab>                                    <Tab
-                                    eventKey="qr"
-                                    title={
-                                        <span className="d-flex align-items-center">
-                                            <BsQrCode size={16} className="me-2" />
-                                            Mã QR
-                                        </span>
-                                    }
-                                >
+                                                        </Card.Body>
+                                                    </Card>
+                                                </Col>
+                                                <Col md={6}>
+                                                    <Card
+                                                        className="border h-100"
+                                                        style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
+                                                    >
+                                                        <Card.Body className="p-4">
+                                                            <h6 className="d-flex align-items-center mb-3 text-dark">
+                                                                <div className="rounded-circle p-2 me-3 bg-light">
+                                                                    <BsCreditCard className="text-danger" size={16} />
+                                                                </div>
+                                                                Thông tin giá vé
+                                                            </h6>
+                                                            <div className="d-flex justify-content-between mb-2">
+                                                                <small className="text-muted fw-medium">Loại vé:</small>
+                                                                <span className="fw-bold text-dark">{selectedTicket.ticketName}</span>
+                                                            </div>
+                                                            <div className="d-flex justify-content-between mb-2">
+                                                                <small className="text-muted fw-medium">Giá vé:</small>
+                                                                <span className="fw-bold text-dark">
+                                                                    {formatPrice(selectedTicket.newPrice)}
+                                                                </span>
+                                                            </div>
+                                                            {selectedTicket.oldPrice !== selectedTicket.newPrice && (
+                                                                <div className="d-flex justify-content-between">
+                                                                    <small className="text-muted fw-medium">Giá gốc:</small>
+                                                                    <Badge bg="light" text="dark" className="rounded-pill border">
+                                                                        {formatPrice(selectedTicket.oldPrice)}
+                                                                    </Badge>
+                                                                </div>
+                                                            )}
+                                                        </Card.Body>
+                                                    </Card>
+                                                </Col>
+                                            </Row>
+                                        </div>
+                                    </Tab>
+                                    <Tab
+                                        eventKey="qr"
+                                        title={
+                                            <span className="d-flex align-items-center">
+                                                <BsQrCode size={16} className="me-2" />
+                                                Mã QR
+                                            </span>
+                                        }
+                                    >
                                         <div className="text-center py-5">
                                             <div
                                                 className="d-inline-block mb-4 p-3 rounded-3 border bg-white"
-                                            >                                            <img
+                                            >
+                                                <img
                                                     src={selectedTicket.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TICKET-${selectedTicket.ticketId}`}
                                                     alt="QR Code"
                                                     style={{ width: "200px", height: "200px", objectFit: "contain" }}
@@ -701,25 +744,28 @@ export default function UserTickets() {
                                             <h6 className="text-dark mb-2">Mã QR vé tàu điện</h6>
                                             <p className="text-muted mb-4">Quét mã QR này tại cổng soát vé để vào ga tàu</p>
                                             <div className="d-flex justify-content-center gap-3">
-                                                <OverlayTrigger placement="top" overlay={<Tooltip>Tải xuống mã QR</Tooltip>}>                                                    <Button
-                                                    variant="outline-dark"
-                                                    className="rounded-pill px-4 py-2 fw-bold"
-                                                >
-                                                    <BsDownload size={16} className="me-2" />
-                                                    Tải mã QR
-                                                </Button>
+                                                <OverlayTrigger placement="top" overlay={<Tooltip>Tải xuống mã QR</Tooltip>}>
+                                                    <Button
+                                                        variant="outline-dark"
+                                                        className="rounded-pill px-4 py-2 fw-bold"
+                                                    >
+                                                        <BsDownload size={16} className="me-2" />
+                                                        Tải mã QR
+                                                    </Button>
                                                 </OverlayTrigger>
-                                                <OverlayTrigger placement="top" overlay={<Tooltip>Chia sẻ mã QR</Tooltip>}>                                                    <Button
-                                                    variant="outline-dark"
-                                                    className="rounded-pill px-4 py-2 fw-bold"
-                                                >
-                                                    <BsShare size={16} className="me-2" />
-                                                    Chia sẻ
-                                                </Button>
+                                                <OverlayTrigger placement="top" overlay={<Tooltip>Chia sẻ mã QR</Tooltip>}>
+                                                    <Button
+                                                        variant="outline-dark"
+                                                        className="rounded-pill px-4 py-2 fw-bold"
+                                                    >
+                                                        <BsShare size={16} className="me-2" />
+                                                        Chia sẻ
+                                                    </Button>
                                                 </OverlayTrigger>
                                             </div>
                                         </div>
-                                    </Tab>                                    <Tab
+                                    </Tab>
+                                    <Tab
                                         eventKey="history"
                                         title={
                                             <span className="d-flex align-items-center">
@@ -728,62 +774,11 @@ export default function UserTickets() {
                                             </span>
                                         }
                                     >
-                                        <div className="py-3">
-                                            {selectedTicket.ticketDetails && selectedTicket.ticketDetails.length > 0 ? (
-                                                <div>
-                                                    <h6 className="d-flex align-items-center mb-4 text-dark">
-                                                        <div
-                                                            className="rounded-circle p-2 me-3 bg-light"
-                                                        >
-                                                            <BsClockHistory className="text-danger" size={20} />
-                                                        </div>
-                                                        Lịch sử sử dụng vé
-                                                    </h6>
-                                                    {selectedTicket.ticketDetails.map((detail, index) => (
-                                                        <Card
-                                                            key={detail.ticketDetailId}
-                                                            className="border mb-3"
-                                                            style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}
-                                                        >
-                                                            <Card.Body className="p-4">
-                                                                <div className="d-flex align-items-center justify-content-between">
-                                                                    <div className="d-flex align-items-center">
-                                                                        <div className="rounded-circle p-3 me-3 bg-light">
-                                                                            <BsCheck className="text-danger" size={20} />
-                                                                        </div>
-                                                                        <div>
-                                                                            <div className="fw-bold text-dark">Lượt đi #{detail.ticketDetailId}</div>
-                                                                            <small className="text-muted">
-                                                                                Vào: {formatDateTime(detail.checkIn)} • Ra: {formatDateTime(detail.checkOut)}
-                                                                            </small>
-                                                                        </div>
-                                                                    </div>                                                                    <Badge bg="dark" text="white" className="rounded-pill px-3 py-2 border-0">
-                                                                        Đã sử dụng
-                                                                    </Badge>
-                                                                </div>
-                                                            </Card.Body>
-                                                        </Card>
-                                                    ))}
-                                                </div>
-                                            ) : (
-                                                <div className="text-center py-5">
-                                                    <div
-                                                        className="d-inline-flex align-items-center justify-content-center rounded-circle mb-4 bg-light"
-                                                        style={{
-                                                            width: "90px",
-                                                            height: "90px",
-                                                        }}
-                                                    >
-                                                        <BsClockHistory size={40} className="text-danger" />
-                                                    </div>
-                                                    <h6 className="text-dark mb-2">Chưa có lịch sử sử dụng</h6>
-                                                    <p className="text-muted mb-0">Vé này chưa được sử dụng lần nào</p>
-                                                </div>
-                                            )}
-                                        </div>
+                                        <HistoryTable ticketId={selectedTicket.ticketId}  />  
                                     </Tab>
                                 </Tabs>
-                            )}                        </Modal.Body>
+                            )}
+                        </Modal.Body>
                     </div>
                 </Modal>
             </Container>

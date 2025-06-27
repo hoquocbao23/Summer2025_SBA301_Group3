@@ -3,13 +3,7 @@
 .checkin-container {
   min-height: 100vh;
   background: linear-gradient(135deg, #e3f2fd 0%, #fff 100%);
-<<<<<<< HEAD
-  display: flex;
-  align-items: center;
-  justify-content: center;
-=======
   padding: 2rem 0;
->>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 }
 
 .checkin-card {
@@ -17,14 +11,8 @@
   border-radius: 24px;
   box-shadow: 0 6px 32px 0 rgba(30,136,229,0.10), 0 1.5px 6px 0 rgba(30,136,229,0.08);
   padding: 40px 32px 32px 32px;
-<<<<<<< HEAD
-  max-width: 420px;
-  width: 100%;
-  margin: 0 auto;
-=======
   height: fit-content;
   margin-bottom: 1rem;
->>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 }
 
 .checkin-title {
@@ -71,7 +59,7 @@
   font-weight: 500;
   margin-left: 6px;
 }
-.status-chuacheck-in {
+.status-available {
   background: #fff3cd;
   color: #856404;
   border: 1px solid #ffe082;
@@ -81,8 +69,8 @@
   color: #256029;
   border: 1px solid #81c784;
 }
-.status-checked-out {
-  background: #ffe0e0;
+.status-expired {
+  background: #ffebee;
   color: #c62828;
   border: 1px solid #ef9a9a;
 }
@@ -101,8 +89,6 @@
 }
 .checkin-btn:active {
   transform: scale(0.97);
-<<<<<<< HEAD
-=======
 }
 
 /* History Table Styles */
@@ -171,5 +157,4 @@
     padding: 0.75rem 0.5rem;
     font-size: 0.9rem;
   }
->>>>>>> ffc18ffcf96e866b7087191925f376dbfeecd6e1
 } 

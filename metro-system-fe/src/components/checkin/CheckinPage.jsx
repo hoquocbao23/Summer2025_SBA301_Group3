@@ -94,7 +94,12 @@ const CheckinPage = () => {
             <h2 className="mb-4 text-center checkin-title">Check-in Vé</h2>
             <div className="text-center checkin-ticket-info">
               <div className="ticket-id"><strong>Mã vé:</strong> #{ticketId}</div>
-              {/* <div className="ticket-status"><strong>Trạng thái:</strong> <span className={`status-badge status-${isCheckIn ? 'true' : 'false'}`}>{isCheckIn ? 'Đã check-in' : 'Đã check-out'}</span></div>  */}
+              <div className="ticket-status">
+                <strong>Trạng thái:</strong> 
+                <span className={`status-badge status-${ticket.ticketStatus === "EXPIRED" ? 'expired' : ticket.ticketStatus === "CANCELLED" ? 'cancelled' : (ticket.isCheckIn ? 'checked-in' : 'available')}`}>
+                  {ticket.ticketStatus === "EXPIRED" ? 'Hết hạn' : ticket.ticketStatus === "CANCELLED" ? 'Đã hủy' : (ticket.isCheckIn ? 'Đã check-in' : 'Chưa check-in')}
+                </span>
+              </div>
               <div><strong>Ngày mua:</strong> {new Date(ticket.purchaseTime).toLocaleString()}</div>
               <div><strong>Hành khách:</strong> {ticket.userName}</div>
               <div><strong>Tuyến:</strong> {ticket.routeName}</div>
@@ -104,54 +109,55 @@ const CheckinPage = () => {
             {successMsg && <Alert variant="success">{successMsg}</Alert>}
             <div className="d-flex justify-content-center gap-4 checkin-btn-group">
 
-              {ticket.isCheckIn === false && (
+              {/* Kiểm tra vé hết hạn hoặc đã hủy trước tiên */}
+              {(ticket.ticketStatus === "EXPIRED" || ticket.ticketStatus === "CANCELLED") && (
                 <Button
                   className="checkin-btn"
                   size="lg"
-                  variant="success"
-                  onClick={() => handleAction('checkin')}
-                  disabled={actionLoading}
+                  variant="danger"
+                  disabled={true}
                 >
-                  {actionLoading ? (
-                    <>
-                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-in...
-                    </>
-                  ) : 'Check-in'}
+                  {ticket.ticketStatus === "EXPIRED" ? 'Vé đã hết hạn' : 'Vé đã hủy'}
                 </Button>
               )}
-              {ticket.isCheckIn === true && (
-                <Button
-                  className="checkin-btn"
-                  size="lg"
-                  variant="warning"
-                  onClick={() => handleAction('checkout')}
-                  disabled={actionLoading}
-                >
-                  {actionLoading ? (
-                    <>
-                      <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-out...
-                    </>
-                  ) : 'Check-out'}
-                </Button>
+
+              {/* Chỉ hiển thị các nút khác khi vé chưa hết hạn và chưa hủy */}
+              {ticket.ticketStatus !== "EXPIRED" && ticket.ticketStatus !== "CANCELLED" && (
+                <>
+                  {ticket.isCheckIn === false && (
+                    <Button
+                      className="checkin-btn"
+                      size="lg"
+                      variant="success"
+                      onClick={() => handleAction('checkin')}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <>
+                          <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-in...
+                        </>
+                      ) : 'Check-in'}
+                    </Button>
+                  )}
+
+                  {ticket.isCheckIn === true && (
+                    <Button
+                      className="checkin-btn"
+                      size="lg"
+                      variant="warning"
+                      onClick={() => handleAction('checkout')}
+                      disabled={actionLoading}
+                    >
+                      {actionLoading ? (
+                        <>
+                          <Spinner as="span" animation="border" size="sm" role="status" aria-hidden="true" /> Đang check-out...
+                        </>
+                      ) : 'Check-out'}
+                    </Button>
+                  )}
+                </>
               )}
-              {/* <Button 
-                className="checkin-btn"
-                size="lg"
-                variant="success" 
-                disabled={actionLoading || ticket.isCheckIn === true}
-                onClick={() => handleAction('checkin')}
-              >
-                {actionLoading ? 'Đang check-in...' : 'Check-in'}
-              </Button>
-              <Button 
-                className="checkin-btn"
-                size="lg"
-                variant="warning" 
-                disabled={actionLoading || ticket.isCheckIn === false}
-                onClick={() => handleAction('checkout')}
-              >
-                {actionLoading ? 'Đang check-out...' : 'Check-out'}
-              </Button> */}
+              
             </div>
           </div>
         </Col>

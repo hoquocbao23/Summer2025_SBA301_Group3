@@ -28,8 +28,6 @@ const TicketLayout = () => {
 
     
 
-    
-
     // Cập nhật formData khi location.state thay đổi
     useEffect(() => {
         if (location.state?.singleForm) {
