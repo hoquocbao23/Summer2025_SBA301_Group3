@@ -56,4 +56,16 @@ public class GlobalException {
                 .build();
     }
 
+    @ExceptionHandler(CustomException.class)
+    @ResponseStatus(HttpStatus.OK)
+    public ResponseApi<?> handleCustomException(CustomException e) {
+        return ResponseApi
+                .builder()
+                .status(Integer.parseInt(e.getCode()))
+                .message(e.getMessage())
+                .build();
+    }
+
+
+
 }
