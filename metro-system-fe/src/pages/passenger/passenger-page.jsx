@@ -1,4 +1,4 @@
-import React, { useContext, useState } from 'react';
+import React, { useContext, useState, useEffect } from 'react';
 import { Container, Row, Col, Card } from 'react-bootstrap';
 import PassengerForm from '../../components/passenger/PassengerForm';
 // import PaymentMethodList from '../../components/passenger/PaymentMethodList';
@@ -14,6 +14,15 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
   const [currentPassengerStep, setCurrentPassengerStep] = useState(1);
   const [appliedPromotion, setAppliedPromotion] = useState(null);
   const [promotionCode, setPromotionCode] = useState('');
+  const [userEmail, setUserEmail] = useState('');
+
+  // Get user email from localStorage
+  useEffect(() => {
+    const email = localStorage.getItem('email');
+    if (email) {
+      setUserEmail(email);
+    }
+  }, []);
 
   const handlePromotionApplied = (promotion) => {
     setAppliedPromotion(promotion);
@@ -26,8 +35,11 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
   const renderStep = () => {
     switch (currentPassengerStep) {
       case 1:
-        return <PassengerForm numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1}
-          onPassengerChange={handlePassengerChange} />;
+        return <PassengerForm 
+          numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1}
+          onPassengerChange={handlePassengerChange}
+          userEmail={userEmail}
+        />;
       case 2:
         return <PromotionInput
           ticketType={singleForm?.ticketTypeId || travelPassForm?.ticketTypeId}

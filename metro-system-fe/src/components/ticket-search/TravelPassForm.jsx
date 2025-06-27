@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import './TicketSearchTool.css';
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../config/axios';
+import { RouteService } from '../../services/routeService';
 
 const TravelPassForm = ({ initialData }) => {
     const navigate = useNavigate();
@@ -16,7 +17,7 @@ const TravelPassForm = ({ initialData }) => {
         basePrice: 0,
     });
 
-    // const [availableRoutes, setAvailableRoutes] = useState([]);
+    const [availableRoutes, setAvailableRoutes] = useState([]);
     const [availableTicketTypes, setAvailableTicketTypes] = useState([]);
 
     // const fetchAvailableRoutes = async () => {
@@ -27,6 +28,14 @@ const TravelPassForm = ({ initialData }) => {
     //         console.error('Error fetching available routes:', error);
     //     }
     // };
+
+    const fetchAvailableRoutes = async () => {
+
+        const routes = await RouteService.getAllRoutes();
+
+        setAvailableRoutes(routes.data.routes);
+        console.log("availableRoutes", availableRoutes);
+    };
 
 
     const fetchAvailableTicketTypes = async () => {
@@ -55,7 +64,7 @@ const TravelPassForm = ({ initialData }) => {
     }, [travelPassForm]);
 
     useEffect(() => {
-        //fetchAvailableRoutes();
+        fetchAvailableRoutes();
         fetchAvailableTicketTypes();
     }, []);
 
@@ -81,6 +90,7 @@ const TravelPassForm = ({ initialData }) => {
             basePrice: basePrice.basePrice,
         };
         setTravelPassForm(updatedForm);
+        console.log("updatedForm1", updatedForm);
         // Navigate after the state has been updated
         navigate('/tickets', {
             state: {
@@ -105,15 +115,16 @@ const TravelPassForm = ({ initialData }) => {
                             <Form.Label>Route</Form.Label>
                             <Form.Select
                                 value={travelPassForm.routeId}
-                                onChange={(e) => setTravelPassForm({
+                                onChange={(e) =>  setTravelPassForm({
                                     ...travelPassForm, routeId: e.target.value,
                                     routeName: e.target.options[e.target.selectedIndex].text
                                 })}
                                 className="mb-3"
                             >
                                 <option value="">Select route</option>
-                                <option value="1">Bến Thành - Suối Tiên</option>
-                                <option value="2">Suối Tiên - Biên Hoà</option>
+                                {availableRoutes.map((route) => (
+                                    <option key={route.routeId} value={route.routeId}>{route.routeName}</option>
+                                ))}
                             </Form.Select>
                         </Form.Group>
 
