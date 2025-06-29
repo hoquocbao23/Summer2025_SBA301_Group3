@@ -4,7 +4,7 @@ import './Login.scss';
 import axiosInstance from '../../config/axios';
 import axios from 'axios';
 
-const Login = () => {  
+const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
@@ -16,26 +16,28 @@ const Login = () => {
     setError("");
     setSuccess("");
     setLoading(true);
-    
+
     try {
       const response = await axios.post('http://localhost:8080/api/v1/security/login', {
         email: email,
         password: password
       });
-      
+
       const { status, message, data } = response.data;
-      
+
       if (status === 200) {
         // Login successful
-        const { token, fullname, role } = data;
-        
+        const { id, token, fullname, role } = data;
+
         // Store token and user info in localStorage
+        localStorage.setItem("id", id);
         localStorage.setItem("token", token);
+        localStorage.setItem("email", email);
         localStorage.setItem("fullName", fullname);
         localStorage.setItem("role", role);
-        
+
         setSuccess(`Login successful! Welcome ${fullname}`);
-        
+
         // Redirect based on role
         setTimeout(() => {
           if (role === "ADMIN") {
@@ -50,7 +52,7 @@ const Login = () => {
       }
     } catch (err) {
       console.error("Login error:", err);
-      
+
       if (err.response) {
         // Server responded with an error
         const { status, data } = err.response;
@@ -142,8 +144,8 @@ const Login = () => {
             <div className="login-text">
               <h1>LOGIN NOTE</h1>
               <p>
-HCMC Metro) là hệ thống đường sắt đô thị đang xây dựng tại Thành phố Hồ Chí Minh. Dự án là sự kết hợp giữa metro, xe điện mặt đất (tramway) và tàu một ray (monorail).              </p>
-              
+                HCMC Metro) là hệ thống đường sắt đô thị đang xây dựng tại Thành phố Hồ Chí Minh. Dự án là sự kết hợp giữa metro, xe điện mặt đất (tramway) và tàu một ray (monorail).              </p>
+
             </div>
           </Col>
         </Row>

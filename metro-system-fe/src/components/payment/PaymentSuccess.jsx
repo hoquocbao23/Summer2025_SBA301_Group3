@@ -19,13 +19,12 @@ const PaymentSuccess = () => {
         console.log("paymentData", paymentData);
         const success = searchParams.get('status');
         console.log("success", success);
-        
+
         if (success === 'PAID' && paymentData?.ticketId) {
           setTicketId(paymentData.ticketId);
           // Call API to update ticket status
-          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`);
+          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`, paymentData);
           // Clear payment data after successful update
-          
         }
       } catch (error) {
         console.error('Error updating ticket status:', error);
@@ -79,13 +78,13 @@ const PaymentSuccess = () => {
         </div>
       </div>
       <div className="d-flex justify-content-center gap-3">
-        <Button 
-          variant="outline-primary" 
-          onClick={() => navigate('/tickets')}
+        <Button
+          variant="outline-primary"
+          onClick={() => navigate('/bookings')}
         >
           View My Tickets
         </Button>
-        <Button 
+        <Button
           onClick={() => navigate('/')}
         >
           Back to Home

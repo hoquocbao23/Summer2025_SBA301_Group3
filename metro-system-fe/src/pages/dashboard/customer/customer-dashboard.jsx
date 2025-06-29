@@ -1,132 +1,512 @@
-import React, { useState, useEffect } from 'react';
-import axiosInstance from '../../../config/axios';
+"use client"
 
-const CustomerDashboard = () => {
-  const [users, setUsers] = useState([]);
-  const [selectedUser, setSelectedUser] = useState(null);
-  const [editUser, setEditUser] = useState({ email: '', fullname: '', role: '', status: '' });
-  const [message, setMessage] = useState('');
+import { useState, useEffect } from "react"
+import axiosInstance from "../../../config/axios"
+import { Users, CheckCircle, X, Edit3, Trash2 } from "lucide-react"
+
+const CustomerManagement = () => {
+  const [users, setUsers] = useState([])
+  const [selectedUser, setSelectedUser] = useState(null)
+  const [editUser, setEditUser] = useState({ email: "", fullname: "", role: "", status: "" })
+  const [showModal, setShowModal] = useState(false)
+  const [loading, setLoading] = useState(false)
 
   useEffect(() => {
-    const fetchUsers = async () => {
-      try {
-        const response = await axiosInstance.get('/user');
-        setUsers(response.data.data || []);
-      } catch (error) {
-        setMessage('Failed to fetch users: ' + (error.response?.data?.message || error.message));
-        setUsers([]);
-      }
-    };
-    fetchUsers();
-  }, []);
+    fetchUsers()
+  }, [])
 
-  const handleViewUser = async (id) => {
+  const fetchUsers = async () => {
+    setLoading(true)
     try {
-      const response = await axiosInstance.get(`/user/${id}`);
-      setSelectedUser(response.data.data);
-      setEditUser(response.data.data || { email: '', fullname: '', role: '', status: '' });
-    } catch (error) {
-      setMessage('Failed to fetch user details: ' + (error.response?.data?.message || error.message));
+      const res = await axiosInstance.get("/user")
+      setUsers(res.data?.data || [])
+    } catch (err) {
+      console.error("Error fetching users:", err)
     }
-  };
+    setLoading(false)
+  }
 
-  const handleUpdateUser = async (id) => {
+  const handleEdit = async (id) => {
     try {
-      const response = await axiosInstance.put(`/user/${id}`, editUser);
-      setMessage('User updated successfully');
-      setUsers(users.map(user => user.id === id ? response.data.data : user));
-      setSelectedUser(null);
-    } catch (error) {
-      setMessage('Failed to update user: ' + (error.response?.data?.message || error.message));
+      const res = await axiosInstance.get(`/user/${id}`)
+      setSelectedUser(res.data.data)
+      setEditUser(res.data.data)
+      setShowModal(true)
+    } catch (err) {
+      console.error("Error fetching user:", err)
     }
-  };
+  }
+
+  const handleUpdate = async () => {
+    setLoading(true)
+    try {
+      const res = await axiosInstance.put(`/user/${selectedUser.id}`, editUser)
+      setUsers(users.map((user) => (user.id === selectedUser.id ? res.data.data : user)))
+      setShowModal(false)
+    } catch (err) {
+      console.error("Error updating user:", err)
+    }
+    setLoading(false)
+  }
+
+  const stats = {
+    total: users.length,
+    active: users.filter((u) => u.status === "ACTIVE").length,
+    inactive: users.filter((u) => u.status !== "ACTIVE").length,
+  }
 
   return (
-    <div className="p-6 bg-gradient-to-br from-gray-100 to-white min-h-screen">
-      <h1 className="text-4xl font-bold text-gray-900 mb-8 text-center bg-gradient-to-r from-blue-600 to-purple-600 text-transparent bg-clip-text">
-        Admin Dashboard - User Management
-      </h1>
-      {message && (
-        <div className="mb-6 p-4 text-center text-white bg-red-500 rounded-lg shadow-lg">
-          {message}
+    <div style={{ backgroundColor: "#f8f9fa", minHeight: "100vh", padding: "24px" }}>
+      {/* Header */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: "24px" }}>
+        <div>
+          <h2 style={{ fontSize: "28px", fontWeight: "600", color: "#333", marginBottom: "8px", margin: 0 }}>
+            Quản lý người dùng
+          </h2>
+          <p style={{ color: "#6c757d", fontSize: "14px", margin: 0 }}>Quản lý các người dùng và cấu hình của chúng</p>
         </div>
-      )}
+        <button
+          style={{
+            backgroundColor: "#4f46e5",
+            color: "white",
+            border: "none",
+            borderRadius: "8px",
+            padding: "10px 20px",
+            fontSize: "14px",
+            fontWeight: "500",
+            cursor: "pointer",
+          }}
+        >
+          + Thêm người dùng
+        </button>
+      </div>
 
-      <h2 className="text-2xl font-semibold text-gray-800 mb-6">User List</h2>
-      <ul className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 mb-8">
-        {users && users.length > 0 ? (
-          users.map(user => (
-            <li key={user.id} className="p-4 bg-white rounded-lg shadow-md hover:shadow-lg transition-shadow">
-              <div className="text-lg font-medium text-gray-700">{user.fullname}</div>
-              <div className="text-sm text-gray-500">Email: {user.email}</div>
-              <div className="text-sm text-gray-500">Role: {user.role}, Status: {user.status}</div>
-              <button
-                onClick={() => handleViewUser(user.id)}
-                className="mt-2 px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
+      {/* Stats Cards */}
+      <div
+        style={{
+          display: "grid",
+          gridTemplateColumns: "repeat(auto-fit, minmax(300px, 1fr))",
+          gap: "20px",
+          marginBottom: "40px",
+        }}
+      >
+        <div style={{ backgroundColor: "white", border: "1px solid #e9ecef", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <p
+                style={{ color: "#6c757d", fontSize: "12px", fontWeight: "600", textTransform: "uppercase", margin: 0 }}
               >
-                View/Edit
-              </button>
-            </li>
-          ))
-        ) : (
-          <li className="p-4 text-gray-500">No users found</li>
-        )}
-      </ul>
+                TỔNG SỐ NGƯỜI DÙNG
+              </p>
+              <h3 style={{ fontSize: "32px", fontWeight: "700", color: "#333", margin: "8px 0 0 0" }}>{stats.total}</h3>
+            </div>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                backgroundColor: "#dbeafe",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <Users size={24} style={{ color: "#3b82f6" }} />
+            </div>
+          </div>
+        </div>
 
-      {selectedUser && (
-        <div className="bg-white p-6 rounded-lg shadow-xl max-w-2xl mx-auto">
-          <h2 className="text-2xl font-semibold text-gray-800 mb-6">Edit User</h2>
-          <div className="space-y-6">
-            <input
-              type="text"
-              value={editUser.email || ''}
-              onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
-              placeholder="Email"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <input
-              type="text"
-              value={editUser.fullname || ''}
-              onChange={(e) => setEditUser({ ...editUser, fullname: e.target.value })}
-              placeholder="Full Name"
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
-            <select
-              value={editUser.role || ''}
-              onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="ADMIN">ADMIN</option>
-              <option value="CUSTOMER">CUSTOMER</option>
-            </select>
-            <select
-              value={editUser.status || ''}
-              onChange={(e) => setEditUser({ ...editUser, status: e.target.value })}
-              className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            >
-              <option value="ACTIVE">ACTIVE</option>
-              <option value="INACTIVE">INACTIVE</option>
-              <option value="BANNED">BANNED</option>
-            </select>
-            <div className="flex justify-between">
-              <button
-                onClick={() => handleUpdateUser(selectedUser.id)}
-                className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors"
+        <div style={{ backgroundColor: "white", border: "1px solid #e9ecef", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <p
+                style={{ color: "#6c757d", fontSize: "12px", fontWeight: "600", textTransform: "uppercase", margin: 0 }}
               >
-                Save Changes
+                NGƯỜI DÙNG HOẠT ĐỘNG
+              </p>
+              <h3 style={{ fontSize: "32px", fontWeight: "700", color: "#333", margin: "8px 0 0 0" }}>
+                {stats.active}
+              </h3>
+            </div>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                backgroundColor: "#dcfce7",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <CheckCircle size={24} style={{ color: "#16a34a" }} />
+            </div>
+          </div>
+        </div>
+
+        <div style={{ backgroundColor: "white", border: "1px solid #e9ecef", borderRadius: "12px", padding: "20px" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+            <div>
+              <p
+                style={{ color: "#6c757d", fontSize: "12px", fontWeight: "600", textTransform: "uppercase", margin: 0 }}
+              >
+                NGƯỜI DÙNG KHÔNG HOẠT ĐỘNG
+              </p>
+              <h3 style={{ fontSize: "32px", fontWeight: "700", color: "#333", margin: "8px 0 0 0" }}>
+                {stats.inactive}
+              </h3>
+            </div>
+            <div
+              style={{
+                width: "48px",
+                height: "48px",
+                backgroundColor: "#fee2e2",
+                borderRadius: "50%",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+              }}
+            >
+              <X size={24} style={{ color: "#dc2626" }} />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Table */}
+      <div>
+        <h4 style={{ fontSize: "18px", fontWeight: "600", color: "#333", marginBottom: "20px" }}>
+          Danh sách người dùng
+        </h4>
+
+        <div
+          style={{ backgroundColor: "white", border: "1px solid #e9ecef", borderRadius: "12px", overflow: "hidden" }}
+        >
+          <table style={{ width: "100%", borderCollapse: "collapse", fontSize: "14px" }}>
+            <thead style={{ backgroundColor: "#f8f9fa" }}>
+              <tr>
+                <th
+                  style={{
+                    border: "none",
+                    padding: "16px 20px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    textAlign: "left",
+                  }}
+                >
+                  Người dùng
+                </th>
+                <th
+                  style={{
+                    border: "none",
+                    padding: "16px 20px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    textAlign: "left",
+                  }}
+                >
+                  Email
+                </th>
+                <th
+                  style={{
+                    border: "none",
+                    padding: "16px 20px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    textAlign: "left",
+                  }}
+                >
+                  Vai trò
+                </th>
+                <th
+                  style={{
+                    border: "none",
+                    padding: "16px 20px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    textAlign: "left",
+                  }}
+                >
+                  Trạng thái
+                </th>
+                <th
+                  style={{
+                    border: "none",
+                    padding: "16px 20px",
+                    fontWeight: "600",
+                    color: "#374151",
+                    textAlign: "left",
+                  }}
+                >
+                  Hành động
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {users.map((user, index) => (
+                <tr key={user.id} style={{ borderTop: index === 0 ? "none" : "1px solid #f3f4f6" }}>
+                  <td style={{ border: "none", padding: "16px 20px", color: "#374151" }}>
+                    {user.fullname || "Không có tên"}
+                  </td>
+                  <td style={{ border: "none", padding: "16px 20px", color: "#6b7280" }}>{user.email}</td>
+                  <td style={{ border: "none", padding: "16px 20px" }}>
+                    <span
+                      style={{
+                        backgroundColor: user.role === "ADMIN" ? "#3b82f6" : "#6b7280",
+                        color: "white",
+                        fontSize: "12px",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {user.role === "ADMIN" ? "Admin" : "User"}
+                    </span>
+                  </td>
+                  <td style={{ border: "none", padding: "16px 20px" }}>
+                    <span
+                      style={{
+                        backgroundColor: user.status === "ACTIVE" ? "#dcfce7" : "#fee2e2",
+                        color: user.status === "ACTIVE" ? "#166534" : "#991b1b",
+                        fontSize: "12px",
+                        padding: "4px 8px",
+                        borderRadius: "4px",
+                        fontWeight: "500",
+                      }}
+                    >
+                      {user.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
+                    </span>
+                  </td>
+                  <td style={{ border: "none", padding: "16px 20px" }}>
+                    <div style={{ display: "flex", gap: "8px" }}>
+                      <button
+                        onClick={() => handleEdit(user.id)}
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#3b82f6",
+                          cursor: "pointer",
+                          padding: "4px",
+                        }}
+                      >
+                        <Edit3 size={16} />
+                      </button>
+                      <button
+                        style={{
+                          background: "none",
+                          border: "none",
+                          color: "#dc2626",
+                          cursor: "pointer",
+                          padding: "4px",
+                        }}
+                      >
+                        <Trash2 size={16} />
+                      </button>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+
+          {/* Footer */}
+          <div
+            style={{
+              padding: "16px 20px",
+              backgroundColor: "#f8f9fa",
+              borderTop: "1px solid #e9ecef",
+              fontSize: "14px",
+              color: "#6b7280",
+              display: "flex",
+              justifyContent: "space-between",
+            }}
+          >
+            <span>
+              Hiển thị 1-{users.length} trong số {users.length} người dùng
+            </span>
+            <span>Số hàng mỗi trang: {users.length}</span>
+          </div>
+        </div>
+      </div>
+
+      {/* Edit Modal */}
+      {showModal && (
+        <div
+          style={{
+            position: "fixed",
+            top: 0,
+            left: 0,
+            right: 0,
+            bottom: 0,
+            backgroundColor: "rgba(0, 0, 0, 0.5)",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            zIndex: 1000,
+          }}
+        >
+          <div
+            style={{
+              backgroundColor: "white",
+              borderRadius: "12px",
+              width: "500px",
+              maxWidth: "90vw",
+              maxHeight: "90vh",
+              overflow: "hidden",
+            }}
+          >
+            {/* Modal Header */}
+            <div
+              style={{
+                padding: "20px",
+                borderBottom: "1px solid #e9ecef",
+                display: "flex",
+                justifyContent: "space-between",
+                alignItems: "center",
+              }}
+            >
+              <h3 style={{ fontSize: "18px", fontWeight: "600", margin: 0 }}>Chỉnh sửa người dùng</h3>
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  background: "none",
+                  border: "none",
+                  fontSize: "20px",
+                  cursor: "pointer",
+                  color: "#6b7280",
+                }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* Modal Body */}
+            <div style={{ padding: "20px" }}>
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                  Email
+                </label>
+                <input
+                  type="email"
+                  value={editUser.email || ""}
+                  onChange={(e) => setEditUser({ ...editUser, email: e.target.value })}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
+
+              <div style={{ marginBottom: "16px" }}>
+                <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                  Tên đầy đủ
+                </label>
+                <input
+                  type="text"
+                  value={editUser.fullname || ""}
+                  onChange={(e) => setEditUser({ ...editUser, fullname: e.target.value })}
+                  style={{
+                    width: "100%",
+                    padding: "8px 12px",
+                    border: "1px solid #d1d5db",
+                    borderRadius: "8px",
+                    fontSize: "14px",
+                  }}
+                />
+              </div>
+
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+                <div>
+                  <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                    Vai trò
+                  </label>
+                  <select
+                    value={editUser.role || ""}
+                    onChange={(e) => setEditUser({ ...editUser, role: e.target.value })}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="ADMIN">Admin</option>
+                    <option value="CUSTOMER">User</option>
+                  </select>
+                </div>
+
+                <div>
+                  <label style={{ display: "block", fontWeight: "500", color: "#374151", marginBottom: "8px" }}>
+                    Trạng thái
+                  </label>
+                  <select
+                    value={editUser.status || ""}
+                    onChange={(e) => setEditUser({ ...editUser, status: e.target.value })}
+                    style={{
+                      width: "100%",
+                      padding: "8px 12px",
+                      border: "1px solid #d1d5db",
+                      borderRadius: "8px",
+                      fontSize: "14px",
+                    }}
+                  >
+                    <option value="ACTIVE">Hoạt động</option>
+                    <option value="INACTIVE">Không hoạt động</option>
+                  </select>
+                </div>
+              </div>
+            </div>
+
+            {/* Modal Footer */}
+            <div
+              style={{
+                padding: "20px",
+                borderTop: "1px solid #e9ecef",
+                display: "flex",
+                gap: "12px",
+                justifyContent: "flex-end",
+              }}
+            >
+              <button
+                onClick={() => setShowModal(false)}
+                style={{
+                  padding: "8px 16px",
+                  border: "1px solid #d1d5db",
+                  borderRadius: "8px",
+                  backgroundColor: "white",
+                  color: "#374151",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                }}
+              >
+                Hủy
               </button>
               <button
-                onClick={() => setSelectedUser(null)}
-                className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600 transition-colors"
+                onClick={handleUpdate}
+                disabled={loading}
+                style={{
+                  padding: "8px 16px",
+                  backgroundColor: "#4f46e5",
+                  color: "white",
+                  border: "none",
+                  borderRadius: "8px",
+                  cursor: "pointer",
+                  fontSize: "14px",
+                  opacity: loading ? 0.6 : 1,
+                }}
               >
-                Cancel
+                {loading ? "Đang lưu..." : "Lưu thay đổi"}
               </button>
             </div>
           </div>
         </div>
       )}
     </div>
-  );
-};
+  )
+}
 
-export default CustomerDashboard;
+export default CustomerManagement

@@ -14,6 +14,8 @@ import PromotionDashboard from "../pages/dashboard/promotion/promotion-dashboard
 import AdminStationManager from "../pages/dashboard/station/station-dashboard";
 import AdminRouteManager from "../pages/dashboard/route/route-dashboard";
 import MetroServiceStatus from "../components/route/RouteOverview";
+import UserProfile from "../pages/user/UserProfile";
+import UserTickets from "../pages/user/UserTicket";
 import TicketTypeDashboard from "../pages/dashboard/ticket-type/ticket-type-dashboard";
 import AdminTicketRuleManager from "../pages/dashboard/ticket-rule/ticket-rule-dashboard";
 import PaymentSuccess from "../components/payment/PaymentSuccess";
@@ -50,7 +52,7 @@ const router = createBrowserRouter([
         path: "/stations/:id",
         element: <StationDetail />,
       },
-      
+
       {
         path: "/login",
         element: <Login />,
@@ -64,6 +66,14 @@ const router = createBrowserRouter([
         element: <MetroServiceStatus />,
       },
       {
+        path: "/profile",
+        element: <UserProfile />,
+      },
+      {
+        path: "/bookings",
+        element: <UserTickets />,
+      },
+      {
         path: "/payment-success",
         element: <PaymentSuccess />,
       },
@@ -74,9 +84,8 @@ const router = createBrowserRouter([
       {
         path: "/checkin/:ticketId",
         element: <CheckinPage />,
-      },
-      
-    ],
+      }
+    ]
   },
   {
     path: "/dashboard",
@@ -92,19 +101,19 @@ const router = createBrowserRouter([
       },
       {
         path: "stations",
-        element: <AdminStationManager/>
+        element: <AdminStationManager />
       },
       {
         path: "routes",
-        element: <AdminRouteManager/>
+        element: <AdminRouteManager />
       },
       {
         path: "ticket-type",
-        element: <TicketTypeDashboard/>
+        element: <TicketTypeDashboard />
       },
       {
         path: "ticket-rule",
-        element: <AdminTicketRuleManager/>
+        element: <AdminTicketRuleManager />
       }
     ],
   },

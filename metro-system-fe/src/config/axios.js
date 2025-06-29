@@ -3,10 +3,10 @@ import axios from 'axios';
 const axiosInstance = axios.create({
     baseURL: 'http://localhost:8080/api/v1',
     headers: {
-                
+
         'Content-Type': 'application/json',
-        'Accept': 'application/json',   
-        
+        'Accept': 'application/json',
+
     },
     withCredentials: true
 });
@@ -33,7 +33,7 @@ axiosInstance.interceptors.response.use(
         if (error.response && error.response.status === 401) {
             // Clear local storage if token is invalid or expired
             localStorage.clear(); // Sử dụng clear thay vì xóa từng item để đồng bộ với Header.jsx
-            
+
             // Redirect to login page if not already there
             if (window.location.pathname !== '/login') {
                 window.location.href = '/login';

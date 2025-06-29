@@ -2,17 +2,26 @@ import React, { useState, useEffect } from 'react';
 import { Form, Row, Col, Card } from 'react-bootstrap';
 import './PassengerForm.css';
 
-const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail = '' }) => {
+const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) => {
   const [passengers, setPassengers] = useState([]);
   const [isBuyingForSelf, setIsBuyingForSelf] = useState(true);
 
   useEffect(() => {
+    console.log('PassengerForm useEffect triggered:', { numberOfTickets, isBuyingForSelf, userEmail });
+    
     // Initialize passengers array based on number of tickets
     const initialPassengers = Array(numberOfTickets).fill('').map((_, index) => ({
       id: index + 1,
-      email: isBuyingForSelf ? userEmail : ''
+      email: isBuyingForSelf && userEmail ? userEmail : ''
     }));
     setPassengers(initialPassengers);
+    
+    console.log('Initial passengers created:', initialPassengers);
+    
+    // Notify parent component about the initial passengers
+    if (onPassengerChange) {
+      onPassengerChange(initialPassengers);
+    }
   }, [numberOfTickets, isBuyingForSelf, userEmail]);
 
   const handleEmailChange = (index, value) => {
@@ -32,7 +41,7 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail = '' 
     setIsBuyingForSelf(mode);
     const updatedPassengers = Array(numberOfTickets).fill('').map((_, index) => ({
       id: index + 1,
-      email: mode ? userEmail : ''
+      email: mode && userEmail ? userEmail : ''
     }));
     setPassengers(updatedPassengers);
     if (onPassengerChange) {

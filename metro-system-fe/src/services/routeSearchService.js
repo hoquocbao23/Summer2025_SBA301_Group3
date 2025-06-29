@@ -196,8 +196,8 @@ export class RouteSearchService {
    */
   static calculateSegmentPrice(distance, ticketRule = null) {
     // Default values if ticketRule is not provided
-    const basePrice = ticketRule?.basePrice || 8000;
-    const pricePerKm = ticketRule?.pricePerKm || 2000;
+    const basePrice = ticketRule?.basePrice || 6000;
+    const pricePerKm = ticketRule?.pricePerKm || 1000;
     
     // Apply pricing formula: if distance < 6km, use basePrice only
     if (distance < 6) {
