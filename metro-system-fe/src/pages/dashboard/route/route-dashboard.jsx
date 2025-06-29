@@ -9,7 +9,7 @@ const AdminRouteManager = () => {
   const [editRoute, setEditRoute] = useState(null)
   const [showModal, setShowModal] = useState(false)
   const [selectedRoutes, setSelectedRoutes] = useState([])
-  const [showStationModal, setShowStationModal] = useState(false)
+  const [activeTab, setActiveTab] = useState('details') // 'details' or 'stations'
   const [currentRouteStations, setCurrentRouteStations] = useState([])
   const [currentRouteId, setCurrentRouteId] = useState(null)
   const [errors, setErrors] = useState({})
@@ -87,23 +87,30 @@ const AdminRouteManager = () => {
       newErrors.routeName = "Route name cannot exceed 50 characters"
     } else {
       // Check for duplicate route name using API
-      try {
-        // const nameExists = await RouteService.checkRouteNameExists(editRoute.routeName.trim())
-        const isEditingExisting = editRoute.routeId && routes.find(r => r.routeId === editRoute.routeId)?.routeName === editRoute.routeName.trim()
+      // try {
+      //   // const nameExists = await RouteService.checkRouteNameExists(editRoute.routeName.trim())
+      //   const isEditingExisting = editRoute.routeId && routes.find(r => r.routeId === editRoute.routeId)?.routeName === editRoute.routeName.trim()
 
-        if (isEditingExisting) {
-          newErrors.routeName = "Route name already exists"
-        }
-      } catch (error) {
-        console.warn('Could not check route name uniqueness:', error)
-        // Fall back to local check
-        const isDuplicateName = routes.some(route =>
+      //   if (isEditingExisting) {
+      //     newErrors.routeName = "Route name already exists"
+      //   }
+      // } catch (error) {
+      //   console.warn('Could not check route name uniqueness:', error)
+      //   // Fall back to local check
+      //   const isDuplicateName = routes.some(route =>
+      //     route.routeId !== editRoute.routeId &&
+      //     route.routeName.toLowerCase().trim() === editRoute.routeName?.toLowerCase().trim()
+      //   )
+      //   if (isDuplicateName) {
+      //     newErrors.routeName = "Route name already exists"
+      //   }
+      // }
+      const isDuplicateName = routes.some(route =>
           route.routeId !== editRoute.routeId &&
           route.routeName.toLowerCase().trim() === editRoute.routeName?.toLowerCase().trim()
         )
-        if (isDuplicateName) {
-          newErrors.routeName = "Route name already exists"
-        }
+      if (isDuplicateName) {
+        newErrors.routeName = "Route name already exists"
       }
     }
 
@@ -117,11 +124,11 @@ const AdminRouteManager = () => {
     }
 
     // Validate total distance
-    if (editRoute?.routeId) {
-      if (!editRoute.totalDistance || editRoute.totalDistance <= 0) {
-        newErrors.totalDistance = "Total distance must be greater than 0"
-      }
-    }
+    // if (editRoute?.routeId) {
+    //   if (!editRoute.totalDistance || editRoute.totalDistance <= 0) {
+    //     newErrors.totalDistance = "Total distance must be greater than 0"
+    //   }
+    // }
 
     // Validate estimated time
     if (!editRoute.estimatedDuration || editRoute.estimatedDuration <= 0) {
@@ -152,6 +159,23 @@ const AdminRouteManager = () => {
       newErrors.ruleId = "Please create pricing rules before creating the train route"
     }
 
+    // Validate stations - required for all routes (new and existing)
+    if (currentRouteStations.length < 2) {
+      newErrors.stations = "A route must have at least 2 stations"
+    }
+
+    for (let i = 0; i < currentRouteStations.length - 1; i++) {
+      if (currentRouteStations[i].stationId === currentRouteStations[i + 1].stationId) {
+        newErrors.stations = "Two same stations must not next to each other"
+      }
+    }
+
+    // Validate total distance - calculate from stations
+    const totalDistance = currentRouteStations.reduce((sum, station) => sum + (station.distanceToNext || 0), 0)
+    if (totalDistance <= 0) {
+      newErrors.totalDistance = "Total distance must be greater than 0. Please set distance between stations."
+    }
+
     setErrors(newErrors)
     return Object.keys(newErrors).length === 0
   }
@@ -173,6 +197,9 @@ const AdminRouteManager = () => {
       }
 
     setEditRoute(newRoute)
+    setCurrentRouteStations(route ? [...route.stations] : [])
+    setCurrentRouteId(route ? route.routeId : null)
+    setActiveTab('details') // Always start with details tab
     setErrors({}) // Clear previous errors
     setShowModal(true)
   }
@@ -186,7 +213,11 @@ const AdminRouteManager = () => {
         setLoading(false)
         return // Don't save if validation fails
       }
-      // Prepare route data with ruleId
+
+      // Calculate total distance from stations
+      const totalDistance = currentRouteStations.reduce((sum, station) => sum + (station.distanceToNext || 0), 0)
+
+      // Prepare route data with calculated total distance
       const routeData = {
         routeName: editRoute.routeName?.trim(),
         routeDescription: editRoute.routeDescription?.trim(),
@@ -195,16 +226,16 @@ const AdminRouteManager = () => {
         operatingHours: editRoute.operatingHours?.trim(),
         status: editRoute.status,
         color: editRoute.color,
-        ruleId: parseInt(editRoute.ruleId)
+        ruleId: parseInt(editRoute.ruleId),
+        totalDistance: totalDistance
       }
+
       if (editRoute.routeId) {
         // Update existing route
         const response = await RouteService.updateRoute(editRoute.routeId, routeData)
         if (response) {
-          // Update stations if there are any
-          if (editRoute.stations && editRoute.stations.length > 0) {
-            await RouteService.updateRouteStations(editRoute.routeId, editRoute.stations)
-          }
+          // Always update stations as they are required
+          await RouteService.updateRouteStations(editRoute.routeId, currentRouteStations)
           // Reload routes to get updated data
           await loadRoutes()
         }
@@ -212,16 +243,17 @@ const AdminRouteManager = () => {
         // Create new route
         const response = await RouteService.createRoute(routeData)
         if (response && response.data.routeId) {
-          // Add stations if there are any
-          if (editRoute.stations && editRoute.stations.length > 0) {
-            await RouteService.addStationsToRoute(response.routeId, editRoute.stations)
-          }
+          // Always add stations as they are required
+          await RouteService.addStationsToRoute(response.data.routeId, currentRouteStations)
           // Reload routes to get updated data
           await loadRoutes()
         }
       }
       setShowModal(false)
       setEditRoute(null)
+      setCurrentRouteStations([])
+      setCurrentRouteId(null)
+      setActiveTab('details')
       setErrors({}) // Clear errors after successful save
     } catch (error) {
       console.error('Error saving route:', error)
@@ -301,9 +333,12 @@ const AdminRouteManager = () => {
   }
 
   const handleManageStations = (route) => {
+    setEditRoute({ ...route })
     setCurrentRouteId(route.routeId)
     setCurrentRouteStations([...route.stations])
-    setShowStationModal(true)
+    setActiveTab('stations')
+    setErrors({})
+    setShowModal(true)
   }
   const addStationToRoute = () => {
     const newOrder = currentRouteStations.length + 1
@@ -311,6 +346,7 @@ const AdminRouteManager = () => {
       ...currentRouteStations,
       { stationId: stations[0]?.stationId || 1, order: newOrder, distanceToNext: 0 }
     ])
+    setErrors({})
   }
 
   const removeStationFromRoute = (index) => {
@@ -321,6 +357,7 @@ const AdminRouteManager = () => {
       order: i + 1
     }))
     setCurrentRouteStations(updatedStations)
+    setErrors({})
   }
   const updateStationInRoute = (index, field, value) => {
     const updated = [...currentRouteStations]
@@ -330,6 +367,7 @@ const AdminRouteManager = () => {
       updated[index] = { ...updated[index], distanceToNext: parseFloat(value) || 0 }
     }
     setCurrentRouteStations(updated)
+    setErrors({})
   }
 
   const moveStation = (index, direction) => {
@@ -350,28 +388,57 @@ const AdminRouteManager = () => {
   }
 
   const saveStations = async () => {
-    try {
-      setLoading(true)
-      setApiError(null)
-
-      if (currentRouteId && currentRouteStations.length > 0) {
+    // Update the edit route with current stations for validation
+    setEditRoute(prev => ({ ...prev, stations: currentRouteStations }))
+    
+    if (currentRouteId && currentRouteStations.length > 0) {
+      try {
+        setLoading(true)
+        setApiError(null)
         await RouteService.updateRouteStations(currentRouteId, currentRouteStations)
         await loadRoutes() // Reload routes to get updated data
+      } catch (error) {
+        console.error('Error saving stations:', error)
+        setApiError(error.message)
+      } finally {
+        setLoading(false)
       }
-
-      setShowStationModal(false)
-      setCurrentRouteStations([])
-      setCurrentRouteId(null)
-    } catch (error) {
-      console.error('Error saving stations:', error)
-      setApiError(error.message)
-    } finally {
-      setLoading(false)
     }
+  }
+
+  const stationLookup = stations.reduce((acc, station) => {
+    acc[station.stationId] = station.stationName;
+    return acc;
+  }, {});
+
+  const getStationNameById = (stationId) => {
+    return stationLookup[stationId] || 'Unknown Station';
   }
 
   const activeRoutes = routes.filter((r) => r.status === "ACTIVE").length
   const inactiveRoutes = routes.filter((r) => r.status === "INACTIVE").length
+
+  const isValidRoute = () => {
+    // Check if at least 2 stations
+    if (currentRouteStations.length < 2) {
+      return false;
+    }
+
+    // Check if total distance is greater than 0
+    const totalDistance = currentRouteStations.reduce((sum, station) => sum + (station.distanceToNext || 0), 0);
+    if (totalDistance <= 0) {
+      return false;
+    }
+
+    // Check if any two consecutive stations are the same
+    for (let i = 0; i < currentRouteStations.length - 1; i++) {
+      if (currentRouteStations[i].stationId === currentRouteStations[i + 1].stationId) {
+        return false;
+      }
+    }
+
+    return true;
+  }
 
   return (
     <div className="route-manager">
@@ -580,7 +647,7 @@ const AdminRouteManager = () => {
                     </td>
                     <td className="px-4 py-3 text-end">
                       <div className="d-flex justify-content-end gap-2">
-                        <button
+                        {/* <button
                           onClick={() => handleManageStations(route)}
                           className="btn btn-sm btn-outline-info border-0"
                           title="Manage stations"
@@ -588,7 +655,7 @@ const AdminRouteManager = () => {
                           <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16">
                             <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                           </svg>
-                        </button>
+                        </button> */}
                         <button
                           onClick={() => handleEditOrAdd(route)}
                           className="btn btn-sm btn-outline-primary border-0"
@@ -635,16 +702,68 @@ const AdminRouteManager = () => {
           </div>
         </div>
       </div>
-      {/* Edit/Add Route Modal */}
+      {/* Combined Edit/Add Route and Station Management Modal */}
       {showModal && (
         <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-lg modal-dialog-centered">
+          <div className="modal-dialog modal-xl modal-dialog-centered">
             <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>
               <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">{editRoute?.routeId ? "Edit Route" : "Add New Route"}</h5>
-                <button type="button" className="btn-close" onClick={() => setShowModal(false)}></button>
+                <h5 className="modal-title fw-bold">
+                  {editRoute?.routeId ? "Edit Route" : "Add New Route"}
+                </h5>
+                <button 
+                  type="button" 
+                  className="btn-close" 
+                  onClick={() => {
+                    setShowModal(false)
+                    setEditRoute(null)
+                    setCurrentRouteStations([])
+                    setCurrentRouteId(null)
+                    setActiveTab('details')
+                    setErrors({})
+                  }}
+                ></button>
               </div>
 
+              {/* Tab Navigation */}
+              <div className="px-4">
+                <ul className="nav nav-tabs border-0">
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'details' ? 'active' : ''} border-0 fw-semibold`}
+                      onClick={() => setActiveTab('details')}
+                      style={{ 
+                        borderRadius: "8px 8px 0 0",
+                        backgroundColor: activeTab === 'details' ? '#f8f9fa' : 'transparent'
+                      }}
+                    >
+                      <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
+                        <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                      </svg>
+                      Route Details
+                    </button>
+                  </li>
+                  <li className="nav-item">
+                    <button
+                      className={`nav-link ${activeTab === 'stations' ? 'active' : ''} border-0 fw-semibold`}
+                      onClick={() => setActiveTab('stations')}
+                      style={{ 
+                        borderRadius: "8px 8px 0 0",
+                        backgroundColor: activeTab === 'stations' ? '#f8f9fa' : 'transparent'
+                      }}
+                    >
+                      <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
+                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                      </svg>
+                      Stations ({currentRouteStations.length})
+                      {!editRoute?.routeId && currentRouteStations.length < 2 && (
+                        <span className="badge bg-danger ms-1">!</span>
+                      )}
+                    </button>
+                  </li>
+                </ul>
+              </div>
+              {/* Error Alert */}
               {Object.keys(errors).length > 0 && (
                 <div className="alert alert-danger mx-4 mb-0" role="alert">
                   <div className="d-flex align-items-center">
@@ -653,147 +772,329 @@ const AdminRouteManager = () => {
                     </svg>
                     <span className="fw-semibold">Please fix these {Object.keys(errors).length} errors:</span>
                   </div>
+                  <ul className="mb-0 mt-2">
+                    {Object.entries(errors).map(([field, message]) => (
+                      <li key={field}>{message}</li>
+                    ))}
+                  </ul>
                 </div>
               )}
 
-              <div className="modal-body p-4">
-                <div className="row g-3">
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Route Name</label>
-                    <input
-                      type="text"
-                      name="routeName"
-                      value={editRoute?.routeName || ""}
-                      onChange={handleInputChange}
-                      placeholder="Enter route name"
-                      className={`form-control ${errors.routeName ? 'is-invalid' : ''}`}
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.routeName && <div className="invalid-feedback d-block">{errors.routeName}</div>}
-                  </div>
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label style={{ alignSelf: "start" }} className="form-label fw-semibold text-dark">Color</label>
-                    <input
-                      type="color"
-                      name="color"
-                      value={editRoute?.color || "#007bff"}
-                      onChange={handleInputChange}
-                      className="form-control form-control-color"
-                      style={{ borderRadius: "8px", display: "inline-block", width: "100%" }}
-                    />
-                  </div>
-                  <div className="col-12" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Description</label>
-                    <textarea
-                      name="routeDescription"
-                      value={editRoute?.routeDescription || ""}
-                      onChange={handleInputChange}
-                      placeholder="Enter route description"
-                      className={`form-control ${errors.routeDescription ? 'is-invalid' : ''}`}
-                      rows="3"
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.routeDescription && <div className="invalid-feedback d-block">{errors.routeDescription}</div>}
-                  </div>
+              <div className="modal-body p-4" style={{ backgroundColor: '#f8f9fa' }}>
+                {/* Route Details Tab */}
+                {activeTab === 'details' && (
+                  <div className="bg-white p-4 rounded-3 shadow-sm">
+                    <h6 className="mb-3 fw-bold text-dark">Route Information</h6>
+                    <div className="row g-3">
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Route Name</label>
+                        <input
+                          type="text"
+                          name="routeName"
+                          value={editRoute?.routeName || ""}
+                          onChange={handleInputChange}
+                          placeholder="Enter route name"
+                          className={`form-control ${errors.routeName ? 'is-invalid' : ''}`}
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        />
+                        {errors.routeName && <div className="invalid-feedback d-block">{errors.routeName}</div>}
+                      </div>
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label style={{ alignSelf: "start" }} className="form-label fw-semibold text-dark">Color</label>
+                        <input
+                          type="color"
+                          name="color"
+                          value={editRoute?.color || "#007bff"}
+                          onChange={handleInputChange}
+                          className="form-control form-control-color"
+                          style={{ borderRadius: "8px", display: "inline-block", width: "100%" }}
+                        />
+                      </div>
+                      <div className="col-12" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Description</label>
+                        <textarea
+                          name="routeDescription"
+                          value={editRoute?.routeDescription || ""}
+                          onChange={handleInputChange}
+                          placeholder="Enter route description"
+                          className={`form-control ${errors.routeDescription ? 'is-invalid' : ''}`}
+                          rows="3"
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        />
+                        {errors.routeDescription && <div className="invalid-feedback d-block">{errors.routeDescription}</div>}
+                      </div>
 
-                  {editRoute?.routeId &&
-                    (<div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                      <label className="form-label fw-semibold text-dark">Total Distance (km)</label>
-                      <input
-                        type="number"
-                        name="totalDistance"
-                        value={editRoute?.totalDistance || ""}
-                        onChange={handleInputChange}
-                        placeholder="0.0"
-                        step="0.1"
-                        className={`form-control ${errors.totalDistance ? 'is-invalid' : ''}`}
-                        style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                      />
-                      {errors.totalDistance && <div className="invalid-feedback d-block">{errors.totalDistance}</div>}
-                    </div>)
-                  }
+                      {/* {editRoute?.routeId && (
+                        <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                          <label className="form-label fw-semibold text-dark">Total Distance (km)</label>
+                          <input
+                            type="number"
+                            name="totalDistance"
+                            value={editRoute?.totalDistance || ""}
+                            onChange={handleInputChange}
+                            placeholder="0.0"
+                            step="0.1"
+                            className={`form-control ${errors.totalDistance ? 'is-invalid' : ''}`}
+                            style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                          />
+                          {errors.totalDistance && <div className="invalid-feedback d-block">{errors.totalDistance}</div>}
+                        </div>
+                      )} */}
 
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Estimated Time (minutes)</label>
-                    <input
-                      type="number"
-                      name="estimatedDuration"
-                      value={editRoute?.estimatedDuration || ""}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                      min="1"
-                      className={`form-control ${errors.estimatedDuration ? 'is-invalid' : ''}`}
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.estimatedDuration && <div className="invalid-feedback d-block">{errors.estimatedDuration}</div>}
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Estimated Time (minutes)</label>
+                        <input
+                          type="number"
+                          name="estimatedDuration"
+                          value={editRoute?.estimatedDuration || ""}
+                          onChange={handleInputChange}
+                          placeholder="0"
+                          min="1"
+                          className={`form-control ${errors.estimatedDuration ? 'is-invalid' : ''}`}
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        />
+                        {errors.estimatedDuration && <div className="invalid-feedback d-block">{errors.estimatedDuration}</div>}
+                      </div>
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Operating Hours</label>
+                        <input
+                          type="text"
+                          name="operatingHours"
+                          value={editRoute?.operatingHours || ""}
+                          onChange={handleInputChange}
+                          placeholder="05:00 - 23:00"
+                          className={`form-control ${errors.operatingHours ? 'is-invalid' : ''}`}
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        />
+                        {errors.operatingHours && <div className="invalid-feedback d-block">{errors.operatingHours}</div>}
+                      </div>
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Frequency Minutes</label>
+                        <input
+                          type="number"
+                          name="frequencyMinutes"
+                          value={editRoute?.frequencyMinutes || ""}
+                          onChange={handleInputChange}
+                          placeholder="0"
+                          min="1"
+                          className={`form-control ${errors.frequencyMinutes ? 'is-invalid' : ''}`}
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        />
+                        {errors.frequencyMinutes && <div className="invalid-feedback d-block">{errors.frequencyMinutes}</div>}
+                      </div>
+                      <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Ticket Rule</label>
+                        <select
+                          name="ruleId"
+                          value={editRoute?.ruleId || (ticketRules.length > 0 ? ticketRules[0].ruleId : 1)}
+                          onChange={handleInputChange}
+                          className="form-select"
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        >
+                          {ticketRules.map(rule => (
+                            <option key={rule.ruleId} value={rule.ruleId}>
+                              {rule.ruleName} ({rule.basePrice?.toLocaleString()} VND)
+                            </option>
+                          ))}
+                          {ticketRules.length === 0 && (
+                            <option value={null}>--No available ticket rule yet--</option>
+                          )}
+                        </select>
+                        {errors.ruleId && <div className="invalid-feedback d-block">{errors.ruleId}</div>}
+                      </div>
+                      {/* <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
+                        <label className="form-label fw-semibold text-dark">Status</label>
+                        <select
+                          name="status"
+                          value={editRoute?.status || "ACTIVE"}
+                          onChange={handleInputChange}
+                          className="form-select"
+                          style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
+                        >
+                          <option value="ACTIVE">ACTIVE</option>
+                          <option value="INACTIVE">INACTIVE</option>
+                        </select>
+                      </div> */}
+                    </div>
                   </div>
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Operating Hours</label>
-                    <input
-                      type="text"
-                      name="operatingHours"
-                      value={editRoute?.operatingHours || ""}
-                      onChange={handleInputChange}
-                      placeholder="05:00 - 23:00"
-                      className={`form-control ${errors.operatingHours ? 'is-invalid' : ''}`}
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.operatingHours && <div className="invalid-feedback d-block">{errors.operatingHours}</div>}
+                )}
+
+                {/* Stations Tab */}
+                {activeTab === 'stations' && (
+                  <div className="bg-white p-4 rounded-3 shadow-sm">
+                    <div className="d-flex justify-content-between align-items-center mb-3">
+                      <h6 className="mb-0 fw-bold text-dark">Route Stations</h6>
+                      <button
+                        onClick={addStationToRoute}
+                        className="btn btn-sm btn-primary"
+                        style={{ borderRadius: "6px" }}
+                      >
+                        <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" className="me-1">
+                          <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
+                        </svg>
+                        Add Station
+                      </button>
+                    </div>
+
+                    {!editRoute?.routeId && (
+                      <div className="alert alert-info mb-3">
+                        <div className="d-flex align-items-center">
+                          <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                          </svg>
+                          <strong>New Route:</strong> You must add at least 2 stations to create a new route.
+                        </div>
+                      </div>
+                    )}
+
+                    <div className="table-responsive">
+                      <table className="table table-bordered">
+                        <thead className="table-light">
+                          <tr>
+                            <th>Order</th>
+                            <th>Station</th>
+                            <th>Distance to Next (km)</th>
+                            <th>Actions</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {console.log("Current Route Stations:", currentRouteStations)}
+                          {currentRouteStations.map((routeStation, index) => (
+                            <tr key={index}>
+                              <td className="text-center fw-bold">{routeStation.order}</td>
+                              <td>
+                                <select
+                                  value={routeStation.stationId}
+                                  onChange={(e) => updateStationInRoute(index, 'stationId', e.target.value)}
+                                  className="form-select form-select-sm"
+                                >
+                                  {stations.map(station => (
+                                    <option key={station.stationId} value={station.stationId}>
+                                      {station.stationName}
+                                    </option>
+                                  ))}
+                                </select>
+                              </td>
+                              <td>
+                                <input
+                                  type="number"
+                                  value={routeStation.distanceToNext}
+                                  onChange={(e) => updateStationInRoute(index, 'distanceToNext', e.target.value)}
+                                  className="form-control form-control-sm"
+                                  step="0.1"
+                                  min="0"
+                                  disabled={index === currentRouteStations.length - 1}
+                                  placeholder={index === currentRouteStations.length - 1 ? "End point" : "0.0"}
+                                />
+                              </td>
+                              <td>
+                                <div className="d-flex gap-1">
+                                  <button
+                                    onClick={() => moveStation(index, 'up')}
+                                    disabled={index === 0 || index === currentRouteStations.length - 1}
+                                    className="btn btn-sm btn-outline-secondary"
+                                    title="Move up"
+                                  >
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => moveStation(index, 'down')}
+                                    disabled={index === currentRouteStations.length - 1 || index === currentRouteStations.length - 2}
+                                    className="btn btn-sm btn-outline-secondary"
+                                    title="Move down"
+                                  >
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M8 4a.5.5 0 0 0-.5.5v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5A.5.5 0 0 0 8 4z" />
+                                    </svg>
+                                  </button>
+                                  <button
+                                    onClick={() => removeStationFromRoute(index)}
+                                    className="btn btn-sm btn-outline-danger"
+                                    title="Remove station"
+                                  >
+                                    <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
+                                      <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
+                                    </svg>
+                                  </button>
+                                </div>
+                              </td>
+                            </tr>
+                          ))}
+                          {currentRouteStations.length === 0 && (
+                            <tr>
+                              <td colSpan="4" className="text-center text-muted py-4">
+                                No stations added yet. Click "Add Station" to start building your route.
+                              </td>
+                            </tr>
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+
+                    {currentRouteStations.length > 0 && (
+                      <div className="mt-3 p-3 bg-light rounded">
+                        <h6 className="mb-2">Route Summary</h6>
+                        <div className="row">
+                          <div className="col-md-4">
+                            <small className="text-muted">Total Stations:</small>
+                            <div className="fw-semibold">{currentRouteStations.length}</div>
+                          </div>
+                          <div className="col-md-4">
+                            <small className="text-muted">Total Distance:</small>
+                            <div className="fw-semibold">
+                              {currentRouteStations.reduce((sum, station) => sum + station.distanceToNext, 0).toFixed(1)} km
+                            </div>
+                          </div>
+                          <div className="col-md-4">
+                            <small className="text-muted">Status:</small>
+                            <div className={`fw-semibold ${isValidRoute() ? 'text-success' : 'text-danger'}`}>
+                              {isValidRoute() ? '✓ Valid Route' : '⚠ Invalid Route'}
+                            </div>
+                          </div>
+                        </div>
+                        <div className="mt-2">
+                          <small className="text-muted">Route Path:</small>
+                          <div className="small">
+                            {currentRouteStations.map((routeStation, index) => (
+                              <span key={index}>
+                                {getStationNameById(routeStation.stationId)}
+                                {index < currentRouteStations.length - 1 && ' → '}
+                              </span>
+                            ))}
+                          </div>
+                        </div>
+                        {errors.stations && <div className="invalid-feedback d-block mt-2">{errors.stations}</div>}
+                        {errors.totalDistance && <div className="invalid-feedback d-block mt-1">{errors.totalDistance}</div>}
+                      </div>
+                    )}
+
+                    {/* Show validation messages when no stations */}
+                    {currentRouteStations.length === 0 && (
+                      <div className="mt-3 p-3 bg-light rounded">
+                        <div className="text-center text-muted">
+                          <p className="mb-1">No stations added yet</p>
+                          <small>A route must have at least 2 stations to be valid</small>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Frequency Minutes</label>
-                    <input
-                      type="number"
-                      name="frequencyMinutes"
-                      value={editRoute?.frequencyMinutes || ""}
-                      onChange={handleInputChange}
-                      placeholder="0"
-                      min="1"
-                      className={`form-control ${errors.frequencyMinutes ? 'is-invalid' : ''}`}
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    />
-                    {errors.frequencyMinutes && <div className="invalid-feedback d-block">{errors.frequencyMinutes}</div>}
-                  </div>
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Ticket Rule</label>
-                    <select
-                      name="ruleId"
-                      value={editRoute?.ruleId || (ticketRules.length > 0 ? ticketRules[0].ruleId : 1)}
-                      onChange={handleInputChange}
-                      className="form-select"
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    >
-                      {ticketRules.map(rule => (
-                        <option key={rule.ruleId} value={rule.ruleId}>
-                          {rule.ruleName} ({rule.basePrice?.toLocaleString()} VND)
-                        </option>
-                      ))}
-                      {ticketRules.length === 0 && (
-                        <option value={null}>--No available ticket rule yet--</option>
-                      )}
-                    </select>
-                    {errors.ruleId && <div className="invalid-feedback d-block">{errors.ruleId}</div>}
-                  </div>
-                  <div className="col-md-6" style={{ display: "flex", flexDirection: "column", alignItems: "flex-start" }}>
-                    <label className="form-label fw-semibold text-dark">Status</label>
-                    <select
-                      name="status"
-                      value={editRoute?.status || "ACTIVE"}
-                      onChange={handleInputChange}
-                      className="form-select"
-                      style={{ borderRadius: "8px", border: "1px solid #ced4da" }}
-                    >
-                      <option value="ACTIVE">ACTIVE</option>
-                      <option value="INACTIVE">INACTIVE</option>
-                    </select>
-                  </div>
-                </div>
+                )}
               </div>
+
               <div className="modal-footer border-0 pt-0">
                 <button
                   type="button"
                   className="btn btn-secondary"
-                  onClick={() => setShowModal(false)}
+                  onClick={() => {
+                    setShowModal(false)
+                    setEditRoute(null)
+                    setCurrentRouteStations([])
+                    setCurrentRouteId(null)
+                    setActiveTab('details')
+                    setErrors({})
+                  }}
                   style={{ borderRadius: "8px" }}
                 >
                   Cancel
@@ -805,172 +1106,7 @@ const AdminRouteManager = () => {
                   disabled={Object.keys(errors).length > 0}
                   style={{ borderRadius: "8px" }}
                 >
-                  {editRoute?.routeId ? "Update Route" : "Add Route"}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Station Management Modal */}
-      {showStationModal && (
-        <div className="modal show d-block" style={{ backgroundColor: "rgba(0,0,0,0.5)" }}>
-          <div className="modal-dialog modal-xl modal-dialog-centered">
-            <div className="modal-content border-0 shadow-lg" style={{ borderRadius: "12px" }}>
-              <div className="modal-header border-0 pb-0">
-                <h5 className="modal-title fw-bold">Manage Route Stations</h5>
-                <button type="button" className="btn-close" onClick={() => setShowStationModal(false)}></button>
-              </div>
-
-              <div className="modal-body p-4">
-                <div className="d-flex justify-content-between align-items-center mb-3">
-                  <h6 className="mb-0">Route Stations</h6>
-                  <button
-                    onClick={addStationToRoute}
-                    className="btn btn-sm btn-primary"
-                    style={{ borderRadius: "6px" }}
-                  >
-                    <svg width="14" height="14" fill="currentColor" viewBox="0 0 16 16" className="me-1">
-                      <path d="M8 4a.5.5 0 0 1 .5.5v3h3a.5.5 0 0 1 0 1h-3v3a.5.5 0 0 1-1 0v-3h-3a.5.5 0 0 1 0-1h3v-3A.5.5 0 0 1 8 4z" />
-                    </svg>
-                    Add Station
-                  </button>
-                </div>
-
-                <div className="table-responsive">
-                  <table className="table table-bordered">
-                    <thead className="table-light">
-                      <tr>
-                        <th>Order</th>
-                        <th>Station</th>
-                        <th>Distance to Next (km)</th>
-                        <th>Actions</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {console.log("Current Route station: ", currentRouteStations)}
-                      {currentRouteStations.map((routeStation, index) => (
-                        <tr key={index}>
-                          <td className="text-center fw-bold">{routeStation.order}</td>
-                          <td>
-                            <select
-                              value={routeStation.stationId}
-                              onChange={(e) => updateStationInRoute(index, 'stationId', e.target.value)}
-                              className="form-select form-select-sm"
-                            >
-                              {stations.map(station => (
-                                <option key={station.stationId} value={station.stationId}>
-                                  {station.stationName}
-                                </option>
-                              ))}
-                            </select>
-                          </td>
-                          <td>
-                            <input
-                              type="number"
-                              value={routeStation.distanceToNext}
-                              onChange={(e) => updateStationInRoute(index, 'distanceToNext', e.target.value)}
-                              className="form-control form-control-sm"
-                              step="0.1"
-                              min="0"
-                              disabled={index === currentRouteStations.length - 1}
-                              placeholder={index === currentRouteStations.length - 1 ? "End point" : "0.0"}
-                            />
-                          </td>
-                          <td>
-                            <div className="d-flex gap-1">
-                              <button
-                                onClick={() => moveStation(index, 'up')}
-                                disabled={index === currentRouteStations.length - 1 || index === 0}
-                                className="btn btn-sm btn-outline-secondary"
-                                title="Move up"
-                              >
-                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M8 12a.5.5 0 0 0 .5-.5V5.707l2.146 2.147a.5.5 0 0 0 .708-.708l-3-3a.5.5 0 0 0-.708 0l-3 3a.5.5 0 1 0 .708.708L7.5 5.707V11.5a.5.5 0 0 0 .5.5z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => moveStation(index, 'down')}
-                                disabled={index === currentRouteStations.length - 1 || index === currentRouteStations.length - 2}
-                                className="btn btn-sm btn-outline-secondary"
-                                title="Move down"
-                              >
-                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M8 4a.5.5 0 0 0-.5.5v5.793L5.354 8.146a.5.5 0 1 0-.708.708l3 3a.5.5 0 0 0 .708 0l3-3a.5.5 0 0 0-.708-.708L8.5 10.293V4.5A.5.5 0 0 0 8 4z" />
-                                </svg>
-                              </button>
-                              <button
-                                onClick={() => removeStationFromRoute(index)}
-                                className="btn btn-sm btn-outline-danger"
-                                title="Remove station"
-                              >
-                                <svg width="12" height="12" fill="currentColor" viewBox="0 0 16 16">
-                                  <path d="M4.646 4.646a.5.5 0 0 1 .708 0L8 7.293l2.646-2.647a.5.5 0 0 1 .708.708L8.707 8l2.647 2.646a.5.5 0 0 1-.708.708L8 8.707l-2.646 2.647a.5.5 0 0 1-.708-.708L7.293 8 4.646 5.354a.5.5 0 0 1 0-.708z" />
-                                </svg>
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                      {currentRouteStations.length === 0 && (
-                        <tr>
-                          <td colSpan="4" className="text-center text-muted py-4">
-                            No stations added yet. Click "Add Station" to start building your route.
-                          </td>
-                        </tr>
-                      )}
-                    </tbody>
-                  </table>
-                </div>
-
-                {currentRouteStations.length > 0 && (
-                  <div className="mt-3 p-3 bg-light rounded">
-                    <h6 className="mb-2">Route Summary</h6>
-                    <div className="row">
-                      <div className="col-md-6">
-                        <small className="text-muted">Total Stations:</small>
-                        <div className="fw-semibold">{currentRouteStations.length}</div>
-                      </div>
-                      <div className="col-md-6">
-                        <small className="text-muted">Total Distance:</small>
-                        <div className="fw-semibold">
-                          {currentRouteStations.reduce((sum, station) => sum + station.distanceToNext, 0).toFixed(1)} km
-                        </div>
-                      </div>
-                    </div>
-                    <div className="mt-2">
-                      <small className="text-muted">Route Path:</small>
-                      <div className="small">
-                        {currentRouteStations.map((routeStation, index) => (
-                          <span key={index}>
-                            {getStationName(routeStation.stationId)}
-                            {index < currentRouteStations.length - 1 && ' → '}
-                          </span>
-                        ))}
-                      </div>
-
-                    </div>
-                  </div>
-                )}
-              </div>
-
-              <div className="modal-footer border-0 pt-0">
-                <button
-                  type="button"
-                  className="btn btn-secondary"
-                  onClick={() => setShowStationModal(false)}
-                  style={{ borderRadius: "8px" }}
-                >
-                  Cancel
-                </button>
-                <button
-                  type="button"
-                  className="btn btn-primary"
-                  onClick={saveStations}
-                  style={{ borderRadius: "8px" }}
-                >
-                  Save Stations
+                  {editRoute?.routeId ? "Save Route & Stations" : "Create Route & Stations"}
                 </button>
               </div>
             </div>

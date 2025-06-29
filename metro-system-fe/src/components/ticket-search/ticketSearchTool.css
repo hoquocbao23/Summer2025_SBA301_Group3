@@ -88,3 +88,102 @@
   box-shadow: none;
   border-color: rgba(0, 0, 0, 0.125);
 }
+
+/* Additional styles for enhanced ticket search */
+.cursor-pointer {
+  cursor: pointer;
+}
+
+.route-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.route-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.route-card.selected {
+  border-color: #dc3545 !important;
+  box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+.search-controls .btn {
+  transition: all 0.2s ease-in-out;
+}
+
+.recent-search-card {
+  transition: all 0.2s ease-in-out;
+}
+
+.recent-search-card:hover {
+  background-color: #f8f9fa;
+  transform: translateX(5px);
+}
+
+.route-icon {
+  transition: color 0.2s ease-in-out;
+}
+
+.station-path {
+  font-size: 0.85rem;
+  line-height: 1.2;
+}
+
+.price-display {
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  font-weight: 600;
+}
+
+.route-features {
+  opacity: 0.7;
+  transition: opacity 0.2s ease-in-out;
+}
+
+.route-card:hover .route-features {
+  opacity: 1;
+}
+
+.loading-spinner {
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+
+.search-summary {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: white;
+  border-radius: 8px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.no-results-icon {
+  color: #6c757d;
+  opacity: 0.5;
+}
+
+.sort-controls .btn-link {
+  text-decoration: none;
+  color: #6c757d;
+  transition: color 0.2s ease-in-out;
+}
+
+.sort-controls .btn-link:hover {
+  color: #dc3545;
+  text-decoration: underline;
+}
+
+.sort-controls .btn-link.active {
+  color: #dc3545;
+  font-weight: 600;
+}
+
+.pagination-wrapper {
+  margin-top: 2rem;
+  padding-top: 1rem;
+  border-top: 1px solid #dee2e6;
+}

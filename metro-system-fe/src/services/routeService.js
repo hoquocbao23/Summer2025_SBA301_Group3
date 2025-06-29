@@ -128,7 +128,7 @@ export class RouteService {
         stations: stations.map(station => ({
           stationId: station.stationId,
           stationOrder: station.order,
-          distanceToNext: station.distanceFromPrevious || 0
+          distanceToNext: station.distanceToNext || 0
         }))
       };
       const response = await axiosInstance.post(ROUTE_ENDPOINTS.ROUTE_STATIONS, payload);
@@ -294,7 +294,7 @@ export class RouteService {
       stations: (apiRouteData.stations || []).map(station => ({
         stationId: station.stationId,
         order: station.stationOrder,
-        distanceFromPrevious: station.distanceToNext || 0
+        distanceToNext: station.distanceToNext || 0
       }))
     };
   }

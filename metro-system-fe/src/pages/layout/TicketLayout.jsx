@@ -20,7 +20,12 @@ const TicketLayout = () => {
 
     // Lấy dữ liệu từ SingleTripForm
     // Lưu dữ liệu vào singleForm
-    const [singleForm, setSingleForm] = useState(location.state?.singleForm || null);
+    const [singleForm, setSingleForm] = useState({
+        ...location.state?.singleForm,
+        selectedRoute: null,
+        totalPrice: 0,
+        estimatedDuration: 0
+    });
 
     // Lấy dữ liệu từ TravelPassForm
     // Lưu dữ liệu vào travelPassForm
@@ -33,7 +38,10 @@ const TicketLayout = () => {
     // Cập nhật formData khi location.state thay đổi
     useEffect(() => {
         if (location.state?.singleForm) {
-            setSingleForm(location.state.singleForm);
+            setSingleForm(prev => ({
+                ...prev,
+                ...location.state.singleForm
+            }));
         }
         if (location.state?.travelPassForm) {
             setTravelPassForm(location.state.travelPassForm);
