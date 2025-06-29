@@ -31,4 +31,9 @@ public class Transaction {
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    private Long payOrderId;
+    private String counterAccountBankId;
+    private String counterAccountName;
+    private String counterAccountNumber;
 }

@@ -55,6 +55,15 @@ public class StationService implements IStationService {
 
     @Override
     public ResponseApi<?> createStation(StationDTO stationDTO) {
+        UserPrinciple user = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if(user==null){
+            return ResponseApi.
+                    builder().
+                    status(HttpStatus.UNAUTHORIZED.value()).
+                    message(HttpStatus.UNAUTHORIZED.getReasonPhrase()).
+                    data("UNAUTHORIZED").
+                    build();
+        }
         Station station = new Station(stationDTO.getStationName(),stationDTO.getStationLocation(),stationDTO.getUrl(),stationDTO.getStatus(),stationDTO.getDescription());
 
         return ResponseApi.

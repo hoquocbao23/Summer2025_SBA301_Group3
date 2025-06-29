@@ -45,12 +45,14 @@ public class SecurityConfig {
     private final String[] GET_URLS= {
             "/stations",
             "/promotions",
-            "/ticket-types"
+            "/ticket-types",
+            "train"
     };
 
     private final String[] ADMIN_URLS= {
             "/stations",
-            "/user"
+            "/user",
+            "/train"
     };
 
     private final String[] USER_URLS= {};
@@ -62,7 +64,7 @@ public class SecurityConfig {
         httpSecurity.authorizeHttpRequests(request -> request
                         .requestMatchers(PUBLIC_URLS).permitAll()
                         .requestMatchers(HttpMethod.GET,GET_URLS).permitAll()
-                          .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+                        .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
                         .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())

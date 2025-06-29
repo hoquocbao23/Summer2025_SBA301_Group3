@@ -27,7 +27,7 @@ public class PaymentService implements IPaymentService {
     private String CANCEL_URL;
 
     @Override
-    public String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception {
+    public CheckoutResponseData createCheckout(PaymentRequestDto paymentRequestDto) throws Exception {
         ItemData item = ItemData
                 .builder()
                 .name(paymentRequestDto.getProductName())
@@ -49,7 +49,8 @@ public class PaymentService implements IPaymentService {
                 .cancelUrl(CANCEL_URL)
                 .build();
         CheckoutResponseData data = payOS.createPaymentLink(paymentData);
-        return data.getCheckoutUrl();
+//        return data.getCheckoutUrl();
+        return data;
     }
 
 
@@ -57,4 +58,10 @@ public class PaymentService implements IPaymentService {
             PaymentLinkData order = payOS.cancelPaymentLink(orderId, cancellationReason);
             return order;
     }
+
+    public PaymentLinkData getPaymentInform(long orderId ) throws Exception {
+        PaymentLinkData order = payOS.getPaymentLinkInformation(orderId);
+        return order;
+    }
+
 }

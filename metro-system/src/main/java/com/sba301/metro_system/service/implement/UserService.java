@@ -5,13 +5,16 @@ import com.sba301.metro_system.dto.request.LoginRequestDTO;
 import com.sba301.metro_system.dto.request.SignupRequestDTO;
 import com.sba301.metro_system.dto.request.user.UserDTO;
 import com.sba301.metro_system.dto.response.LoginResponse;
+import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.Account;
 import com.sba301.metro_system.entity.OTP;
+import com.sba301.metro_system.entity.Ticket;
 import com.sba301.metro_system.entity.UserPrinciple;
 import com.sba301.metro_system.enums.AccountStatus;
 import com.sba301.metro_system.enums.Role;
 import com.sba301.metro_system.record.MailBody;
 import com.sba301.metro_system.repository.OtpRepository;
+import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.repository.UserRepository;
 import com.sba301.metro_system.service.IEmailService;
 import com.sba301.metro_system.service.IJwtService;
@@ -26,6 +29,7 @@ import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.AuthenticationException;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -53,6 +57,9 @@ public class UserService implements IUserService {
     IEmailService emailService;
 
     @Autowired
+    TicketRepository ticketRepository;
+
+    @Autowired
     private OtpRepository otpRepository;
 
     private BCryptPasswordEncoder encoder = new BCryptPasswordEncoder(12);
@@ -66,7 +73,7 @@ public class UserService implements IUserService {
 
             UserPrinciple userPrinciple = (UserPrinciple) authentication.getPrincipal();
             Account user = userPrinciple.getUser();
-            if(user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE){
+            if (user.getStatus() == AccountStatus.BANNED || user.getStatus() == AccountStatus.INACTIVE) {
                 return ResponseApi.
                         builder().
                         status(HttpStatus.UNAUTHORIZED.value()).
@@ -76,8 +83,8 @@ public class UserService implements IUserService {
             }
             String token = jwtService.generateToken(user.getEmail(), user.getAccountId());
             System.out.println(user.getRole());
-            LoginResponse response = new LoginResponse(token,user.getFullname(),user.getRole().name());
-             ResponseEntity.ok(response);
+            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name(), user.getEmail() );
+            ResponseEntity.ok(response);
             return ResponseApi.
                     builder().
                     status(HttpStatus.OK.value()).
@@ -153,9 +160,9 @@ public class UserService implements IUserService {
     }
 
     @Override
-    public ResponseApi<?> verify(SignupRequestDTO signupRequestDTO,Integer otp) {
+    public ResponseApi<?> verify(SignupRequestDTO signupRequestDTO, Integer otp) {
         OTP otp1 = otpService.findByOtpToken(otp);
-        if(otp1 == null){
+        if (otp1 == null) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.NOT_FOUND.value()).
@@ -163,7 +170,7 @@ public class UserService implements IUserService {
                     data("Otp not found").
                     build();
         }
-        if(otp1.isExpired()){
+        if (otp1.isExpired()) {
             otpRepository.delete(otp1);
             return ResponseApi.
                     builder().
@@ -172,7 +179,7 @@ public class UserService implements IUserService {
                     data("Otp has expired").
                     build();
         }
-        if(!otp1.getOtpToken().equals(otp)){
+        if (!otp1.getOtpToken().equals(otp)) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.BAD_REQUEST.value()).
@@ -180,7 +187,7 @@ public class UserService implements IUserService {
                     data("Otp does not match expected value.").
                     build();
         }
-        if(otp1.getMail().equals(signupRequestDTO.getEmail())){
+        if (otp1.getMail().equals(signupRequestDTO.getEmail())) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.BAD_REQUEST.value()).
@@ -189,7 +196,7 @@ public class UserService implements IUserService {
                     build();
         }
         Account user = userRepository.findByEmail(signupRequestDTO.getEmail());
-        if(user !=null) {
+        if (user != null) {
             return ResponseApi.
                     builder().
                     status(HttpStatus.CONFLICT.value()).
@@ -229,6 +236,7 @@ public class UserService implements IUserService {
             dto.setFullname(u.getFullname());
             dto.setStatus(u.getStatus());
             dto.setRole(u.getRole());
+            dto.setId(u.getAccountId());
             userDTOs.add(dto);
         }
 
@@ -263,6 +271,7 @@ public class UserService implements IUserService {
         updatedDTO.setFullname(updatedAccount.getFullname());
         updatedDTO.setRole(updatedAccount.getRole());
         updatedDTO.setStatus(updatedAccount.getStatus());
+        updatedDTO.setId(updatedAccount.getAccountId());
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
@@ -288,6 +297,7 @@ public class UserService implements IUserService {
         userDTO.setRole(account.getRole());
         userDTO.setStatus(account.getStatus());
         userDTO.setEmail(account.getEmail());
+        userDTO.setId(account.getAccountId());
 
         return ResponseApi.builder()
                 .status(HttpStatus.OK.value())
@@ -296,4 +306,64 @@ public class UserService implements IUserService {
                 .build();
     }
 
+    @Override
+    public ResponseApi<?> getMyTicket() {
+        UserPrinciple userPrinciple = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+        if (userPrinciple.getUser() == null) {
+            throw new IllegalStateException("User not authenticated or user data is missing");
+        }
+        Account account = userPrinciple.getUser();
+        List<Ticket> ticket = ticketRepository.findTicketByAccount(account);
+        if (ticket == null) {
+            return ResponseApi.builder()
+                    .status(HttpStatus.NOT_FOUND.value())
+                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
+                    .data("Have no ticket")
+                    .build();
+        }
+        List<TicketResponseDto> ticketResponseDtoList = new ArrayList<>();
+
+        for (Ticket t : ticket) {
+            TicketResponseDto dto = new TicketResponseDto();
+
+            dto.setTicketId(t.getTicketId());
+            dto.setDepartureStation(
+                    t.getDepartureStation() != null ? t.getDepartureStation().getStationLocation() : null
+            );
+            dto.setArrivalStation(
+                    t.getArrivalStation() != null ? t.getArrivalStation().getStationName() : null
+            );
+            dto.setOldPrice(t.getOldPrice());
+            dto.setNewPrice(t.getNewPrice());
+            dto.setValidFrom(t.getValidFrom());
+            dto.setValidTo(t.getValidTo());
+            dto.setPurchaseTime(t.getPurchaseTime());
+            dto.setQrUrl(t.getQrUrl());
+            dto.setTicketStatus(t.getTicketStatus());
+
+            if (t.getTicketType() != null) {
+                dto.setTicketName(t.getTicketType().getTicketName());
+            }
+
+            if (t.getPromotion() != null) {
+                dto.setPromotionCode(t.getPromotion().getPromotionCode());
+            }
+
+            if (t.getRoute() != null) {
+                dto.setRouteName(t.getRoute().getRouteName());
+            }
+
+            dto.setUrlCheckout("https://localhost:5173/checkout/" + t.getTicketId());
+
+            ticketResponseDtoList.add(dto);
+        }
+
+        return ResponseApi.builder()
+                    .status(HttpStatus.OK.value())
+                    .message(HttpStatus.OK.getReasonPhrase())
+                    .data(ticketResponseDtoList)
+                    .build();
+
+
+    }
 }

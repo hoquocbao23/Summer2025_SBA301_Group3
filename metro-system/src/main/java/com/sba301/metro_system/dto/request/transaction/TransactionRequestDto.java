@@ -14,5 +14,9 @@ public class TransactionRequestDto {
     private long ticketId;
     private PaymentMethod paymentMethod;
     private TransactionStatus transactionStatus;
+    private Long payOrderId;
+    private String counterAccountBankId;
+    private String counterAccountName;
+    private String counterAccountNumber;
 
 }
