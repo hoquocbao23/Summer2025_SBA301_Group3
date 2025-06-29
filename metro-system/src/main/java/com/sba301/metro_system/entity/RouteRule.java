@@ -1,5 +1,6 @@
 package com.sba301.metro_system.entity;
 
+import com.sba301.metro_system.enums.RuleType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,7 @@ public class RouteRule {
     @ManyToOne
     @JoinColumn(name = "rule_id")
     private TicketRule ticketRule;
-    
-    private String type;
+
+    @Enumerated(EnumType.STRING)
+    private RuleType type;
 }
