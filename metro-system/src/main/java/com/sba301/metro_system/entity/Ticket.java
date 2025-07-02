@@ -10,6 +10,7 @@ import org.springframework.boot.context.properties.bind.DefaultValue;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.UUID;
 
 @Data
 @Entity
@@ -17,7 +18,7 @@ import java.time.LocalDateTime;
 @NoArgsConstructor
 public class Ticket {
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long ticketId;
 
     @ManyToOne
@@ -28,32 +29,47 @@ public class Ticket {
     @JoinColumn(name = "arrival_station_id")
     private Station arrivalStation;
 
-//    private BigDecimal price;
-    private Double oldPrice;
-    private Double newPrice;
-    private LocalDateTime validFrom;
-    private LocalDateTime validTo;
-    private LocalDateTime purchaseTime;
-    private String qrUrl;
+    @ManyToOne
+    @JoinColumn(name = "route_id")
+    private Route route;
 
-    @Enumerated(EnumType.STRING)
-    private TicketStatus ticketStatus;
+
 
     @ManyToOne
-    @JoinColumn(name = "account_id")
-    private Account account;
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 
     @ManyToOne
     @JoinColumn(name = "ticket_type_id")
     private TicketType ticketType;
 
-    @ManyToOne
-    @JoinColumn(name = "promotion_id")
-    private Promotion promotion;
-    
-    @ManyToOne
-    @JoinColumn(name = "route_id")
-    private Route route;
+    @Enumerated(EnumType.STRING)
+    private TicketStatus ticketStatus;
+
+    private LocalDateTime validFrom;
+
+    private LocalDateTime validTo;
+
+    private LocalDateTime purchaseTime;
 
     private Boolean isCheckin;
+//    private BigDecimal price;
+//    private Double oldPrice;
+//    private Double newPrice;
+
+//    private String qrUrl;
+
+
+
+//    @ManyToOne
+//    @JoinColumn(name = "account_id")
+//    private Account account;
+
+
+
+//    @ManyToOne
+//    @JoinColumn(name = "promotion_id")
+//    private Promotion promotion;
+    
+
 }

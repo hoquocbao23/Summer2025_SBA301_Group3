@@ -11,8 +11,8 @@ import org.springframework.stereotype.Service;
 public class RouteRuleService implements IRouteRuleService {
     private final RouteRuleRepository routeRuleRepository;
     @Override
-    public RouteRule findByRouteIdAndType(long routeId, String type) {
-        return routeRuleRepository.findRuleByRouteIdAndType(routeId, type) ;
+    public RouteRule findByRouteIdAndType(long routeId, long ticketTypeId) {
+        return routeRuleRepository.findRuleByRouteIdAndType(routeId, ticketTypeId) ;
     }
 
 

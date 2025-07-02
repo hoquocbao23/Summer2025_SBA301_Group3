@@ -3,7 +3,6 @@ import com.sba301.metro_system.dto.ResponseApi;
 
 import com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;
 import com.sba301.metro_system.service.ITicketTypeService;
-import com.sba301.metro_system.service.implement.TicketTypeService;
 import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.validation.Valid;
 import org.springframework.http.HttpStatus;
@@ -71,6 +70,15 @@ public class TicketTypeController {
                 .status(HttpStatus.OK.value())
                 .message("Ticket type deleted successfully")
                 .data(ticketTypeService.findAllUnlimitTicketTypes())
+                .build();
+    }
+
+    @GetMapping("/limit")
+    public ResponseApi<?> getTicketTypes() {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message("Ticket type deleted successfully")
+                .data(ticketTypeService.findAllLimitTicketTypes())
                 .build();
     }
 

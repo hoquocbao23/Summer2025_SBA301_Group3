@@ -10,7 +10,11 @@ public enum StatusCode {
     TICKET_NOT_ACTIVE("2004", "Ticket not active"),
     TICKET_EXPIRED("2005", "Ticket has expired"),
     TICKET_NOT_FOUND("2006", "Ticket not found"),
-    TICKET_BUY_FAILED("2007", "Ticket not available");
+    TICKET_BUY_FAILED("2007", "Ticket not available"),
+
+
+    TICKET_NOT_MATCHED("2008", "The station you selected is not valid for this ticket");
+
 
     private final String code;
     private final String message;

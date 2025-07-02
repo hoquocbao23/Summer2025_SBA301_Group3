@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 
 @Data
 public class TransactionRequestDto {
-    private long ticketId;
+    private long bookingId;
     private PaymentMethod paymentMethod;
     private TransactionStatus transactionStatus;
     private Long payOrderId;

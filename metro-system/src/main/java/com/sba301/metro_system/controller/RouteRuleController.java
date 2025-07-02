@@ -19,12 +19,12 @@ public class RouteRuleController {
 
     @GetMapping("/detail")
     public ResponseApi<?> createPromotion(@RequestParam(name = "routeId") long routeId,
-                                          @RequestParam(name = "ticketType") String ticketType) {
+                                          @RequestParam(name = "ticketType") long ticketTypeId) {
         return ResponseApi
                 .builder()
                 .status(HttpStatus.OK.value())
                 .message(HttpStatus.OK.getReasonPhrase())
-                .data(routeRuleService.findByRouteIdAndType(routeId, ticketType))
+                .data(routeRuleService.findByRouteIdAndType(routeId, ticketTypeId))
                 .build();
     }
 

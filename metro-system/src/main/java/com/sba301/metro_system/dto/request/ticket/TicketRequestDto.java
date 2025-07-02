@@ -19,5 +19,7 @@ public class TicketRequestDto {
     private String promotionCode;
     private int numberOfPassengers;
     private List<String> userEmails;
+    private double total;
+    private double paymentAmount;
 
 }

@@ -1,5 +1,6 @@
 package com.sba301.metro_system.service.implement;
 
+import com.sba301.metro_system.dto.request.ticketdetail.CheckTicketRequestDto;
 import com.sba301.metro_system.dto.response.TicketDetailResponseDto;
 import com.sba301.metro_system.entity.Ticket;
 import com.sba301.metro_system.entity.TicketDetail;
@@ -9,6 +10,8 @@ import com.sba301.metro_system.enums.TicketStatus;
 import com.sba301.metro_system.exception.CustomException;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.mapper.TicketDetailMapper;
+import com.sba301.metro_system.repository.StationRepository;
+import com.sba301.metro_system.repository.StationRouteRepository;
 import com.sba301.metro_system.repository.TicketDetailRepository;
 import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.service.ITicketDetailService;
@@ -16,9 +19,11 @@ import lombok.RequiredArgsConstructor;
 import org.apache.coyote.BadRequestException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestBody;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -27,6 +32,8 @@ public class TicketDetailService implements ITicketDetailService {
 
     private final TicketDetailRepository ticketDetailRepository;
     private final TicketRepository ticketRepository;
+    private final StationRouteRepository stationRouteRepository;
+    private final StationRepository stationRepository;
 
 
     /**
@@ -39,10 +46,15 @@ public class TicketDetailService implements ITicketDetailService {
      */
     @Override
     @Transactional
-    public void checkIn(long ticketId) throws BadRequestException {
+    public void checkIn(CheckTicketRequestDto dto) throws BadRequestException {
 
-        Ticket ticket = ticketRepository.findById(ticketId)
+        Ticket ticket = ticketRepository.findById(dto.getTicketId())
                 .orElseThrow(() -> new NotFoundException("Ticket not found"));
+        
+        if (!checkAvailableStation(ticket, dto.getStationId(), true)){
+            throw new CustomException(StatusCode.TICKET_NOT_MATCHED.getCode(),
+                                        StatusCode.TICKET_NOT_MATCHED.getMessage());
+        }
 
         // Ticket expired
         if (ticket.getTicketStatus().equals(TicketStatus.EXPIRED)) {
@@ -61,12 +73,6 @@ public class TicketDetailService implements ITicketDetailService {
                                         StatusCode.TICKET_NOT_CHECK_OUT.getMessage());
         }
 
-//        TicketDetail ticketDetail = ticketDetailRepository.findByTicket(ticket).orElse(null);
-        //ticket already checked-in
-//        if (ticketDetailRepository.existsByTicket(ticket) && ticket.getTicketType().getUsageLimit()) {
-//            throw new CustomException(StatusCode.Ticket_.getCode(),
-//                    StatusCode.TICKET_EXPIRED.getMessage());
-//        }
         // Travel pass checkin the first time
         boolean exists = ticketDetailRepository.existsByTicket(ticket);
         boolean unlimit = ticket.getTicketType().getUsageLimit();
@@ -81,6 +87,7 @@ public class TicketDetailService implements ITicketDetailService {
         TicketDetail newTicketDetail  = new TicketDetail();
         newTicketDetail.setTicket(ticket);
         newTicketDetail.setCheckIn(LocalDateTime.now());
+        newTicketDetail.setDepartureStation(stationRepository.findById(dto.getStationId()).get());
 
         //Update ticket status
         ticket.setTicketStatus(TicketStatus.ACTIVE);
@@ -100,11 +107,16 @@ public class TicketDetailService implements ITicketDetailService {
      */
     @Override
     @Transactional
-    public void checkOut(long ticketId) throws BadRequestException {
+    public void checkOut(CheckTicketRequestDto dto) throws BadRequestException {
 
-        Ticket ticket = ticketRepository.findByTicketIdAndTicketStatusIn(ticketId, List.of(TicketStatus.ACTIVE))
+        Ticket ticket = ticketRepository.findByTicketIdAndTicketStatusIn(dto.getTicketId(), List.of(TicketStatus.ACTIVE))
                 .orElseThrow(() -> new CustomException(StatusCode.TICKET_NOT_ACTIVE.getCode(),
                 StatusCode.TICKET_NOT_ACTIVE.getMessage()));
+
+        if (!checkAvailableStation(ticket, dto.getStationId(), false)){
+            throw new CustomException(StatusCode.TICKET_NOT_MATCHED.getCode(),
+                    StatusCode.TICKET_NOT_MATCHED.getMessage());
+        }
 
         if (ticket.getTicketStatus().equals(TicketStatus.EXPIRED)) {
             throw new CustomException(StatusCode.TICKET_EXPIRED.getCode(),
@@ -130,6 +142,7 @@ public class TicketDetailService implements ITicketDetailService {
                                                                                                                     StatusCode.TICKET_NOT_CHECK_IN.getMessage()));
 
         ticketDetail.setCheckOut(LocalDateTime.now());
+        ticketDetail.setArrivalStation(stationRepository.findById(dto.getStationId()).get());
         if (ticket.getTicketType().getUsageLimit()) {
             ticket.setTicketStatus(TicketStatus.EXPIRED);
         } else {
@@ -145,5 +158,27 @@ public class TicketDetailService implements ITicketDetailService {
                 .stream()
                 .map(TicketDetailMapper::toTicketDetailResponseDto)
                 .collect(Collectors.toList());
+    }
+
+    public boolean checkAvailableStation(Ticket checkTicket, long stationId, boolean checkin) {
+        boolean availableStation = false;
+
+            // single ticket
+        if (checkTicket.getTicketType().getUsageLimit()) {
+            // Checkin or checkout action
+            if (checkin) {
+                if (checkTicket.getDepartureStation().getStationId() == stationId) {
+                    availableStation = true;
+                }
+            }else {
+                if (checkTicket.getArrivalStation().getStationId() == stationId) {
+                    availableStation = true;
+                }
+            }
+        }else {
+            availableStation = stationRouteRepository.isStationBelongsToRoute(stationId, checkTicket.getRoute().getRouteId());
+        }
+
+        return availableStation;
     }
 }
