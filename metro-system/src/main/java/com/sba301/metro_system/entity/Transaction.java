@@ -24,11 +24,20 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private TransactionStatus status;
 
+//    @ManyToOne
+//    @JoinColumn(name = "ticket_id")
+//    private Ticket ticket;
+
     @ManyToOne
-    @JoinColumn(name = "ticket_id")
-    private Ticket ticket;
+    @JoinColumn(name = "booking_id")
+    private Booking booking;
 
     @ManyToOne
     @JoinColumn(name = "account_id")
     private Account account;
+
+    private Long payOrderId;
+    private String counterAccountBankId;
+    private String counterAccountName;
+    private String counterAccountNumber;
 }

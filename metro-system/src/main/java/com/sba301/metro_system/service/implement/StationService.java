@@ -5,6 +5,7 @@ import com.sba301.metro_system.dto.request.station.StationDTO;
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.UserPrinciple;
 import com.sba301.metro_system.enums.Status;
+import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.repository.StationRepository;
 import com.sba301.metro_system.service.IStationService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -51,6 +52,13 @@ public class StationService implements IStationService {
                 .data(station)
                 .build();
     }
+
+    @Override
+    public Station findStationById(Long id) {
+        Optional<Station> stationOptional = stationRepository.findById(id);
+        return stationOptional.orElseThrow(() -> new NotFoundException("Station is not found with id " + id));
+    }
+
 
 
     @Override

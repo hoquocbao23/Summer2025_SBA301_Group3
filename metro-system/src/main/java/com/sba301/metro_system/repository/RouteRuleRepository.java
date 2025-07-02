@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 
 public interface RouteRuleRepository extends JpaRepository<RouteRule, Long> {
 
-    @Query("SELECT r FROM RouteRule r WHERE r.route.routeId =:routeId AND r.type =:type")
-    RouteRule findRuleByRouteIdAndType(Long routeId, String type);
+    @Query("SELECT r FROM RouteRule r WHERE r.route.routeId =:routeId AND r.ticketType.ticketTypeId =:ticketTypeId")
+    RouteRule findRuleByRouteIdAndType(Long routeId, Long ticketTypeId);
 }

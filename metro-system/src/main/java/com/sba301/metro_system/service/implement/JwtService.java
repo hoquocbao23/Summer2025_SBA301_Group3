@@ -22,13 +22,13 @@ public class JwtService implements IJwtService {
     @Value("${token.expire}")
     private int tokenExpire;
 
-    @Value("9c9d7cc5c9fe5579d1b7b0b0d4ff4b951da90529a7859ac17a6cb0ec63290fcb")
+    @Value("${jwt.secret}")
     private String secretKey;
 
     private final SecretKey cachedKey;
 
     @Autowired
-    public JwtService(@Value("9c9d7cc5c9fe5579d1b7b0b0d4ff4b951da90529a7859ac17a6cb0ec63290fcb") String secretKey) {
+    public JwtService(@Value("${jwt.secret}") String secretKey) {
         this.secretKey = secretKey;
         this.cachedKey = generateSecretKey(secretKey);
     }

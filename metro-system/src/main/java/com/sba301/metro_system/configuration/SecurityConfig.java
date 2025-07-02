@@ -45,12 +45,14 @@ public class SecurityConfig {
     private final String[] GET_URLS= {
             "/stations",
             "/promotions",
-            "/ticket-types"
+            "/ticket-types",
+            "train"
     };
 
     private final String[] ADMIN_URLS= {
             "/stations",
-            "/user"
+            "/user",
+            "/train"
     };
 
     private final String[] USER_URLS= {};

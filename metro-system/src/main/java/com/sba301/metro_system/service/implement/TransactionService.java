@@ -2,6 +2,7 @@ package com.sba301.metro_system.service.implement;
 
 import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
 import com.sba301.metro_system.dto.response.TicketResponseDto;
+import com.sba301.metro_system.entity.Booking;
 import com.sba301.metro_system.entity.Ticket;
 import com.sba301.metro_system.entity.Transaction;
 import com.sba301.metro_system.enums.TransactionStatus;
@@ -25,14 +26,18 @@ public class TransactionService implements ITransactionService {
 
     @Override
     @Transactional
-    public void saveTransaction(TransactionRequestDto transactionDto, Ticket ticket) {
+    public void saveTransaction(TransactionRequestDto transactionDto, Booking booking) {
         Transaction transaction = new Transaction();
-        transaction.setAmount(ticket.getNewPrice());
+        transaction.setAmount(booking.getNewPrice());
         transaction.setPaymentMethod(transactionDto.getPaymentMethod());
         transaction.setTransactionTime(LocalDateTime.now());
         transaction.setStatus(transactionDto.getTransactionStatus());
-        transaction.setTicket(ticket);
-        transaction.setAccount(ticket.getAccount());
+        transaction.setBooking(booking);
+        transaction.setAccount(booking.getAccount());
+        transaction.setPayOrderId(transactionDto.getPayOrderId());
+        transaction.setCounterAccountNumber(transactionDto.getCounterAccountNumber());
+        transaction.setCounterAccountName(transactionDto.getCounterAccountName());
+        transaction.setCounterAccountBankId(transactionDto.getCounterAccountBankId());
         transactionRepository.save(transaction);
     }
 }

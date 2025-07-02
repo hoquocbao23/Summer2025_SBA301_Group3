@@ -13,4 +13,5 @@ public interface ITicketTypeService {
     void deleteTicketType(long id);
     TicketType updateTicketType(long id, TicketTypeDto ticketType);
     List<TicketType> findAllUnlimitTicketTypes();
+    TicketType findAllLimitTicketTypes();
 }
