@@ -22,9 +22,9 @@ const TicketLayout = () => {
     // Lưu dữ liệu vào singleForm
     const [singleForm, setSingleForm] = useState({
         ...location.state?.singleForm,
-        selectedRoute: null,
         totalPrice: 0,
-        estimatedDuration: 0
+        estimatedDuration: 0,
+        
     });
 
     // Lấy dữ liệu từ TravelPassForm
@@ -74,6 +74,8 @@ const TicketLayout = () => {
         <TicketContext.Provider value={{
              singleForm,  
              travelPassForm,
+             setSingleForm,
+             setTravelPassForm
         }}>
             { travelPassForm === null  && (
                 
