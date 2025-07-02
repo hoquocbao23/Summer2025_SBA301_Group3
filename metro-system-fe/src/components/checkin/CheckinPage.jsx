@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Container, Spinner, Alert, Row, Col } from 'react-bootstrap';
+import { Button, Container, Spinner, Alert, Row, Col, Form } from 'react-bootstrap';
 import './checkinPage.css';
 import useTicket from '../../services/ticket';
 import HistoryTable from './HistoryTable';
+import StationService from '../../services/stationService';
 
 const CheckinPage = () => {
   const { ticketId } = useParams();
@@ -15,11 +16,24 @@ const CheckinPage = () => {
   const [successMsg, setSuccessMsg] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(0);
   const { getTicketById, checkInTicket, checkOutTicket } = useTicket();
+  const [stations, setStations] = useState([]);
+  const [selectedStationId, setSelectedStationId] = useState('');
 
+  const fetchStations = async () => {
+    try {
+    const response = await StationService.getAllStations()
+    setStations(response.data);
+    console.log("stations checkin page:", response.data);
+  } catch (error) {
+    console.error('Failed to fetch stations:', error);
+  }
+  }
 
   useEffect(() => {
     setLoading(true);
     setError(null);
+    // Fetch stations
+    fetchStations();
     setTimeout(() => {
       if (ticketId) {
         fetchTicket();
@@ -46,22 +60,37 @@ const CheckinPage = () => {
         setActionLoading(false);
         return;
       }
+      if (!selectedStationId) {
+        setActionError('Vui lòng chọn ga.');
+        setActionLoading(false);
+        return;
+      }
       try {
-        if (type === 'checkin') {
-          const response = await checkInTicket(+ticketId);
-          console.log(response);
-          setSuccessMsg('Check-in thành công!');
+        const actionMap = {
+          checkin: {
+            fn: checkInTicket,
+            successMsg: 'Check-in thành công!'
+          },
+          checkout: {
+            fn: checkOutTicket,
+            successMsg: 'Check-out thành công!'
+          }
+        };
+        const action = actionMap[type];
+        if (!action) throw new Error('Hành động không hợp lệ.');
+        const response = await action.fn({ ticketId: +ticketId, stationId: +selectedStationId });
+        if (response && response.status && response.status !== 200) {
+          setActionError(response.message || 'Có lỗi xảy ra khi thực hiện thao tác.');
         } else {
-          const response = await checkOutTicket(+ticketId);
-          console.log(response);
-          setSuccessMsg('Check-out thành công!');
+          setSuccessMsg(action.successMsg);
+          // Reload ticket data and trigger history reload
+          await fetchTicket();
+          setReloadTrigger(prev => prev + 1);
         }
-        // Reload ticket data and trigger history reload
-        await fetchTicket();
-        setReloadTrigger(prev => prev + 1);
-
       } catch (error) {
-        setActionError('Có lỗi xảy ra khi thực hiện thao tác.');
+        const apiMsg = error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi thực hiện thao tác.';
+        setActionError(apiMsg);
+        setSuccessMsg(null);
         console.error('Error:', error);
       }
       setActionLoading(false);
@@ -104,6 +133,21 @@ const CheckinPage = () => {
               <div><strong>Hành khách:</strong> {ticket.userName}</div>
               <div><strong>Tuyến:</strong> {ticket.routeName}</div>
               <div><strong>Loại vé:</strong> {ticket.ticketName}</div>
+              <div className="mb-3">
+                <Form.Label>Chọn ga</Form.Label>
+                <Form.Select
+                  value={selectedStationId}
+                  onChange={e => setSelectedStationId(e.target.value)}
+                  disabled={stations.length === 0}
+                >
+                  <option value="">Chọn ga...</option>
+                  {stations.map(station => (
+                    <option key={station.stationId} value={station.stationId}>
+                      {station.stationName}
+                    </option>
+                  ))}
+                </Form.Select>
+              </div>
             </div>
             {actionError && <Alert variant="danger">{actionError}</Alert>}
             {successMsg && <Alert variant="success">{successMsg}</Alert>}

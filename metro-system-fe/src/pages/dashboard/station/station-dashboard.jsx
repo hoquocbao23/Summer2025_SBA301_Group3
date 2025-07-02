@@ -227,17 +227,6 @@ const AdminStationManager = () => {
                     </td>
                     <td className="px-4 py-3">
                       <div className="fw-semibold text-dark">{station.stationLocation}</div>
-<<<<<<< HEAD
-                    </td>
-                    <td className="px-4 py-3">
-                      <img
-                        src={station.url || "/placeholder.svg?height=40&width=60"}
-                        alt={station.stationName}
-                        className="rounded border"
-                        style={{ width: "60px", height: "40px", objectFit: "cover" }}
-                        onError={(e) => { e.target.src = "https://cdn.24h.com.vn/upload/3-2022/images/2022-09-29/Hinh-anh-moi-nhat-ve-ga-tren-cao-tuyen-metro-so-1-dat-99-tien-do-1-1664390321-916-width2000height1359.jpg?height=40&width=60"; }}
-                      />
-=======
 
                     </td>                    <td className="px-4 py-3">
                       {station.url && (
@@ -250,7 +239,6 @@ const AdminStationManager = () => {
                         />
                       )}
 
->>>>>>> 0b2e748d7935f96ff2c9c7bc7d94493a8f7d86ec
                     </td>
                     <td className="px-4 py-3">
                       <span

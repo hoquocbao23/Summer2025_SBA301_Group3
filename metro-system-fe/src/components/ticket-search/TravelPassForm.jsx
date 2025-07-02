@@ -82,7 +82,7 @@ const TravelPassForm = ({ initialData }) => {
         }
 
 
-        const basePrice = await getRouteDetails(travelPassForm.routeId, travelPassForm.ticketName);
+        const basePrice = await getRouteDetails(travelPassForm.routeId, travelPassForm.ticketTypeId);
         // Update the form with the base price
         // Set state là bất đồng bộ, nên phải lưu tạm trong updatedForm
         const updatedForm = {

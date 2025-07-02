@@ -8,7 +8,7 @@ import { useState, useEffect } from 'react';
 const PaymentSuccess = () => {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [ticketId, setTicketId] = useState(null);
+  const [bookingId, setBookingId] = useState(null);
   const [isProcessing, setIsProcessing] = useState(true);
 
   useEffect(() => {
@@ -20,10 +20,10 @@ const PaymentSuccess = () => {
         const success = searchParams.get('status');
         console.log("success", success);
 
-        if (success === 'PAID' && paymentData?.ticketId) {
-          setTicketId(paymentData.ticketId);
+        if (success === 'PAID' && paymentData?.bookingId) {
+          setBookingId(paymentData.bookingId);
           // Call API to update ticket status
-          await axiosInstance.put(`tickets/success/${paymentData.ticketId}`, paymentData);
+          await axiosInstance.put(`tickets/success/${paymentData.bookingId}`, paymentData);
           // Clear payment data after successful update
         }
       } catch (error) {
@@ -60,8 +60,8 @@ const PaymentSuccess = () => {
         <h5 className="mb-3">Ticket Details</h5>
         <div className="row text-start">
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Ticket ID</small>
-            <span className="fw-bold">#{ticketId || 'N/A'}</span>
+            <small className="text-muted d-block">Booking ID</small>
+            <span className="fw-bold">#{bookingId || 'N/A'}</span>
           </div>
           <div className="col-md-6 mb-3">
             <small className="text-muted d-block">Purchase Date</small>

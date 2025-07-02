@@ -4,6 +4,8 @@ const TICKET_ENDPOINTS = {
   TICKETS: '/tickets'
 };
 
+
+
 export default function useTicket() {
   const getTicketById = async (ticketId) => {
     try {
@@ -23,18 +25,18 @@ export default function useTicket() {
     }
   };
 
-  const checkInTicket = async (ticketId) => {
+  const checkInTicket = async (checkTicket) => {
     try {
-      const response = await axiosInstance.post(`${TICKET_ENDPOINTS.TICKETS}/check-in?ticketId=${ticketId}`);
+      const response = await axiosInstance.post(`${TICKET_ENDPOINTS.TICKETS}/check-in`, checkTicket);
       return response.data;
     } catch (error) {
       throw error;
     }
   };
 
-  const checkOutTicket = async (ticketId) => {
+  const checkOutTicket = async (checkTicket) => {
     try {
-      const response = await axiosInstance.post(`${TICKET_ENDPOINTS.TICKETS}/check-out?ticketId=${ticketId}`);
+      const response = await axiosInstance.post(`${TICKET_ENDPOINTS.TICKETS}/check-out`, checkTicket);
       return response.data;
     } catch (error) {
       throw error;
