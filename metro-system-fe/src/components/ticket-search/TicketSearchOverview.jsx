@@ -7,7 +7,7 @@ import RouteSearchService from '../../services/routeSearchService';
 import StationService from '../../services/stationService';
 import './ticketSearchTool.css';
 
-const TicketSearchOverview = ({ onStepChange }) => {
+const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
   const [selectedIndex, setSelectedIndex] = useState(null);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchResults, setSearchResults] = useState(null);
@@ -23,10 +23,17 @@ const TicketSearchOverview = ({ onStepChange }) => {
   // Load stations and perform search on component mount
   useEffect(() => {
     loadStations();
-    if (singleForm?.fromStation && singleForm?.toStation) {
+    if (singleForm?.fromStationId && singleForm?.toStationId) {
       performSearch();
     }
   }, []);
+
+  // Trigger search when searchTrigger changes
+  useEffect(() => {
+    if (searchTrigger && searchTrigger > 0 && singleForm?.fromStationId && singleForm?.toStationId) {
+      performSearch();
+    }
+  }, [searchTrigger]);
 
   // Load recent searches from localStorage
   useEffect(() => {
@@ -57,12 +64,12 @@ const TicketSearchOverview = ({ onStepChange }) => {
   };
 
   const performSearch = async () => {
-    if (!singleForm?.fromStation || !singleForm?.toStation) {
+    if (!singleForm?.fromStationId || !singleForm?.toStationId) {
       setError('Please select both departure and destination stations');
       return;
     }
 
-    if (singleForm.fromStation === singleForm.toStation) {
+    if (singleForm.fromStationId === singleForm.toStationId) {
       setError('Departure and destination stations cannot be the same');
       return;
     }
@@ -72,7 +79,7 @@ const TicketSearchOverview = ({ onStepChange }) => {
       setError(null);
       setSelectedIndex(null);
 
-      console.log('Searching routes from', singleForm.fromStation, 'to', singleForm.toStation);
+      console.log('Searching routes from', singleForm.fromStationId, 'to', singleForm.toStationId);
 
       const response = await RouteSearchService.searchRoutes(
         singleForm.fromStationId,
@@ -147,8 +154,10 @@ const TicketSearchOverview = ({ onStepChange }) => {
   const handleRecentSearchClick = (recentSearch) => {
     setSingleForm(prev => ({
       ...prev,
-      fromStation: recentSearch.sourceStationId,
-      toStation: recentSearch.destinationStationId
+      fromStationId: recentSearch.sourceStationId,
+      fromStation: recentSearch.sourceStationName,
+      toStationId: recentSearch.destinationStationId,
+      toStation: recentSearch.destinationStationName
     }));
     performSearch();
   };
@@ -206,36 +215,24 @@ const TicketSearchOverview = ({ onStepChange }) => {
       <Row>
         {/* Sidebar Filters + Recent */}
         <Col md={3}>
-          {/* Search Controls */}
-          <Card className="mb-3">
-            <Card.Header>
-              <h6 className="mb-0">Search Options</h6>
-            </Card.Header>
-            <Card.Body>
-              <Button 
-                variant="primary" 
-                size="sm" 
-                className="w-100 mb-2"
-                onClick={performSearch}
-                disabled={loading || !singleForm?.fromStation || !singleForm?.toStation}
-              >
-                {loading ? (
-                  <>
-                    <Spinner animation="border" size="sm" className="me-2" />
-                    Searching...
-                  </>
-                ) : (
-                  'Search Routes'
-                )}
-              </Button>
-              
-              {searchResults && (
+          {/* Search Results Summary */}
+          {searchResults && (
+            <Card className="mb-3">
+              <Card.Header>
+                <h6 className="mb-0">Search Results</h6>
+              </Card.Header>
+              <Card.Body>
                 <div className="text-center small text-muted">
-                  {searchResults.totalRoutesFound} routes found
+                  {searchResults.totalPathsFound} routes found
                 </div>
-              )}
-            </Card.Body>
-          </Card>
+                {searchResults.sourceStation && searchResults.destinationStation && (
+                  <div className="text-center small text-muted">
+                    {searchResults.sourceStation.name} → {searchResults.destinationStation.name}
+                  </div>
+                )}
+              </Card.Body>
+            </Card>
+          )}
 
           <hr className="border-light my-4" />
           
@@ -366,9 +363,6 @@ const TicketSearchOverview = ({ onStepChange }) => {
                   No routes available between the selected stations. 
                   Please try different stations or check back later.
                 </p>
-                <Button variant="primary" onClick={performSearch}>
-                  Search Again
-                </Button>
               </Card.Body>
             </Card>
           )}

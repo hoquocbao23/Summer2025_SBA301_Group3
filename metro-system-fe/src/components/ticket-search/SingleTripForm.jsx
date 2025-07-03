@@ -1,12 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useContext } from 'react';
 import { Form, InputGroup, Button, Accordion, Row, Col, Spinner } from 'react-bootstrap';
 import { ArrowDownUp, Plus, Dash } from 'react-bootstrap-icons';
 import './TicketSearchTool.css';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import StationService from '../../services/stationService';
 import { availableStations } from '../../data/stations';
+import { TicketContext } from '../../pages/layout/TicketLayout';
 
-const SingleTripForm = ({ initialData }) => {
+const SingleTripForm = ({ initialData, onSearch }) => {
+    const navigate = useNavigate();
+    const location = useLocation();
+    
+    // Check if we're on the tickets page and if context is available
+    const isOnTicketsPage = location.pathname === '/tickets';
+    const context = isOnTicketsPage ? useContext(TicketContext) : null;
+    
     const [singleForm, setSingleForm] = useState(initialData || {
         fromStationId: '',
         fromStation : '',
@@ -15,11 +23,19 @@ const SingleTripForm = ({ initialData }) => {
         numberOfTickets: 1,
     });
 
+    // Update form when context changes (for tickets page)
+    useEffect(() => {
+        if (context?.singleForm && isOnTicketsPage) {
+            setSingleForm(prev => ({
+                ...prev,
+                ...context.singleForm
+            }));
+        }
+    }, [context?.singleForm, isOnTicketsPage]);
+
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-
-    const navigate = useNavigate();
 
     // Fetch stations from API on component mount
     useEffect(() => {
@@ -93,18 +109,29 @@ const SingleTripForm = ({ initialData }) => {
         fetchStations();
     };
 
+    const updateForm = (newFormData) => {
+        setSingleForm(newFormData);
+        
+        // Update context if on tickets page
+        if (isOnTicketsPage && context?.setSingleForm) {
+            context.setSingleForm(newFormData);
+        }
+    };
+
     const handleSwapStations = () => {
-        setSingleForm(prev => ({
-            ...prev,
-            fromStationId: prev.toStationId,
-            fromStation: prev.toStation,
-            toStationId: prev.fromStationId,
-            toStation: prev.fromStation
-        }));
+        const newForm = {
+            ...singleForm,
+            fromStationId: singleForm.toStationId,
+            fromStation: singleForm.toStation,
+            toStationId: singleForm.fromStationId,
+            toStation: singleForm.fromStation
+        };
+        
+        updateForm(newForm);
     };
 
     const handleSearch = () => {
-        // Validate form before navigation
+        // Validate form before navigation/search
         if (!singleForm.fromStationId || !singleForm.toStationId) {
             setError('Please select both departure and destination stations');
             return;
@@ -118,12 +145,26 @@ const SingleTripForm = ({ initialData }) => {
         // Clear any previous errors
         setError(null);
         
-        // Navigate to ticket layout with form data
-        navigate('/tickets', { 
-            state: { 
-                singleForm: singleForm 
+        if (isOnTicketsPage) {
+            // If we're on the tickets page, update context and trigger search
+            if (context?.setSingleForm) {
+                context.setSingleForm(singleForm);
             }
-        });
+            // Use context's search handler if available
+            if (context?.onFormSearch) {
+                context.onFormSearch(singleForm);
+            } else if (onSearch) {
+                // Fallback to onSearch prop
+                onSearch(singleForm);
+            }
+        } else {
+            // If we're on home page, navigate to ticket layout with form data
+            navigate('/tickets', { 
+                state: { 
+                    singleForm: singleForm 
+                }
+            });
+        }
     };
 
     return (
@@ -150,7 +191,7 @@ const SingleTripForm = ({ initialData }) => {
                                 value={singleForm.fromStationId}
                                 onChange={(e) => {
                                     const selectedOption = e.target.options[e.target.selectedIndex];
-                                    setSingleForm({ 
+                                    updateForm({ 
                                         ...singleForm, 
                                         fromStationId: e.target.value, 
                                         fromStation: selectedOption.text 
@@ -183,7 +224,7 @@ const SingleTripForm = ({ initialData }) => {
                                 value={singleForm.toStationId}
                                 onChange={(e) => {
                                     const selectedOption = e.target.options[e.target.selectedIndex];
-                                    setSingleForm({ 
+                                    updateForm({ 
                                         ...singleForm, 
                                         toStationId: e.target.value, 
                                         toStation: selectedOption.text 
@@ -243,7 +284,7 @@ const SingleTripForm = ({ initialData }) => {
                                                 <Button
                                                     variant="outline-secondary"
                                                     size="sm"
-                                                    onClick={() => setSingleForm({ ...singleForm, numberOfTickets: Math.max(1, singleForm.numberOfTickets - 1) })}
+                                                    onClick={() => updateForm({ ...singleForm, numberOfTickets: Math.max(1, singleForm.numberOfTickets - 1) })}
                                                 >
                                                     <Dash />
                                                 </Button>
@@ -251,7 +292,7 @@ const SingleTripForm = ({ initialData }) => {
                                                 <Button
                                                     variant="outline-secondary"
                                                     size="sm"
-                                                    onClick={() => setSingleForm({ ...singleForm, numberOfTickets: Math.min(10, singleForm.numberOfTickets + 1) })}
+                                                    onClick={() => updateForm({ ...singleForm, numberOfTickets: Math.min(10, singleForm.numberOfTickets + 1) })}
                                                 >
                                                     <Plus />
                                                 </Button>

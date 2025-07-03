@@ -588,28 +588,23 @@ const AdminTicketRuleManager = () => {
                       <div className="col-md-4">
                         <small className="text-muted">5km trip:</small>
                         <div className="fw-semibold">
-                          {Math.min(
-                            parseFloat(editTicketRule.basePrice),
-                            parseFloat(editTicketRule.maxPrice || 50000)
-                          ).toLocaleString()} VND
+                          {parseFloat(editTicketRule.basePrice).toLocaleString()} VND
                         </div>
                       </div>
                       <div className="col-md-4">
                         <small className="text-muted">10km trip:</small>
                         <div className="fw-semibold">
-                          {Math.min(
-                            (parseFloat(editTicketRule.basePrice) + 2 * Math.ceil((10 - parseFloat(editTicketRule.basePrice) / 1000) / 2)) * 1000,
-                            parseFloat(editTicketRule.maxPrice || 1000000)
-                          ).toLocaleString()} VND
+                          {(parseFloat(editTicketRule.basePrice) + 
+                          (10 - 6) * parseFloat(editTicketRule.pricePerKm))
+                          .toLocaleString()} VND
                         </div>
                       </div>
                       <div className="col-md-4">
                         <small className="text-muted">20km trip:</small>
                         <div className="fw-semibold">
-                          {Math.min(
-                            (parseFloat(editTicketRule.basePrice) + 2 * Math.ceil((20 - parseFloat(editTicketRule.basePrice) / 1000) / 2)) * 1000,
-                            parseFloat(editTicketRule.maxPrice || 1000000)
-                          ).toLocaleString()} VND
+                          {(parseFloat(editTicketRule.basePrice) + 
+                          (20 - 6) * parseFloat(editTicketRule.pricePerKm))
+                          .toLocaleString()} VND
                         </div>
                       </div>
                     </div>

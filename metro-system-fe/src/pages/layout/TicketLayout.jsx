@@ -54,11 +54,19 @@ const TicketLayout = () => {
         { number: 3, label: "PROMOTION", active: false },
     ];
     
+    // Search trigger for SingleTripForm when on tickets page
+    const [searchTrigger, setSearchTrigger] = useState(0);
+    
+    const handleFormSearch = (formData) => {
+        // Update the form data and trigger search
+        setSingleForm(formData);
+        setSearchTrigger(prev => prev + 1); // Increment to trigger search
+    };
 
     const renderCurrentStep = () => {
         switch(layoutCurrentStep) {
             case 1:
-                return <TicketSearchOverview onStepChange={setLayoutCurrentStep} />;
+                return <TicketSearchOverview onStepChange={setLayoutCurrentStep} searchTrigger={searchTrigger} />;
             case 2:
                 return <PassengerPage layoutCurrentStep={layoutCurrentStep} onStepChange={setLayoutCurrentStep} />;
             case 3:
@@ -73,7 +81,10 @@ const TicketLayout = () => {
         ///
         <TicketContext.Provider value={{
              singleForm,  
+             setSingleForm,
              travelPassForm,
+             setTravelPassForm,
+             onFormSearch: handleFormSearch,
         }}>
             { travelPassForm === null  && (
                 

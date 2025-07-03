@@ -3,6 +3,8 @@ import { availableStations, getStationName, initialRoutes } from "../../../data"
 import RouteService from "../../../services/routeService"
 import StationService from "../../../services/stationService"
 import TicketRuleService from "../../../services/ticketRuleService"
+import Button from 'react-bootstrap/Button';
+import Spinner from 'react-bootstrap/Spinner';
 
 const AdminRouteManager = () => {
   const [routes, setRoutes] = useState([])
@@ -106,9 +108,9 @@ const AdminRouteManager = () => {
       //   }
       // }
       const isDuplicateName = routes.some(route =>
-          route.routeId !== editRoute.routeId &&
-          route.routeName.toLowerCase().trim() === editRoute.routeName?.toLowerCase().trim()
-        )
+        route.routeId !== editRoute.routeId &&
+        route.routeName.toLowerCase().trim() === editRoute.routeName?.toLowerCase().trim()
+      )
       if (isDuplicateName) {
         newErrors.routeName = "Route name already exists"
       }
@@ -390,7 +392,7 @@ const AdminRouteManager = () => {
   const saveStations = async () => {
     // Update the edit route with current stations for validation
     setEditRoute(prev => ({ ...prev, stations: currentRouteStations }))
-    
+
     if (currentRouteId && currentRouteStations.length > 0) {
       try {
         setLoading(true)
@@ -711,9 +713,9 @@ const AdminRouteManager = () => {
                 <h5 className="modal-title fw-bold">
                   {editRoute?.routeId ? "Edit Route" : "Add New Route"}
                 </h5>
-                <button 
-                  type="button" 
-                  className="btn-close" 
+                <button
+                  type="button"
+                  className="btn-close"
                   onClick={() => {
                     setShowModal(false)
                     setEditRoute(null)
@@ -732,13 +734,13 @@ const AdminRouteManager = () => {
                     <button
                       className={`nav-link ${activeTab === 'details' ? 'active' : ''} border-0 fw-semibold`}
                       onClick={() => setActiveTab('details')}
-                      style={{ 
+                      style={{
                         borderRadius: "8px 8px 0 0",
                         backgroundColor: activeTab === 'details' ? '#f8f9fa' : 'transparent'
                       }}
                     >
                       <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
-                        <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z"/>
+                        <path d="M1 2.828c.885-.37 2.154-.769 3.388-.893 1.33-.134 2.458.063 3.112.752v9.746c-.935-.53-2.12-.603-3.213-.493-1.18.12-2.37.461-3.287.811V2.828zm7.5-.141c.654-.689 1.782-.886 3.112-.752 1.234.124 2.503.523 3.388.893v9.923c-.918-.35-2.107-.692-3.287-.81-1.094-.111-2.278-.039-3.213.492V2.687zM8 1.783C7.015.936 5.587.81 4.287.94c-1.514.153-3.042.672-3.994 1.105A.5.5 0 0 0 0 2.5v11a.5.5 0 0 0 .707.455c.882-.4 2.303-.881 3.68-1.02 1.409-.142 2.59.087 3.223.877a.5.5 0 0 0 .78 0c.633-.79 1.814-1.019 3.222-.877 1.378.139 2.8.62 3.681 1.02A.5.5 0 0 0 16 13.5v-11a.5.5 0 0 0-.293-.455c-.952-.433-2.48-.952-3.994-1.105C10.413.809 8.985.936 8 1.783z" />
                       </svg>
                       Route Details
                     </button>
@@ -747,13 +749,13 @@ const AdminRouteManager = () => {
                     <button
                       className={`nav-link ${activeTab === 'stations' ? 'active' : ''} border-0 fw-semibold`}
                       onClick={() => setActiveTab('stations')}
-                      style={{ 
+                      style={{
                         borderRadius: "8px 8px 0 0",
                         backgroundColor: activeTab === 'stations' ? '#f8f9fa' : 'transparent'
                       }}
                     >
                       <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
-                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z"/>
+                        <path d="M8 16s6-5.686 6-10A6 6 0 0 0 2 6c0 4.314 6 10 6 10zm0-7a3 3 0 1 1 0-6 3 3 0 0 1 0 6z" />
                       </svg>
                       Stations ({currentRouteStations.length})
                       {!editRoute?.routeId && currentRouteStations.length < 2 && (
@@ -940,7 +942,7 @@ const AdminRouteManager = () => {
                       <div className="alert alert-info mb-3">
                         <div className="d-flex align-items-center">
                           <svg width="16" height="16" fill="currentColor" className="me-2" viewBox="0 0 16 16">
-                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z"/>
+                            <path d="M8 16A8 8 0 1 0 8 0a8 8 0 0 0 0 16zm.93-9.412-1 4.705c-.07.34.029.533.304.533.194 0 .487-.07.686-.246l-.088.416c-.287.346-.92.598-1.465.598-.703 0-1.002-.422-.808-1.319l.738-3.468c.064-.293.006-.399-.287-.47l-.451-.081.082-.381 2.29-.287zM8 5.5a1 1 0 1 1 0-2 1 1 0 0 1 0 2z" />
                           </svg>
                           <strong>New Route:</strong> You must add at least 2 stations to create a new route.
                         </div>
@@ -978,7 +980,7 @@ const AdminRouteManager = () => {
                               <td>
                                 <input
                                   type="number"
-                                  value={routeStation.distanceToNext}
+                                  value={index === currentRouteStations.length - 1 ? 0 : routeStation.distanceToNext === 0 ? null : routeStation.distanceToNext}
                                   onChange={(e) => updateStationInRoute(index, 'distanceToNext', e.target.value)}
                                   className="form-control form-control-sm"
                                   step="0.1"
@@ -1099,7 +1101,7 @@ const AdminRouteManager = () => {
                 >
                   Cancel
                 </button>
-                <button
+                {/* <button
                   type="button"
                   className={`btn btn-primary ${Object.keys(errors).length > 0 ? 'disabled' : ''}`}
                   onClick={handleSave}
@@ -1107,7 +1109,24 @@ const AdminRouteManager = () => {
                   style={{ borderRadius: "8px" }}
                 >
                   {editRoute?.routeId ? "Save Route & Stations" : "Create Route & Stations"}
-                </button>
+                </button> */}
+                <Button 
+                  variant="primary" 
+                  onClick={handleSave}
+                  disabled={Object.keys(errors).length > 0 || loading}
+                  style={{ borderRadius: "8px" }}
+                >
+                  <Spinner
+                    as="span"
+                    animation="border"
+                    size="sm"
+                    role="status"
+                    aria-hidden="true"
+                  />
+                  <span className={loading ? "visually-hidden" : ""}>
+                    {editRoute?.routeId ? "Save Route & Stations" : "Create Route & Stations"}
+                  </span>
+                </Button>
               </div>
             </div>
           </div>
