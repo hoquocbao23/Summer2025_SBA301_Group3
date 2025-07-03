@@ -28,8 +28,8 @@ const TicketSummary = ({ passengers = [],
     {
       departureStation: singleForm?.fromStationId,
       arrivalStation: singleForm?.toStationId,
-      routeId: travelPassForm?.routeId,
-      ticketTypeId: travelPassForm?.ticketTypeId,
+      routeId: travelPassForm?.routeId || 0,
+      ticketTypeId: travelPassForm?.ticketTypeId || singleForm?.ticketTypeId,   //ticket type id which í
       promotionId: promotion?.promotionId,
       promotionCode: promotion?.promotionCode,
       userEmails: passengers.map(passenger => passenger.email),
@@ -37,10 +37,10 @@ const TicketSummary = ({ passengers = [],
 
       ticketName: travelPassForm?.ticketName,
       numberOfPassengers: singleForm?.numberOfTickets || 1,
-      total: travelPassForm?.basePrice * (singleForm?.numberOfTickets || 1) || 20000,
+      total: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000,
       salePercent: 0,
       saleAmount: 0,
-      paymentAmount: travelPassForm?.basePrice || 1
+      paymentAmount: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000
 
     }
   );
@@ -48,9 +48,10 @@ const TicketSummary = ({ passengers = [],
   
 
   useEffect(() => {
+    console.log("singleForm", singleForm);
     setTicket({
       ...ticket,
-      paymentAmount: travelPassForm?.basePrice || 1,
+      paymentAmount: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000,
       userEmails: passengers.map(passenger => passenger.email),
     });
     if (promotion) {
@@ -96,7 +97,7 @@ const TicketSummary = ({ passengers = [],
     setShowConfirmModal(false);
     try {
       console.log("ticketdto", ticket);
-      const response = await axiosInstance.post('/tickets/unlimit', ticket);
+      const response = await axiosInstance.post('/tickets/booking', ticket);
       const paymentUrl = response.data.data.urlCheckout;
       localStorage.setItem('paymentData', JSON.stringify(response.data.data));
       window.location.href = paymentUrl;
@@ -194,7 +195,7 @@ const TicketSummary = ({ passengers = [],
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
           <span>Ticket Price</span>
-          <span>{formatCurrency(travelPassForm?.basePrice || 20000)}</span>
+          <span>{formatCurrency(ticket.total)}</span>
         </div >
         <div className="d-flex justify-content-between mb-2">
           <span>Number of Passengers</span>
@@ -208,7 +209,7 @@ const TicketSummary = ({ passengers = [],
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
           <span>Total</span>
-          <span>{formatCurrency(travelPassForm?.basePrice * ticket.numberOfPassengers || 20000)}</span>
+          <span>{formatCurrency(ticket.total)}</span>
         </div>
         {promotion && (
           <div className="d-flex justify-content-between mb-2">

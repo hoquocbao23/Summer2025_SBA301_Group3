@@ -6,6 +6,7 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import StationService from '../../services/stationService';
 import { availableStations } from '../../data/stations';
 import { TicketContext } from '../../pages/layout/TicketLayout';
+import axiosInstance from '../../config/axios';
 
 const SingleTripForm = ({ initialData, onSearch }) => {
     const navigate = useNavigate();
@@ -20,6 +21,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
         fromStation : '',
         toStationId: '',
         toStation : '',
+        ticketTypeId: '',
         numberOfTickets: 1,
     });
 
@@ -36,6 +38,26 @@ const SingleTripForm = ({ initialData, onSearch }) => {
     const [stations, setStations] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+
+    const fetchAvailableTicketTypes = async () => {
+        try {
+            const response = await axiosInstance.get('/ticket-types/limit');
+            // Set the first ticket type as default if available
+            setSingleForm(prev => ({
+                ...prev,
+                ticketTypeId: response.data.data.ticketTypeId,
+            }));
+                
+            
+        } catch (error) {
+            console.error('Error fetching available ticket types:', error);
+        }
+    };
+
+    useEffect(() => {
+        fetchAvailableTicketTypes();
+        console.log("singleForm:", singleForm);
+    }, []);
 
     // Fetch stations from API on component mount
     useEffect(() => {

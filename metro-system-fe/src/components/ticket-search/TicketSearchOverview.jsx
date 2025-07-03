@@ -47,6 +47,7 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
     }
   }, []);
 
+
   const loadStations = async () => {
     try {
       const response = await StationService.getAllStations();
@@ -133,21 +134,39 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
     setRecentSearches(updated);
     localStorage.setItem('recentSearches', JSON.stringify(updated));
   };
+
   const handleBuyNow = () => {
     if (selectedIndex !== null && searchResults?.paths[selectedIndex]) {
-      const selectedPath = searchResults.paths[selectedIndex];
+      console.log("Proceeding to next step with selected route:", selectedIndex);
+      console.log("Current singleForm:", singleForm);
+      onStepChange(2);
+    }
+  };
+
+  const handleRouteSelection = (index) => {
+    
+    setSelectedIndex(index) 
+   
+    // Update singleForm immediately when a route is selected
+    if (searchResults?.paths[index]) {
+      const selectedPath = searchResults.paths[index];
+      console.log("Selected path:", selectedPath);
       
-      // Update context with selected path information
-      setSingleForm(prev => ({
-        ...prev,
-        selectedPath: selectedPath,
+      const updatedSingleForm = {
+        ...singleForm,
         totalPrice: selectedPath.totalPrice,
         totalDuration: selectedPath.totalDuration,
         totalDistance: selectedPath.totalDistance,
         transferCount: selectedPath.transferCount
-      }));
-
-      onStepChange(2);
+      }
+      setSingleForm(updatedSingleForm);
+      console.log("Route selected - Updated singleForm:", {
+        ...singleForm,
+        totalPrice: selectedPath.totalPrice,
+        totalDuration: selectedPath.totalDuration,
+        totalDistance: selectedPath.totalDistance,
+        transferCount: selectedPath.transferCount
+      });
     }
   };
 
@@ -157,7 +176,8 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
       fromStationId: recentSearch.sourceStationId,
       fromStation: recentSearch.sourceStationName,
       toStationId: recentSearch.destinationStationId,
-      toStation: recentSearch.destinationStationName
+      toStation: recentSearch.destinationStationName,
+      ticketTypeId: prev.ticketTypeId
     }));
     performSearch();
   };
@@ -171,30 +191,30 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
     setCurrentPage(1);
   };
 
-  // Sort and paginate results
-  const getSortedPaths = () => {
-    if (!searchResults?.paths) return [];
+  // // Sort and paginate results
+  // const getSortedPaths = () => {
+  //   if (!searchResults?.paths) return [];
     
-    const sorted = [...searchResults.paths].sort((a, b) => {
-      switch (sortBy) {
-        case 'price':
-          return a.totalPrice - b.totalPrice;
-        case 'time':
-          return a.totalDuration - b.totalDuration;
-        case 'distance':
-          return a.totalDistance - b.totalDistance;
-        default:
-          return 0;
-      }
-    });
+  //   const sorted = [...searchResults.paths].sort((a, b) => {
+  //     switch (sortBy) {
+  //       case 'price':
+  //         return a.totalPrice - b.totalPrice;
+  //       case 'time':
+  //         return a.totalDuration - b.totalDuration;
+  //       case 'distance':
+  //         return a.totalDistance - b.totalDistance;
+  //       default:
+  //         return 0;
+  //     }
+  //   });
     
-    return sorted;
-  };
+  //   return sorted;
+  // };
 
-  const sortedPaths = getSortedPaths();
-  const totalPages = Math.ceil(sortedPaths.length / ticketsPerPage);
+  const originalPaths = searchResults?.paths || [];
+  const totalPages = Math.ceil(originalPaths.length / ticketsPerPage);
   const startIdx = (currentPage - 1) * ticketsPerPage;
-  const currentTickets = sortedPaths.slice(startIdx, startIdx + ticketsPerPage);
+  const currentTickets = originalPaths.slice(startIdx, startIdx + ticketsPerPage);
 
   const formatPrice = (price) => {
     return new Intl.NumberFormat('vi-VN', {
@@ -369,11 +389,13 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
 
           {/* Path Results */}
           {!loading && currentTickets.map((path, idx) => {
+            console.log("Path:", path);
+            console.log("currentTickets:", currentTickets);
             const actualIdx = startIdx + idx;
             return (
               <Card
                 key={path.id}
-                onClick={() => setSelectedIndex(actualIdx)}
+                onClick={() => handleRouteSelection(actualIdx)}
                 className={`mb-3 ${actualIdx === selectedIndex ? 'border border-danger' : ''}`}
                 style={{ cursor: 'pointer' }}
               >
@@ -428,6 +450,7 @@ const TicketSearchOverview = ({ onStepChange, searchTrigger }) => {
 
                           {/* Segments Path (for selected path) */}
                           {actualIdx === selectedIndex && path.segments && path.segments.length > 0 && (
+                            console.log("path.segments:", path.segments),
                             <Row className="mt-3">
                               <Col>
                                 <div className="small text-muted mb-2">Route details:</div>

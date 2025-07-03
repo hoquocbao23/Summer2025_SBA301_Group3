@@ -65,6 +65,7 @@ const HistoryTable = ({ ticketId, reloadTrigger }) => {
                                 <tr>
                                     <th>Thời gian</th>
                                     <th>Tuyến</th>
+                                    <th>Nhà ga</th>
                                     <th>Hành động</th>
                                     
                                 </tr>
@@ -78,6 +79,7 @@ const HistoryTable = ({ ticketId, reloadTrigger }) => {
                                     <tr key={`${record.id}-checkin`}>
                                         <td>{formatDateTime(record.checkIn)}</td>
                                         <td>{record.routeName}</td>
+                                        <td>{record.checkinStation}</td>
                                         <td>
                                             <span className="badge bg-success">
                                                 Check-in
@@ -88,6 +90,7 @@ const HistoryTable = ({ ticketId, reloadTrigger }) => {
                                         <tr key={`${record.id}-checkout`}>
                                             <td>{formatDateTime(record.checkOut)}</td>
                                             <td>{record.routeName}</td>
+                                            <td>{record.checkoutStation}</td>
                                             <td>
                                                 <span className="badge bg-warning">
                                                     Check-out

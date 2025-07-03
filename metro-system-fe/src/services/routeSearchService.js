@@ -53,6 +53,7 @@ export class RouteSearchService {
    * @returns {Object} Transformed data for frontend
    */
   static transformSearchResults(apiResponse) {
+    console.log("apiResponse", apiResponse);
     if (!apiResponse || !apiResponse.data || !apiResponse.data.paths) {
       return {
         sourceStation: null,
@@ -64,6 +65,7 @@ export class RouteSearchService {
 
     const { data } = apiResponse;
     const paths = data.paths || [];
+    console.log("paths", paths);
 
     // Extract source and destination from first path
     let sourceStation = null;
