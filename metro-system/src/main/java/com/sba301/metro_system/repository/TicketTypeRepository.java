@@ -8,4 +8,5 @@ import java.util.List;
 public interface TicketTypeRepository extends JpaRepository<TicketType, Long> {
     List<TicketType> findAllByTicketTypeIdIn(List<Long> ids );
     List<TicketType> findAllByUsageLimit(Boolean usageLimit);
+    TicketType findByUsageLimit(Boolean usageLimit);
 }

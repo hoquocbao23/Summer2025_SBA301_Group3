@@ -62,4 +62,10 @@ public interface StationRouteRepository extends JpaRepository<StationRoute, Long
                                              @Param("destinationStationId") Long destinationStationId);
 
     List<StationRoute> findAllByRouteStatus(Status status);
+
+    //Check Station co thuoc ve route
+    @Query("SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END FROM StationRoute sr  WHERE sr.station.stationId = :stationId AND sr.route.routeId = :routeId")
+    boolean isStationBelongsToRoute(@Param("stationId") Long stationId, @Param("routeId") Long routeId);
+
+
 }

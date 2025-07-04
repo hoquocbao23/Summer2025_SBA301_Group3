@@ -20,6 +20,10 @@ public class RouteRule {
     @JoinColumn(name = "rule_id")
     private TicketRule ticketRule;
 
-    @Enumerated(EnumType.STRING)
-    private RuleType type;
+//    @Enumerated(EnumType.STRING)
+//    private RuleType type;
+
+    @ManyToOne
+    @JoinColumn(name = "ticket_type_id")
+    private TicketType ticketType;
 }

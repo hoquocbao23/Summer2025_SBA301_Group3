@@ -6,9 +6,7 @@ import com.sba301.metro_system.enums.Status;
 import com.sba301.metro_system.exception.NotFoundException;
 import com.sba301.metro_system.repository.TicketTypeRepository;
 import com.sba301.metro_system.service.ITicketTypeService;
-import jakarta.persistence.Id;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -82,5 +80,9 @@ public class TicketTypeService implements ITicketTypeService {
     @Override
     public List<TicketType> findAllUnlimitTicketTypes() {
         return ticketTypeRepository.findAllByUsageLimit(false);
+    }
+    @Override
+    public TicketType findAllLimitTicketTypes() {
+        return ticketTypeRepository.findByUsageLimit(true);
     }
 }

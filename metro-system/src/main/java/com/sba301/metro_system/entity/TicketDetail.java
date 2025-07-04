@@ -18,4 +18,12 @@ public class TicketDetail {
     @ManyToOne
     @JoinColumn(name = "ticket_id")
     private Ticket ticket;
+
+    @ManyToOne
+    @JoinColumn(name = "departure_station_id")
+    private Station departureStation;
+
+    @ManyToOne
+    @JoinColumn(name = "arrival_station_id")
+    private Station arrivalStation;
 }
