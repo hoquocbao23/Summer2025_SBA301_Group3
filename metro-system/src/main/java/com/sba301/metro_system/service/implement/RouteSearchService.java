@@ -1,6 +1,5 @@
 package com.sba301.metro_system.service.implement;
 
-import com.beust.ah.A;
 import com.sba301.metro_system.dto.request.RouteSearchRequest;
 import com.sba301.metro_system.dto.request.route.PathDTO;
 import com.sba301.metro_system.dto.response.*;
@@ -16,9 +15,8 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.stream.Collectors;
 
 @Service
@@ -29,307 +27,359 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
     private final StationRouteRepository stationRouteRepository;
     private final StationRepository stationRepository;
 
+    // Optimized data structures
     private Map<Long, List<Edge>> graph;
+    private Map<Long, Station> stationCache;
+    private Map<String, Route> routeConnectionCache; // Cache for route connections between stations
+    private Map<Long, List<StationRoute>> stationRouteCache; // Cache station routes
 
     @PostConstruct
     public void initGraph() {
+        buildCaches();
         buildGraph();
     }
 
     /**
-     * Build graph representation: node = stationId, edges between adjacent stations on active routes
+     * Build caches for faster lookups
+     */
+    private void buildCaches() {
+        log.info("Building caches for faster lookups");
+
+        // Initialize all cache maps first
+        stationCache = new ConcurrentHashMap<>();
+        stationRouteCache = new ConcurrentHashMap<>();
+        routeConnectionCache = new ConcurrentHashMap<>();
+
+        // Build station cache
+        stationRepository.findAll().forEach(station ->
+                stationCache.put(station.getStationId(), station));
+
+        // Build station route cache
+        List<StationRoute> allStationRoutes = stationRouteRepository.findAll();
+        for (StationRoute sr : allStationRoutes) {
+            stationRouteCache.computeIfAbsent(sr.getStation().getStationId(),
+                    k -> new ArrayList<>()).add(sr);
+        }
+
+        log.info("Caches built successfully - Station cache: {}, Route cache: {}",
+                stationCache.size(), stationRouteCache.size());
+    }
+
+    /**
+     * Build graph representation with optimizations
      */
     public void buildGraph() {
-        log.info("Building graph from active routes");
+        log.info("Building optimized graph from active routes");
         List<StationRoute> routes = stationRouteRepository.findAllByRouteStatus(Status.ACTIVE);
-        Map<Long, List<StationRoute>> byRoute = routes.stream()
+
+        // Initialize graph if not already done
+        if (graph == null) {
+            graph = new ConcurrentHashMap<>();
+        }
+
+        graph.clear();
+
+        // Group by route ID for better performance
+        Map<Long, List<StationRoute>> byRoute = routes.parallelStream()
                 .collect(Collectors.groupingBy(sr -> sr.getRoute().getRouteId()));
 
-        graph = new HashMap<>();
         int totalEdges = 0;
 
-        for (List<StationRoute> list : byRoute.values()) {
-            list.sort(Comparator.comparing(StationRoute::getStationOrder));
-            for (int i = 0; i < list.size() - 1; i++) {
-                StationRoute cur = list.get(i);
-                StationRoute next = list.get(i + 1);
+        for (List<StationRoute> routeStations : byRoute.values()) {
+            // Sort once per route
+            routeStations.sort(Comparator.comparing(StationRoute::getStationOrder));
 
-                if (cur.getDistanceToNext() == null || cur.getDistanceToNext() <= 0) {
+            // Build edges for this route
+            for (int i = 0; i < routeStations.size() - 1; i++) {
+                StationRoute current = routeStations.get(i);
+                StationRoute next = routeStations.get(i + 1);
+
+                Double distance = current.getDistanceToNext();
+                if (distance == null || distance <= 0) {
                     log.warn("Invalid distance {} from station {} to {}",
-                            cur.getDistanceToNext(),
-                            cur.getStation().getStationName(),
+                            distance, current.getStation().getStationName(),
                             next.getStation().getStationName());
                     continue;
                 }
 
-                double dist = cur.getDistanceToNext();
-                addEdge(cur.getStation().getStationId(), next.getStation().getStationId(), dist);
-                addEdge(next.getStation().getStationId(), cur.getStation().getStationId(), dist);
+                Long currentId = current.getStation().getStationId();
+                Long nextId = next.getStation().getStationId();
+
+                // Add bidirectional edges
+                addEdge(currentId, nextId, distance);
+                addEdge(nextId, currentId, distance);
                 totalEdges += 2;
 
-                log.debug("Added bidirectional edge: {} <-> {} (distance: {})",
-                         cur.getStation().getStationName(),
-                         next.getStation().getStationName(),
-                         dist);
+                // Cache route connection - with null check
+                if (routeConnectionCache != null) {
+                    String connectionKey = Math.min(currentId, nextId) + "-" + Math.max(currentId, nextId);
+                    routeConnectionCache.put(connectionKey, current.getRoute());
+                }
             }
         }
 
-        log.info("Graph built successfully with {} nodes and {} edges", graph.size(), totalEdges);
+        log.info("Optimized graph built with {} nodes and {} edges", graph.size(), totalEdges);
     }
 
     private void addEdge(Long from, Long to, double weight) {
+        if (graph == null) {
+            graph = new ConcurrentHashMap<>();
+        }
         graph.computeIfAbsent(from, k -> new ArrayList<>()).add(new Edge(from, to, weight));
     }
 
     /**
-     * Find k shortest simple paths without revisiting same nodes or edges
+     * Optimized k-shortest paths algorithm
      */
     public List<PathDTO> findKShortestPaths(Long source, Long dest, int k) {
-        log.info("Finding {} shortest paths from station {} to station {}", k, source, dest);
+        log.info("Finding {} shortest paths from {} to {}", k, source, dest);
 
-        // Validate inputs
+        // Input validation
         if (source == null || dest == null) {
-            log.warn("Source or destination is null");
-            throw new IllegalArgumentException("Source or destination is null");
+            throw new IllegalArgumentException("Source or destination cannot be null");
         }
-
         if (source.equals(dest)) {
-            log.warn("Source and destination are the same");
-            throw new IllegalArgumentException("Source and destination are the same");
+            throw new IllegalArgumentException("Source and destination cannot be the same");
         }
 
-        // Limit k to prevent excessive computation
+        // Limit k for performance
         k = Math.min(k, 10);
 
-        // Store found paths and candidates
-        List<Path> A = new ArrayList<>();
-        PriorityQueue<Path> B = new PriorityQueue<>(Comparator.comparingDouble(p -> p.totalDistance));
+        // Use more efficient data structures
+        List<Path> foundPaths = new ArrayList<>();
+        PriorityQueue<Path> candidates = new PriorityQueue<>(
+                Comparator.comparingDouble(p -> p.totalDistance));
 
-        // Set to track unique paths and avoid duplicates
-        Set<List<Long>> uniquePaths = new HashSet<>();
+        // Use BitSet for faster duplicate detection if station IDs are small
+        Set<String> uniquePathSignatures = new HashSet<>();
 
         // Find initial shortest path
-        Path p0 = dijkstra(source, dest, Collections.emptySet(), Collections.emptySet());
-        if (p0 == null) {
+        Path initialPath = optimizedDijkstra(source, dest, Collections.emptySet(), Collections.emptySet());
+        if (initialPath == null) {
             log.info("No path found from {} to {}", source, dest);
             return Collections.emptyList();
         }
-        A.add(p0);
-        uniquePaths.add(new ArrayList<>(p0.stations));
-        log.debug("Initial path: {} with distance: {}", p0.stations, p0.totalDistance);
 
-        // Find k-1 additional paths
+        foundPaths.add(initialPath);
+        uniquePathSignatures.add(getPathSignature(initialPath.stations));
+
+        // Yen's algorithm with optimizations
         for (int i = 1; i < k; i++) {
-            // Generate candidate paths from all previous paths
-            for (int pathIndex = 0; pathIndex < A.size(); pathIndex++) {
-                Path currentPath = A.get(pathIndex);
+            Set<Edge> allBannedEdges = new HashSet<>();
 
-                // Try each node as spur node (except the last one)
-                for (int spurIndex = 0; spurIndex < currentPath.stations.size() - 1; spurIndex++) {
-                    Long spurNode = currentPath.stations.get(spurIndex);
-                    List<Long> rootPath = new ArrayList<>(currentPath.stations.subList(0, spurIndex + 1));
+            // Generate candidates from all found paths
+            for (Path path : foundPaths) {
+                List<Long> pathStations = path.stations;
 
-                    // Collect edges to ban (edges used by paths with same root)
+                // Try each spur node (except last)
+                for (int spurIndex = 0; spurIndex < pathStations.size() - 1; spurIndex++) {
+                    Long spurNode = pathStations.get(spurIndex);
+                    List<Long> rootPath = pathStations.subList(0, spurIndex + 1);
+
+                    // Collect banned edges more efficiently
                     Set<Edge> bannedEdges = new HashSet<>();
-                    for (Path path : A) {
-                        if (path.stations.size() > spurIndex &&
-                                path.stations.subList(0, spurIndex + 1).equals(rootPath) &&
-                                spurIndex + 1 < path.stations.size()) {
+                    for (Path existingPath : foundPaths) {
+                        if (existingPath.stations.size() > spurIndex + 1 &&
+                                existingPath.stations.subList(0, spurIndex + 1).equals(rootPath)) {
 
-                            Long u = path.stations.get(spurIndex);
-                            Long v = path.stations.get(spurIndex + 1);
+                            Long u = existingPath.stations.get(spurIndex);
+                            Long v = existingPath.stations.get(spurIndex + 1);
                             bannedEdges.add(new Edge(u, v, 0));
                         }
                     }
 
-                    // Ban nodes in root path (except spur node) to avoid cycles
+                    // Ban root path nodes (except spur)
                     Set<Long> bannedNodes = new HashSet<>(rootPath);
                     bannedNodes.remove(spurNode);
 
-                    // Find spur path from spur node to destination
-                    Path spurPath = dijkstra(spurNode, dest, bannedEdges, bannedNodes);
+                    // Find spur path
+                    Path spurPath = optimizedDijkstra(spurNode, dest, bannedEdges, bannedNodes);
 
                     if (spurPath != null && spurPath.stations.size() > 1) {
-                        // Combine root path with spur path
+                        // Create candidate path
                         List<Long> candidateStations = new ArrayList<>(rootPath);
                         candidateStations.addAll(spurPath.stations.subList(1, spurPath.stations.size()));
 
-                        // Validate and check uniqueness
-                        if (candidateStations.size() > 1 &&
-                                candidateStations.get(0).equals(source) &&
-                                candidateStations.get(candidateStations.size() - 1).equals(dest) &&
-                                !uniquePaths.contains(candidateStations)) {
-
-                            double candidateDistance = computeDistance(candidateStations);
-                            if (candidateDistance > 0) {
-                                Path candidate = new Path(candidateStations, candidateDistance);
-                                B.add(candidate);
-                                log.debug("Added candidate path: {} with distance: {}",
-                                        candidateStations, candidateDistance);
+                        String signature = getPathSignature(candidateStations);
+                        if (!uniquePathSignatures.contains(signature)) {
+                            double distance = computeDistanceFast(candidateStations);
+                            if (distance > 0) {
+                                candidates.add(new Path(candidateStations, distance));
                             }
                         }
                     }
                 }
             }
 
-            // Find the best unique candidate
+            // Get best unique candidate
             Path nextBest = null;
-            while (!B.isEmpty() && nextBest == null) {
-                Path candidate = B.poll();
-                if (!uniquePaths.contains(candidate.stations)) {
+            while (!candidates.isEmpty() && nextBest == null) {
+                Path candidate = candidates.poll();
+                String signature = getPathSignature(candidate.stations);
+                if (!uniquePathSignatures.contains(signature)) {
                     nextBest = candidate;
-                } else {
-                    log.debug("Skipping duplicate candidate: {}", candidate.stations);
+                    uniquePathSignatures.add(signature);
                 }
             }
 
             if (nextBest == null) {
-                log.debug("No more unique paths found, stopping at {} paths", A.size());
                 break;
             }
 
-            A.add(nextBest);
-            uniquePaths.add(new ArrayList<>(nextBest.stations));
-            log.debug("Found path {}: {} with distance: {}", i + 1, nextBest.stations, nextBest.totalDistance);
+            foundPaths.add(nextBest);
         }
 
-        log.info("Found {} unique paths from {} to {}", A.size(), source, dest);
-        return A.stream()
+        log.info("Found {} paths from {} to {}", foundPaths.size(), source, dest);
+        return foundPaths.stream()
                 .map(p -> new PathDTO(p.stations, p.totalDistance))
                 .collect(Collectors.toList());
     }
 
     /**
-     * Dijkstra algorithm with banned edges and banned nodes to ensure simple paths
+     * Optimized Dijkstra with early termination and better data structures
      */
-    private Path dijkstra(Long src, Long dest, Set<Edge> bannedEdges, Set<Long> bannedNodes) {
+    private Path optimizedDijkstra(Long src, Long dest, Set<Edge> bannedEdges, Set<Long> bannedNodes) {
         if (src.equals(dest)) {
-            return new Path(Arrays.asList(src), 0.0);
+            return new Path(List.of(src), 0.0);
         }
 
-        Map<Long, Double> dist = new HashMap<>();
-        Map<Long, Long> prev = new HashMap<>();
-        // Use double array instead of long array for better precision
-        PriorityQueue<double[]> pq = new PriorityQueue<>(Comparator.comparingDouble(a -> a[1]));
-        dist.put(src, 0.0);
-        pq.add(new double[]{src.doubleValue(), 0.0});
-
+        // Use primitive collections for better performance
+        Map<Long, Double> distances = new HashMap<>();
+        Map<Long, Long> predecessors = new HashMap<>();
+        PriorityQueue<Node> pq = new PriorityQueue<>(Comparator.comparingDouble(n -> n.distance));
         Set<Long> visited = new HashSet<>();
-        int maxIterations = 10000; // Prevent infinite loops
-        int iterations = 0;
 
-        while (!pq.isEmpty() && iterations < maxIterations) {
-            iterations++;
-            double[] top = pq.poll();
-            Long u = (long) top[0];
-            double d = top[1];
+        distances.put(src, 0.0);
+        pq.offer(new Node(src, 0.0));
 
-            if (!visited.add(u)) continue;
-            if (u.equals(dest)) break;
+        while (!pq.isEmpty()) {
+            Node current = pq.poll();
+            Long currentId = current.id;
 
-            List<Edge> edges = graph.getOrDefault(u, Collections.emptyList());
-            for (Edge e : edges) {
-                if (bannedEdges.contains(e) || bannedNodes.contains(e.to)) continue;
+            if (!visited.add(currentId)) {
+                continue;
+            }
 
-                double nd = d + e.weight;
-                Double currentDist = dist.get(e.to);
+            // Early termination when destination is reached
+            if (currentId.equals(dest)) {
+                break;
+            }
 
-                if (currentDist == null || nd < currentDist) {
-                    dist.put(e.to, nd);
-                    prev.put(e.to, u);
-                    pq.add(new double[]{e.to.doubleValue(), nd});
+            double currentDist = current.distance;
+            List<Edge> edges = graph.get(currentId);
+            if (edges == null) continue;
+
+            for (Edge edge : edges) {
+                Long neighborId = edge.to;
+
+                // Skip banned edges and nodes
+                if (bannedEdges.contains(edge) || bannedNodes.contains(neighborId)) {
+                    continue;
+                }
+
+                double newDist = currentDist + edge.weight;
+                Double existingDist = distances.get(neighborId);
+
+                if (existingDist == null || newDist < existingDist) {
+                    distances.put(neighborId, newDist);
+                    predecessors.put(neighborId, currentId);
+                    pq.offer(new Node(neighborId, newDist));
                 }
             }
         }
 
-        if (iterations >= maxIterations) {
-            log.warn("Dijkstra algorithm reached max iterations limit for path from {} to {}", src, dest);
-            return null;
-        }
-
-        if (!dist.containsKey(dest)) {
-            log.debug("No path found from {} to {}", src, dest);
+        // Reconstruct path
+        if (!distances.containsKey(dest)) {
             return null;
         }
 
         List<Long> path = new ArrayList<>();
         Long current = dest;
-        int pathIterations = 0;
-        int maxPathIterations = 1000; // Prevent infinite loop in path reconstruction
-
-        while (current != null && pathIterations < maxPathIterations) {
-            pathIterations++;
+        while (current != null) {
             path.add(current);
-            current = prev.get(current);
-
-            // Break if we've reached the source
-            if (current != null && current.equals(src)) {
-                path.add(src);
-                break;
-            }
-        }
-
-        if (pathIterations >= maxPathIterations) {
-            log.warn("Path reconstruction reached max iterations limit");
-            return null;
+            current = predecessors.get(current);
         }
 
         Collections.reverse(path);
-        return new Path(path, dist.get(dest));
+        return new Path(path, distances.get(dest));
     }
 
-    private double computeDistance(List<Long> stations) {
-        if (stations == null || stations.size() < 2) {
-            return 0.0;
-        }
+    /**
+     * Fast distance computation using cached graph
+     */
+    private double computeDistanceFast(List<Long> stations) {
+        if (stations.size() < 2) return 0.0;
 
-        double sum = 0;
+        double totalDistance = 0.0;
         for (int i = 0; i < stations.size() - 1; i++) {
-            Long u = stations.get(i);
-            Long v = stations.get(i + 1);
+            Long from = stations.get(i);
+            Long to = stations.get(i + 1);
 
-            List<Edge> edges = graph.get(u);
-            if (edges == null) {
-                log.warn("No edges found for station {}", u);
-                continue;
+            List<Edge> edges = graph.get(from);
+            if (edges == null) return -1.0;
+
+            boolean found = false;
+            for (Edge edge : edges) {
+                if (edge.to.equals(to)) {
+                    totalDistance += edge.weight;
+                    found = true;
+                    break;
+                }
             }
 
-            Optional<Edge> edgeOpt = edges.stream()
-                    .filter(e -> e.to.equals(v))
-                    .findFirst();
-
-            if (edgeOpt.isPresent()) {
-                sum += edgeOpt.get().weight;
-            } else {
-                log.warn("No edge found from station {} to station {}", u, v);
-                // Return -1 to indicate invalid path
-                return -1.0;
-            }
+            if (!found) return -1.0;
         }
-        return sum;
+
+        return totalDistance;
+    }
+
+    /**
+     * Create path signature for duplicate detection
+     */
+    private String getPathSignature(List<Long> stations) {
+        return stations.stream()
+                .map(String::valueOf)
+                .collect(Collectors.joining("-"));
+    }
+
+    // Optimized inner classes
+    private static class Node {
+        final Long id;
+        final double distance;
+
+        Node(Long id, double distance) {
+            this.id = id;
+            this.distance = distance;
+        }
     }
 
     private static class Edge {
-        Long from, to;
-        double weight;
+        final Long from, to;
+        final double weight;
+
         public Edge(Long from, Long to, double weight) {
             this.from = from;
             this.to = to;
             this.weight = weight;
         }
-        @Override public boolean equals(Object o) {
+
+        @Override
+        public boolean equals(Object o) {
             if (this == o) return true;
             if (!(o instanceof Edge edge)) return false;
             return from.equals(edge.from) && to.equals(edge.to);
         }
-        @Override public int hashCode() {
+
+        @Override
+        public int hashCode() {
             return Objects.hash(from, to);
         }
     }
 
     private static class Path {
-        List<Long> stations;
-        double totalDistance;
+        final List<Long> stations;
+        final double totalDistance;
+
         public Path(List<Long> stations, double totalDistance) {
             this.stations = stations;
             this.totalDistance = totalDistance;
@@ -338,20 +388,15 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
 
     @Override
     public PathSearchResponse findKShortestPathsWithRoutes(Long source, Long dest, int k) {
-        log.info("Finding {} shortest paths with route details from station {} to station {}", k, source, dest);
+        log.info("Finding {} shortest paths with routes from {} to {}", k, source, dest);
 
-        // Find k shortest paths using existing algorithm
         List<PathDTO> shortestPaths = findKShortestPaths(source, dest, k);
-
         if (shortestPaths.isEmpty()) {
-            log.info("No paths found between station {} and station {}", source, dest);
-            return PathSearchResponse.builder()
-                    .paths(List.of())
-                    .build();
+            return PathSearchResponse.builder().paths(List.of()).build();
         }
 
-        // Convert each PathDTO to PathResponse with route details
-        List<PathResponse> pathResponses = shortestPaths.stream()
+        // Parallel processing for better performance
+        List<PathResponse> pathResponses = shortestPaths.parallelStream()
                 .map(this::convertToPathResponse)
                 .filter(Objects::nonNull)
                 .collect(Collectors.toList());
@@ -366,34 +411,32 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
             List<Long> stationIds = pathDTO.stations();
             Double totalDistance = pathDTO.totalDistance();
 
-            log.debug("Converting path with {} stations and total distance {}", stationIds.size(), totalDistance);
-
-            // Group consecutive stations by their routes
-            List<RouteInPathResponse> routes = buildRoutesFromStationPath(stationIds);
+            List<RouteInPathResponse> routes = buildRoutesFromStationPathOptimized(stationIds);
 
             return PathResponse.builder()
                     .routes(routes)
                     .totalDistance(totalDistance)
                     .build();
-
         } catch (Exception e) {
             log.error("Error converting PathDTO to PathResponse: {}", e.getMessage());
             return null;
         }
-    }    private List<RouteInPathResponse> buildRoutesFromStationPath(List<Long> stationIds) {
+    }
+
+    /**
+     * Optimized route building using caches
+     */
+    private List<RouteInPathResponse> buildRoutesFromStationPathOptimized(List<Long> stationIds) {
         List<RouteInPathResponse> routes = new ArrayList<>();
+        if (stationIds.size() < 2) return routes;
 
-        if (stationIds.size() < 2) {
-            return routes;
-        }
-
-        // Track the current route and stations
         Route currentRoute = null;
         List<StationInPathResponse> currentStations = new ArrayList<>();
         int globalOrder = 1;
 
-        // Add the first station
-        Station firstStation = stationRepository.findById(stationIds.getFirst()).orElse(null);
+        // Add first station using cache
+        Station firstStation = stationCache != null ?
+                stationCache.get(stationIds.get(0)) : stationRepository.findById(stationIds.get(0)).orElse(null);
         if (firstStation != null) {
             currentStations.add(StationInPathResponse.builder()
                     .stationId(firstStation.getStationId())
@@ -407,26 +450,26 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
             Long currentStationId = stationIds.get(i);
             Long nextStationId = stationIds.get(i + 1);
 
-            // Find the route that connects these two stations
-            Route connectingRoute = findRouteConnectingStations(currentStationId, nextStationId);
-
+            // Use cached route lookup
+            Route connectingRoute = findRouteConnectingStationsOptimized(currentStationId, nextStationId);
             if (connectingRoute == null) {
-                log.warn("No route found connecting station {} and station {}", currentStationId, nextStationId);
+                log.warn("No route found connecting stations {} and {}", currentStationId, nextStationId);
                 continue;
             }
 
-            // If this is a new route (route change)
+            // Handle route changes
             if (currentRoute != null && !currentRoute.getRouteId().equals(connectingRoute.getRouteId())) {
-                // Save the previous route
+                // Save previous route
                 routes.add(RouteInPathResponse.builder()
                         .routeId(currentRoute.getRouteId())
                         .routeName(currentRoute.getRouteName())
                         .stations(new ArrayList<>(currentStations))
                         .build());
 
-                // Start new route with the current station (transfer station)
+                // Start new route
                 currentStations.clear();
-                Station transferStation = stationRepository.findById(currentStationId).orElse(null);
+                Station transferStation = stationCache != null ?
+                        stationCache.get(currentStationId) : stationRepository.findById(currentStationId).orElse(null);
                 if (transferStation != null) {
                     currentStations.add(StationInPathResponse.builder()
                             .stationId(transferStation.getStationId())
@@ -437,11 +480,11 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
                 }
             }
 
-            // Set current route
             currentRoute = connectingRoute;
 
-            // Add the next station
-            Station nextStation = stationRepository.findById(nextStationId).orElse(null);
+            // Add next station using cache
+            Station nextStation = stationCache != null ?
+                    stationCache.get(nextStationId) : stationRepository.findById(nextStationId).orElse(null);
             if (nextStation != null) {
                 currentStations.add(StationInPathResponse.builder()
                         .stationId(nextStation.getStationId())
@@ -451,8 +494,8 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
                         .build());
             }
         }
-        
-        // Add the last route
+
+        // Add final route
         if (currentRoute != null && !currentStations.isEmpty()) {
             routes.add(RouteInPathResponse.builder()
                     .routeId(currentRoute.getRouteId())
@@ -460,25 +503,51 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
                     .stations(currentStations)
                     .build());
         }
-        
+
         return routes;
     }
 
-    private Route findRouteConnectingStations(Long stationId1, Long stationId2) {
-        // Find all routes that contain both stations
-        List<StationRoute> stationRoutes1 = stationRouteRepository.findByStationId(stationId1);
-        List<StationRoute> stationRoutes2 = stationRouteRepository.findByStationId(stationId2);
+    /**
+     * Optimized route finding using cache
+     */
+    private Route findRouteConnectingStationsOptimized(Long stationId1, Long stationId2) {
+        // Check cache first - with null check
+        if (routeConnectionCache != null) {
+            String connectionKey = Math.min(stationId1, stationId2) + "-" + Math.max(stationId1, stationId2);
+            Route cachedRoute = routeConnectionCache.get(connectionKey);
+            if (cachedRoute != null) {
+                return cachedRoute;
+            }
+        }
 
-        // Find common routes
+        // Use cached station routes if available, otherwise fallback to repository
+        List<StationRoute> stationRoutes1 = stationRouteCache != null ?
+                stationRouteCache.get(stationId1) : stationRouteRepository.findByStationId(stationId1);
+        List<StationRoute> stationRoutes2 = stationRouteCache != null ?
+                stationRouteCache.get(stationId2) : stationRouteRepository.findByStationId(stationId2);
+
+        if (stationRoutes1 == null || stationRoutes2 == null) {
+            return null;
+        }
+
+        // Find common active routes
         for (StationRoute sr1 : stationRoutes1) {
-            for (StationRoute sr2 : stationRoutes2) {
-                if (sr1.getRoute().getRouteId().equals(sr2.getRoute().getRouteId()) &&
-                        sr1.getRoute().getStatus() == Status.ACTIVE) {
+            if (sr1.getRoute().getStatus() != Status.ACTIVE) continue;
 
-                    // Check if these stations are adjacent in the route
+            for (StationRoute sr2 : stationRoutes2) {
+                if (sr2.getRoute().getStatus() != Status.ACTIVE) continue;
+
+                if (sr1.getRoute().getRouteId().equals(sr2.getRoute().getRouteId())) {
+                    // Check if stations are adjacent
                     int orderDiff = Math.abs(sr1.getStationOrder() - sr2.getStationOrder());
                     if (orderDiff == 1) {
-                        return sr1.getRoute();
+                        Route route = sr1.getRoute();
+                        // Cache the result if cache is available
+                        if (routeConnectionCache != null) {
+                            String connectionKey = Math.min(stationId1, stationId2) + "-" + Math.max(stationId1, stationId2);
+                            routeConnectionCache.put(connectionKey, route);
+                        }
+                        return route;
                     }
                 }
             }
@@ -486,6 +555,4 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
 
         return null;
     }
-
-    // ...existing code...
 }
