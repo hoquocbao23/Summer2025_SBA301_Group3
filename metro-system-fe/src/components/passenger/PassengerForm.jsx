@@ -52,20 +52,20 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
   return (
     <Card className="passenger-form-card shadow-sm border-0">
       <Card.Body className="p-4">
-        <h4 className="mb-4 text-primary fw-bold">Passenger Information</h4>
+        <h4 className="mb-4 text-primary fw-bold">Thông tin hành khách</h4>
         
         <div className="booking-mode-section mb-4">
           <Form.Check 
             type="switch"
             id="booking-mode"
-            label="Buy tickets for myself"
+            label="Mua vé cho chính mình"
             checked={isBuyingForSelf}
             onChange={handleModeChange}
             className="custom-switch mb-3"
           />
           {isBuyingForSelf && (
             <div className="text-muted small mode-description">
-              Your account email will be used for all tickets
+              Email tài khoản của bạn sẽ được sử dụng cho tất cả vé
             </div>
           )}
         </div>
@@ -74,9 +74,9 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
           {passengers.map((passenger, index) => (
             <div key={passenger.id} className="passenger-section mb-4">
               <div className="d-flex align-items-center mb-3">
-                <h6 className="mb-0 text-muted fw-semibold">Passenger {index + 1}</h6>
+                <h6 className="mb-0 text-muted fw-semibold">Hành khách {index + 1}</h6>
                 {index === 0 && (
-                  <span className="badge bg-primary ms-2 rounded-pill">Primary Contact</span>
+                  <span className="badge bg-primary ms-2 rounded-pill">Liên hệ chính</span>
                 )}
               </div>
               
@@ -84,13 +84,13 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
                 <Col>
                   <Form.Group controlId={`email-${index}`}>
                     <Form.Label className="text-muted small">
-                      Email Address
+                      Địa chỉ email
                       {index === 0 && <span className="text-danger ms-1">*</span>}
                     </Form.Label>
                     <Form.Control
                       type="email"
                       required={index === 0}
-                      placeholder="Enter email address"
+                      placeholder="Nhập địa chỉ email"
                       value={passenger.email}
                       onChange={(e) => handleEmailChange(index, e.target.value)}
                       className="form-control-custom"
@@ -98,7 +98,7 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
                     />
                     {index === 0 && (
                       <Form.Text className="text-muted small">
-                        Booking confirmation will be sent to this email
+                        Xác nhận đặt vé sẽ được gửi đến email này
                       </Form.Text>
                     )}
                   </Form.Group>

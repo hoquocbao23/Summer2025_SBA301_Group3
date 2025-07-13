@@ -59,7 +59,7 @@ const Header = () => {
             <Container>
                 <Link to="/" className="text-decoration-none text-white fw-bold">
                     <FaHome className="me-2" />
-                    Metro Ticket System
+                    Hệ thống vé Metro
                 </Link>
                 <Navbar.Toggle aria-controls="basic-navbar-nav" />
                 <Navbar.Collapse id="basic-navbar-nav">
@@ -70,7 +70,7 @@ const Header = () => {
                                 `nav-link ${isActive ? 'text-primary' : 'text-white'} mx-2`
                             }
                         >
-                            Ticket
+                            Vé
                         </NavLink>
                         <NavLink
                             to="/stations"
@@ -78,7 +78,7 @@ const Header = () => {
                                 `nav-link ${isActive ? 'text-primary' : 'text-white'} mx-2`
                             }
                         >
-                            Station
+                            Nhà ga
                         </NavLink>
                         <NavLink
                             to="/routes"
@@ -86,7 +86,7 @@ const Header = () => {
                                 `nav-link ${isActive ? 'text-primary' : 'text-white'} mx-2`
                             }
                         >
-                            Route
+                            Tuyến
                         </NavLink>
                     </Nav>
                     <div className="ms-auto">
@@ -98,15 +98,15 @@ const Header = () => {
                                 </Dropdown.Toggle>
                                 <Dropdown.Menu>
                                     {userRole === 'ADMIN' ? (
-                                        <Dropdown.Item onClick={() => navigate('/dashboard')}>Dashboard</Dropdown.Item>
+                                        <Dropdown.Item onClick={() => navigate('/dashboard')}>Bảng điều khiển</Dropdown.Item>
                                     ) : (
                                         <>
-                                            <Dropdown.Item onClick={() => navigate('/profile')}>My Profile</Dropdown.Item>
-                                            <Dropdown.Item onClick={() => navigate('/bookings')}>My Bookings</Dropdown.Item>
+                                            <Dropdown.Item onClick={() => navigate('/profile')}>Hồ sơ của tôi</Dropdown.Item>
+                                            <Dropdown.Item onClick={() => navigate('/bookings')}>Đặt vé của tôi</Dropdown.Item>
                                         </>
                                     )}
                                     <Dropdown.Divider />
-                                    <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
+                                    <Dropdown.Item onClick={handleLogout}>Đăng xuất</Dropdown.Item>
                                 </Dropdown.Menu>
                             </Dropdown>
                         ) : (
@@ -116,14 +116,14 @@ const Header = () => {
                                     className="me-2"
                                     onClick={() => navigate('/login')}
                                 >
-                                    Login
+                                    Đăng nhập
                                 </Button>
 
                                 <Button 
                                     variant="primary"
                                     onClick={() => navigate('/signin')}
                                 >
-                                    Sign Up
+                                    Đăng ký
                                 </Button>
                             </>
                         )}
