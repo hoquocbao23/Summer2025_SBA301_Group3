@@ -11,4 +11,6 @@ public interface IStationService {
     public ResponseApi<?> updateStation(StationDTO stationDTO, Long id);
     public ResponseApi<?> deleteStation(Long id);
 
+    public Station findStationById(Long id);
+
 }

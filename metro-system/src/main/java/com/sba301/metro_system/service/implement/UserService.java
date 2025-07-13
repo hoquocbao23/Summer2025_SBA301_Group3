@@ -83,7 +83,7 @@ public class UserService implements IUserService {
             }
             String token = jwtService.generateToken(user.getEmail(), user.getAccountId());
             System.out.println(user.getRole());
-            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name());
+            LoginResponse response = new LoginResponse(user.getAccountId(), token, user.getFullname(), user.getRole().name(), user.getEmail() );
             ResponseEntity.ok(response);
             return ResponseApi.
                     builder().
@@ -308,62 +308,62 @@ public class UserService implements IUserService {
 
     @Override
     public ResponseApi<?> getMyTicket() {
-        UserPrinciple userPrinciple = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (userPrinciple.getUser() == null) {
-            throw new IllegalStateException("User not authenticated or user data is missing");
-        }
-        Account account = userPrinciple.getUser();
-        List<Ticket> ticket = ticketRepository.findTicketByAccount(account);
-        if (ticket == null) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.NOT_FOUND.value())
-                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
-                    .data("Have no ticket")
-                    .build();
-        }
-        List<TicketResponseDto> ticketResponseDtoList = new ArrayList<>();
-
-        for (Ticket t : ticket) {
-            TicketResponseDto dto = new TicketResponseDto();
-
-            dto.setTicketId(t.getTicketId());
-            dto.setDepartureStation(
-                    t.getDepartureStation() != null ? t.getDepartureStation().getStationLocation() : null
-            );
-            dto.setArrivalStation(
-                    t.getArrivalStation() != null ? t.getArrivalStation().getStationName() : null
-            );
-            dto.setOldPrice(t.getOldPrice());
-            dto.setNewPrice(t.getNewPrice());
-            dto.setValidFrom(t.getValidFrom());
-            dto.setValidTo(t.getValidTo());
-            dto.setPurchaseTime(t.getPurchaseTime());
-            dto.setQrUrl(t.getQrUrl());
-            dto.setTicketStatus(t.getTicketStatus());
-
-            if (t.getTicketType() != null) {
-                dto.setTicketName(t.getTicketType().getTicketName());
-            }
-
-            if (t.getPromotion() != null) {
-                dto.setPromotionCode(t.getPromotion().getPromotionCode());
-            }
-
-            if (t.getRoute() != null) {
-                dto.setRouteName(t.getRoute().getRouteName());
-            }
-
-            dto.setUrlCheckout("https://localhost:5173/checkout/" + t.getTicketId());
-
-            ticketResponseDtoList.add(dto);
-        }
-
-        return ResponseApi.builder()
-                    .status(HttpStatus.OK.value())
-                    .message(HttpStatus.OK.getReasonPhrase())
-                    .data(ticketResponseDtoList)
-                    .build();
-
+//        UserPrinciple userPrinciple = (UserPrinciple) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
+//        if (userPrinciple.getUser() == null) {
+//            throw new IllegalStateException("User not authenticated or user data is missing");
+//        }
+//        Account account = userPrinciple.getUser();
+//        List<Ticket> ticket = ticketRepository.findTicketByAccount(account);
+//        if (ticket == null) {
+//            return ResponseApi.builder()
+//                    .status(HttpStatus.NOT_FOUND.value())
+//                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
+//                    .data("Have no ticket")
+//                    .build();
+//        }
+//        List<TicketResponseDto> ticketResponseDtoList = new ArrayList<>();
+//
+//        for (Ticket t : ticket) {
+//            TicketResponseDto dto = new TicketResponseDto();
+//
+//            dto.setTicketId(t.getTicketId());
+//            dto.setDepartureStation(
+//                    t.getDepartureStation() != null ? t.getDepartureStation().getStationLocation() : null
+//            );
+//            dto.setArrivalStation(
+//                    t.getArrivalStation() != null ? t.getArrivalStation().getStationName() : null
+//            );
+//            dto.setOldPrice(t.getOldPrice());
+//            dto.setNewPrice(t.getNewPrice());
+//            dto.setValidFrom(t.getValidFrom());
+//            dto.setValidTo(t.getValidTo());
+//            dto.setPurchaseTime(t.getPurchaseTime());
+//            dto.setQrUrl(t.getQrUrl());
+//            dto.setTicketStatus(t.getTicketStatus());
+//
+//            if (t.getTicketType() != null) {
+//                dto.setTicketName(t.getTicketType().getTicketName());
+//            }
+//
+//            if (t.getPromotion() != null) {
+//                dto.setPromotionCode(t.getPromotion().getPromotionCode());
+//            }
+//
+//            if (t.getRoute() != null) {
+//                dto.setRouteName(t.getRoute().getRouteName());
+//            }
+//
+//            dto.setUrlCheckout("https://localhost:5173/checkout/" + t.getTicketId());
+//
+//            ticketResponseDtoList.add(dto);
+//        }
+//
+//        return ResponseApi.builder()
+//                    .status(HttpStatus.OK.value())
+//                    .message(HttpStatus.OK.getReasonPhrase())
+//                    .data(ticketResponseDtoList)
+//                    .build();
+    return null;
 
     }
 }

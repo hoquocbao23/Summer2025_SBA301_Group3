@@ -9,4 +9,9 @@ public class TicketDetailResponseDto {
     private LocalDateTime checkIn;
     private LocalDateTime checkOut;
     private String routeName;
+
+    private String checkinStation;
+    private String checkoutStation;
+
+
 }

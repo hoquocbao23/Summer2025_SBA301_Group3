@@ -15,6 +15,7 @@ import com.sba301.metro_system.repository.RouteRepository;
 import com.sba301.metro_system.repository.StationRepository;
 import com.sba301.metro_system.repository.StationRouteRepository;
 import com.sba301.metro_system.repository.TicketRuleRepository;
+import com.sba301.metro_system.service.IRouteSearchService;
 import com.sba301.metro_system.service.IRouteService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -32,6 +33,7 @@ public class RouteService implements IRouteService {
     private final StationRepository stationRepository;
     private final StationRouteRepository stationRouteRepository;
     private final RouteMapper routeMapper;
+    private final IRouteSearchService routeSearchService;
 
     @Override
     @Transactional
@@ -51,6 +53,7 @@ public class RouteService implements IRouteService {
 
         // Save route
         Route savedRoute = routeRepository.save(route);
+        routeSearchService.buildGraph();
 
         return routeMapper.toResponse(savedRoute);
     }
@@ -86,6 +89,7 @@ public class RouteService implements IRouteService {
         recalculateTotalDistance(existingRoute);
         
         routeRepository.save(existingRoute);
+        routeSearchService.buildGraph();
     }
 
     @Override
@@ -99,6 +103,7 @@ public class RouteService implements IRouteService {
         // Soft delete
         route.setStatus(Status.INACTIVE);
         routeRepository.save(route);
+        routeSearchService.buildGraph();
     }
 
     @Override
@@ -112,6 +117,7 @@ public class RouteService implements IRouteService {
         // Soft delete
         route.setStatus(Status.ACTIVE);
         routeRepository.save(route);
+        routeSearchService.buildGraph();
     }
 
     @Override
@@ -221,6 +227,8 @@ public class RouteService implements IRouteService {
         recalculateTotalDistance(route);
         routeRepository.save(route);
 
+        routeSearchService.buildGraph();
+
         // Return updated route with stations
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
         return routeMapper.toResponseWithStations(route, stationRoutes);
@@ -248,6 +256,7 @@ public class RouteService implements IRouteService {
         // Recalculate total distance
         recalculateTotalDistance(route);
         routeRepository.save(route);
+        routeSearchService.buildGraph();
     }
 
     @Override
@@ -264,6 +273,7 @@ public class RouteService implements IRouteService {
         // Reset total distance
         route.setTotalDistance(0.0);
         routeRepository.save(route);
+        routeSearchService.buildGraph();
     }
 
 }

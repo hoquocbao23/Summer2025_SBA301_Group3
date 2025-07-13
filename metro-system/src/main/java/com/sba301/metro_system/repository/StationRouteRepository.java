@@ -3,6 +3,7 @@ package com.sba301.metro_system.repository;
 import com.sba301.metro_system.entity.Route;
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.StationRoute;
+import com.sba301.metro_system.enums.Status;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -59,4 +60,12 @@ public interface StationRouteRepository extends JpaRepository<StationRoute, Long
     List<StationRoute> findStationInfoInRoute(@Param("route") Route route,
                                              @Param("sourceStationId") Long sourceStationId,
                                              @Param("destinationStationId") Long destinationStationId);
+
+    List<StationRoute> findAllByRouteStatus(Status status);
+
+    //Check Station co thuoc ve route
+    @Query("SELECT CASE WHEN COUNT(sr) > 0 THEN true ELSE false END FROM StationRoute sr  WHERE sr.station.stationId = :stationId AND sr.route.routeId = :routeId")
+    boolean isStationBelongsToRoute(@Param("stationId") Long stationId, @Param("routeId") Long routeId);
+
+
 }

@@ -25,7 +25,7 @@
 <body style="font-family: Arial, sans-serif; background-color: #f6f6f6; padding: 20px;">
 <div style="max-width: 600px; margin: auto; background-color: white; border-radius: 8px; padding: 20px; border: 1px solid #ddd;">
     <h2 style="color: #2c3e50;">🎟️ Xác nhận mua vé tàu thành công</h2>
-    <p>Xin chào <strong th:text="${userName}"></strong>,</p>
+    <p>Xin chào <strong th:text="${userEmail}"></strong>,</p>
     <p>Bạn đã mua vé tàu thành công. Thông tin chi tiết như sau:</p>
 
     <table style="width: 100%; border-collapse: collapse; margin-top: 15px;">
@@ -35,7 +35,7 @@
 <!--        </tr>-->
         <tr style="background-color: #f9f9f9;">
             <td style="padding: 8px; font-weight: bold;">Mã vé: </td>
-            <td style="padding: 8px;" th:text="${userName}"></td>
+            <td style="padding: 8px;" th:text="${ticketId}"></td>
         </tr>
     </table>
 

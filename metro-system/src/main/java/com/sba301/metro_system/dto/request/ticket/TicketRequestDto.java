@@ -7,6 +7,7 @@ import lombok.Data;
 
 
 import java.util.HashSet;
+import java.util.List;
 
 @Data
 public class TicketRequestDto {
@@ -16,6 +17,9 @@ public class TicketRequestDto {
     private long routeId;
     private long ticketTypeId;
     private String promotionCode;
-
+    private int numberOfPassengers;
+    private List<String> userEmails;
+    private double total;
+    private double paymentAmount;
 
 }
