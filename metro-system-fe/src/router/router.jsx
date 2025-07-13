@@ -21,6 +21,7 @@ import AdminTicketRuleManager from "../pages/dashboard/ticket-rule/ticket-rule-d
 import PaymentSuccess from "../components/payment/PaymentSuccess";
 import PaymentFailed from "../components/payment/PaymentFailed";
 import CheckinPage from "../components/checkin/CheckinPage";
+import Train from "../pages/dashboard/train/Train";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -114,6 +115,10 @@ const router = createBrowserRouter([
       {
         path: "ticket-rule",
         element: <AdminTicketRuleManager />
+      },
+      {
+        path: "trains",
+        element: <Train />
       }
     ],
   },

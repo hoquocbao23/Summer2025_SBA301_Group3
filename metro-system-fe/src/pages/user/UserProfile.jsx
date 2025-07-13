@@ -55,7 +55,7 @@ export default function UserProfile() {
             // Get userId from localStorage
             const userId = localStorage.getItem("id")
             if (!userId) {
-                showMessage("Không tìm thấy thông tin đăng nhập", "error")
+                showMessage("Login information not found", "error")
                 setLoading(false)
                 return
             }
@@ -65,10 +65,10 @@ export default function UserProfile() {
                 setUserData(res.data?.data || null)
                 setEditedFullname(res.data?.data?.fullname || "")
             } else {
-                showMessage("Không thể tải dữ liệu profile", "error")
+                showMessage("Unable to load profile data", "error")
             }
         } catch (err) {
-            showMessage("Không thể tải dữ liệu profile", "error")
+            showMessage("Unable to load profile data", "error")
             console.error("Error fetching profile:", err)
         }
         setLoading(false)
@@ -76,7 +76,7 @@ export default function UserProfile() {
 
     const handleSave = async () => {
         if (!editedFullname.trim()) {
-            showMessage("Họ và tên không được để trống", "error")
+            showMessage("Full name cannot be empty", "error")
             return
         }
 
@@ -84,7 +84,7 @@ export default function UserProfile() {
         try {
             const userId = localStorage.getItem("id")
             if (!userId) {
-                showMessage("Không tìm thấy thông tin đăng nhập", "error")
+                showMessage("Login information not found", "error")
                 setSaving(false)
                 return
             }
@@ -97,12 +97,12 @@ export default function UserProfile() {
             if (res.data?.status === 200) {
                 setUserData({ ...userData, fullname: editedFullname })
                 setIsEditing(false)
-                showMessage("Cập nhật thông tin thành công!", "success")
+                showMessage("Profile updated successfully!", "success")
             } else {
-                showMessage("Không thể cập nhật thông tin", "error")
+                showMessage("Unable to update profile", "error")
             }
         } catch (err) {
-            showMessage("Không thể cập nhật thông tin", "error")
+            showMessage("Unable to update profile", "error")
             console.error("Error updating profile:", err)
         }
         setSaving(false)
@@ -116,17 +116,17 @@ export default function UserProfile() {
     const handlePasswordChange = async () => {
         // Validate passwords
         if (!passwordData.currentPassword || !passwordData.newPassword || !passwordData.confirmPassword) {
-            showMessage("Vui lòng điền đầy đủ thông tin", "error")
+            showMessage("Please fill in all fields", "error")
             return
         }
 
         if (passwordData.newPassword !== passwordData.confirmPassword) {
-            showMessage("Mật khẩu mới không khớp", "error")
+            showMessage("New passwords do not match", "error")
             return
         }
 
         if (passwordData.newPassword.length < 6) {
-            showMessage("Mật khẩu mới phải có ít nhất 6 ký tự", "error")
+            showMessage("New password must be at least 6 characters", "error")
             return
         }
 
@@ -134,7 +134,7 @@ export default function UserProfile() {
         try {
             const userId = localStorage.getItem("id")
             if (!userId) {
-                showMessage("Không tìm thấy thông tin đăng nhập", "error")
+                showMessage("Login information not found", "error")
                 setChangingPassword(false)
                 return
             }
@@ -153,12 +153,12 @@ export default function UserProfile() {
                     confirmPassword: "",
                 })
                 setIsChangingPassword(false)
-                showMessage("Đổi mật khẩu thành công!", "success")
+                showMessage("Password changed successfully!", "success")
             } else {
-                showMessage(res.data?.message || "Không thể đổi mật khẩu", "error")
+                showMessage(res.data?.message || "Unable to change password", "error")
             }
         } catch (err) {
-            const errorMessage = err.response?.data?.message || "Không thể đổi mật khẩu"
+            const errorMessage = err.response?.data?.message || "Unable to change password"
             showMessage(errorMessage, "error")
             console.error("Error changing password:", err)
         }
@@ -249,10 +249,10 @@ export default function UserProfile() {
                         <div className="text-danger mb-4">
                             <X className="h-12 w-12 mx-auto" size={48} />
                         </div>
-                        <h3 className="fs-4 fw-semibold text-dark mb-2">Không thể tải dữ liệu</h3>
-                        <p className="text-muted mb-4">Đã xảy ra lỗi khi tải thông tin profile</p>
+                        <h3 className="fs-4 fw-semibold text-dark mb-2">Unable to load data</h3>
+                        <p className="text-muted mb-4">An error occurred while loading profile information</p>
                         <button className="btn btn-primary w-100" onClick={fetchUserProfile}>
-                            Thử lại
+                            Try again
                         </button>
                     </div>
                 </div>
@@ -272,8 +272,8 @@ export default function UserProfile() {
 
                 {/* Header */}
                 <div className="text-center mb-4">
-                    <h1 className="display-5 fw-bold text-dark mb-2">Thông tin cá nhân</h1>
-                    <p className="text-muted">Quản lý và cập nhật thông tin tài khoản của bạn</p>
+                    <h1 className="display-5 fw-bold text-dark mb-2">Profile Information</h1>
+                    <p className="text-muted">Manage and update your account information</p>
                 </div>
 
                 {/* Main Profile Card */}
@@ -309,7 +309,7 @@ export default function UserProfile() {
                             </div>
                             <button className="btn btn-outline-light d-flex align-items-center gap-1">
                                 <Settings size={16} />
-                                Cài đặt
+                                Settings
                             </button>
                         </div>
                     </div>
@@ -319,7 +319,7 @@ export default function UserProfile() {
                         <div className="mb-4">
                             <h3 className="fs-4 fw-semibold text-dark mb-3 d-flex align-items-center gap-2">
                                 <User className="text-primary" size={20} />
-                                Thông tin cơ bản
+                                Basic Information
                             </h3>
 
                             <div className="row g-3">
@@ -341,7 +341,7 @@ export default function UserProfile() {
 
                                 {/* Role */}
                                 <div className="col-md-6">
-                                    <label className="form-label fw-medium">Vai trò</label>
+                                    <label className="form-label fw-medium">Role</label>
                                     <div className="input-group">
                                         <span className="input-group-text bg-light">
                                             {getRoleIcon(userData.role)}
@@ -357,7 +357,7 @@ export default function UserProfile() {
 
                                 {/* Full Name */}
                                 <div className="col-md-12">
-                                    <label className="form-label fw-medium">Họ và tên</label>
+                                    <label className="form-label fw-medium">Full Name</label>
                                     {isEditing ? (
                                         <div className="d-flex gap-2">
                                             <input
@@ -365,7 +365,7 @@ export default function UserProfile() {
                                                 className="form-control flex-grow-1"
                                                 value={editedFullname}
                                                 onChange={(e) => setEditedFullname(e.target.value)}
-                                                placeholder="Nhập họ và tên"
+                                                placeholder="Enter full name"
                                             />
                                             <button
                                                 onClick={handleSave}
@@ -392,7 +392,7 @@ export default function UserProfile() {
                                                 className="btn btn-sm btn-outline-primary"
                                             >
                                                 <Edit3 size={16} className="me-1" />
-                                                Chỉnh sửa
+                                                Edit
                                             </button>
                                         </div>
                                     )}
@@ -400,7 +400,7 @@ export default function UserProfile() {
 
                                 {/* Status */}
                                 <div className="col-md-12">
-                                    <label className="form-label fw-medium">Trạng thái</label>
+                                    <label className="form-label fw-medium">Status</label>
                                     <div className="p-2 border rounded bg-light">
                                         <span className={`badge ${getStatusColor(userData.status)}`}>
                                             <div className="d-flex align-items-center gap-1">
@@ -419,29 +419,29 @@ export default function UserProfile() {
                         <div className="mb-4">
                             <h3 className="fs-4 fw-semibold text-dark mb-3 d-flex align-items-center gap-2">
                                 <Lock className="text-primary" size={20} />
-                                Bảo mật
+                                Security
                             </h3>
 
                             {!isChangingPassword ? (
                                 <div className="p-4 bg-warning bg-opacity-10 rounded border border-warning">
                                     <div className="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
                                         <div>
-                                            <h4 className="fs-5 fw-semibold mb-2">Mật khẩu</h4>
-                                            <p className="text-muted mb-md-0">Thay đổi mật khẩu để bảo vệ tài khoản của bạn</p>
+                                            <h4 className="fs-5 fw-semibold mb-2">Password</h4>
+                                            <p className="text-muted mb-md-0">Change your password to protect your account</p>
                                         </div>
                                         <button onClick={() => setIsChangingPassword(true)} className="btn btn-warning">
                                             <Lock size={16} className="me-2" />
-                                            Đổi mật khẩu
+                                            Change Password
                                         </button>
                                     </div>
                                 </div>
                             ) : (
                                 <div className="p-4 border rounded shadow-sm">
-                                    <h4 className="fs-5 fw-semibold mb-3">Thay đổi mật khẩu</h4>
+                                    <h4 className="fs-5 fw-semibold mb-3">Change Password</h4>
 
                                     {/* Current Password */}
                                     <div className="mb-3">
-                                        <label className="form-label fw-medium">Mật khẩu hiện tại</label>
+                                        <label className="form-label fw-medium">Current Password</label>
                                         <div className="input-group">
                                             <input
                                                 type={showPasswords.current ? "text" : "password"}
@@ -453,7 +453,7 @@ export default function UserProfile() {
                                                     }))
                                                 }
                                                 className="form-control"
-                                                placeholder="Nhập mật khẩu hiện tại"
+                                                placeholder="Enter current password"
                                             />
                                             <button
                                                 type="button"
@@ -471,7 +471,7 @@ export default function UserProfile() {
 
                                     {/* New Password */}
                                     <div className="mb-3">
-                                        <label className="form-label fw-medium">Mật khẩu mới</label>
+                                        <label className="form-label fw-medium">New Password</label>
                                         <div className="input-group">
                                             <input
                                                 type={showPasswords.new ? "text" : "password"}
@@ -483,7 +483,7 @@ export default function UserProfile() {
                                                     }))
                                                 }
                                                 className="form-control"
-                                                placeholder="Nhập mật khẩu mới (ít nhất 6 ký tự)"
+                                                placeholder="Enter new password (at least 6 characters)"
                                             />
                                             <button
                                                 type="button"
@@ -501,7 +501,7 @@ export default function UserProfile() {
 
                                     {/* Confirm Password */}
                                     <div className="mb-3">
-                                        <label className="form-label fw-medium">Xác nhận mật khẩu mới</label>
+                                        <label className="form-label fw-medium">Confirm New Password</label>
                                         <div className="input-group">
                                             <input
                                                 type={showPasswords.confirm ? "text" : "password"}
@@ -513,7 +513,7 @@ export default function UserProfile() {
                                                     }))
                                                 }
                                                 className="form-control"
-                                                placeholder="Nhập lại mật khẩu mới"
+                                                placeholder="Re-enter new password"
                                             />
                                             <button
                                                 type="button"
@@ -539,18 +539,18 @@ export default function UserProfile() {
                                             {changingPassword ? (
                                                 <>
                                                     <span className="spinner-border spinner-border-sm me-2" role="status"></span>
-                                                    Đang xử lý...
+                                                    Processing...
                                                 </>
                                             ) : (
                                                 <>
                                                     <Save size={16} className="me-2" />
-                                                    Cập nhật mật khẩu
+                                                    Update Password
                                                 </>
                                             )}
                                         </button>
                                         <button onClick={handleCancelPasswordChange} className="btn btn-outline-secondary" disabled={changingPassword}>
                                             <X size={16} className="me-2" />
-                                            Hủy
+                                            Cancel
                                         </button>
                                     </div>
                                 </div>
@@ -563,7 +563,7 @@ export default function UserProfile() {
                         <div>
                             <h3 className="fs-4 fw-semibold text-dark mb-3 d-flex align-items-center gap-2">
                                 <Shield className="text-primary" size={20} />
-                                Thống kê tài khoản
+                                Account Statistics
                             </h3>
 
                             <div className="row g-3">
@@ -571,9 +571,9 @@ export default function UserProfile() {
                                     <div className="card bg-primary bg-opacity-10 border-primary border-opacity-25">
                                         <div className="card-body text-center p-3">
                                             <div className="fs-4 fw-bold text-primary mb-1">
-                                                {userData.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
+                                                {userData.status === "ACTIVE" ? "Active" : "Inactive"}
                                             </div>
-                                            <div className="small text-primary">Trạng thái tài khoản</div>
+                                            <div className="small text-primary">Account Status</div>
                                         </div>
                                     </div>
                                 </div>
@@ -582,9 +582,9 @@ export default function UserProfile() {
                                     <div className="card bg-info bg-opacity-10 border-info border-opacity-25">
                                         <div className="card-body text-center p-3">
                                             <div className="fs-4 fw-bold text-info mb-1">
-                                                {userData.role === "ADMIN" ? "Quản trị viên" : "Khách hàng"}
+                                                {userData.role === "ADMIN" ? "Administrator" : "Customer"}
                                             </div>
-                                            <div className="small text-info">Loại tài khoản</div>
+                                            <div className="small text-info">Account Type</div>
                                         </div>
                                     </div>
                                 </div>
@@ -595,7 +595,7 @@ export default function UserProfile() {
 
                 {/* Footer */}
                 <div className="text-center mt-4 text-muted small">
-                    <p>Cập nhật lần cuối: {new Date().toLocaleDateString("vi-VN")}</p>
+                    <p>Last updated: {new Date().toLocaleDateString("en-US")}</p>
                 </div>
             </div>
         </div>
