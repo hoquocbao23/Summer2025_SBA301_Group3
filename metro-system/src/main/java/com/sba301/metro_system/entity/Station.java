@@ -19,8 +19,6 @@ public class Station {
     
     private String stationLocation;
 
-    private String url;
-
     @Lob
     @Column(columnDefinition = "TEXT")
     private String description;
@@ -28,11 +26,8 @@ public class Station {
     @Enumerated(EnumType.STRING)
     private Status status;
 
-    public Station(String stationName, String stationLocation, String url, Status status, String description) {
-        this.stationName = stationName;
-        this.stationLocation = stationLocation;
-        this.url = url;
-        this.status = status;
-        this.description = description;
-    }
+    private String imageUrl;
+
+    private String imagePublicId;
+
 }

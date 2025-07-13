@@ -277,4 +277,13 @@ public class RouteController {
                 .message("All stations removed from route successfully")
                 .build();
     }
+
+    @GetMapping("/id")
+    public ResponseApi<?> getAllIdOfRoute(){
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message("OK")
+                .data(routeService.getAllIdRoute())
+                .build();
+    }
 }

@@ -173,7 +173,13 @@ public class RouteService implements IRouteService {
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
         return routeMapper.toResponseWithStations(route, stationRoutes);
     }
-    
+
+    @Override
+    public List<Long> getAllIdRoute() {
+        return routeRepository.findAll().stream()
+                .map(Route::getRouteId)
+                .collect(Collectors.toList());
+    }
     /**
      * Helper method to recalculate total distance for a route
      */

@@ -26,4 +26,6 @@ public interface IRouteService {
 
     List<RouteResponse> getRoutesByTicketRule(Long ticketRuleId);
     RouteResponse getRouteByName(String routeName);
+
+    List<Long> getAllIdRoute();
 }
