@@ -66,11 +66,4 @@ public class Booking {
     private List<Ticket> tickets;
 
 
-
-
-
-
-
-
-
 }

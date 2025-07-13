@@ -386,25 +386,25 @@ public class RouteSearchService implements com.sba301.metro_system.service.IRout
         }
     }
 
-    @Override
-    public PathSearchResponse findKShortestPathsWithRoutes(Long source, Long dest, int k) {
-        log.info("Finding {} shortest paths with routes from {} to {}", k, source, dest);
+        @Override
+        public PathSearchResponse findKShortestPathsWithRoutes(Long source, Long dest, int k) {
+            log.info("Finding {} shortest paths with routes from {} to {}", k, source, dest);
 
-        List<PathDTO> shortestPaths = findKShortestPaths(source, dest, k);
-        if (shortestPaths.isEmpty()) {
-            return PathSearchResponse.builder().paths(List.of()).build();
+            List<PathDTO> shortestPaths = findKShortestPaths(source, dest, k);
+            if (shortestPaths.isEmpty()) {
+                return PathSearchResponse.builder().paths(List.of()).build();
+            }
+
+            // Parallel processing for better performance
+            List<PathResponse> pathResponses = shortestPaths.parallelStream()
+                    .map(this::convertToPathResponse)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.toList());
+
+            return PathSearchResponse.builder()
+                    .paths(pathResponses)
+                    .build();
         }
-
-        // Parallel processing for better performance
-        List<PathResponse> pathResponses = shortestPaths.parallelStream()
-                .map(this::convertToPathResponse)
-                .filter(Objects::nonNull)
-                .collect(Collectors.toList());
-
-        return PathSearchResponse.builder()
-                .paths(pathResponses)
-                .build();
-    }
 
     private PathResponse convertToPathResponse(PathDTO pathDTO) {
         try {

@@ -16,6 +16,7 @@ import com.sba301.metro_system.mapper.BookingMapper;
 import com.sba301.metro_system.mapper.TicketMapper;
 import com.sba301.metro_system.mapper.TransactionMapper;
 import com.sba301.metro_system.record.MailBody;
+import com.sba301.metro_system.repository.BookingRepository;
 import com.sba301.metro_system.repository.RouteRepository;
 import com.sba301.metro_system.repository.TicketRepository;
 import com.sba301.metro_system.service.ITicketService;
@@ -52,6 +53,7 @@ public class TicketService implements ITicketService {
     private final StationService stationService;
     private final RouteRepository routeRepository;
     private final BookingService bookingService;
+    private final BookingRepository bookingRepository;
 
     @Value("${CHECK_IN}")
     private String CHECK_IN_URL;
@@ -256,6 +258,8 @@ public class TicketService implements ITicketService {
     @Override
     public void paymentTicketSuccess(long bookingId, Model model, TicketResponseDto ticketDto) throws Exception {
         Booking booking = bookingService.getBookingById(bookingId);
+        booking.setPaymentStatus(TransactionStatus.SUCCESS);
+        bookingRepository.save(booking);
         //update if payment success
         List<Ticket> bookingTickets = booking.getTickets();
         // update ticket status
@@ -298,6 +302,9 @@ public class TicketService implements ITicketService {
     @Override
     public void paymentTicketFail(long bookingId, Model model) throws Exception {
         Booking booking = bookingService.getBookingById(bookingId);
+        booking.setPaymentStatus(TransactionStatus.FAILED);
+        bookingRepository.save(booking);
+
         //update if payment failed
         List<Ticket> bookingTickets = booking.getTickets();
         // update ticket status
