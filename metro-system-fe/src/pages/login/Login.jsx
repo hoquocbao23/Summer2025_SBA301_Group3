@@ -26,47 +26,44 @@ const Login = () => {
       const { status, message, data } = response.data;
 
       if (status === 200) {
-        // Login successful
+        // Đăng nhập thành công
         const { id, token, fullname, role } = data;
 
-        // Store token and user info in localStorage
+        // Lưu token và thông tin người dùng vào localStorage
         localStorage.setItem("id", id);
         localStorage.setItem("token", token);
-        localStorage.setItem("email", email);
-        localStorage.setItem("fullName", fullname);
+        localStorage.setItem("fullname", fullname);
         localStorage.setItem("role", role);
 
-        setSuccess(`Login successful! Welcome ${fullname}`);
+        setSuccess(`Đăng nhập thành công! Chào mừng ${fullname}`);
 
-        // Redirect based on role
-        setTimeout(() => {
-          if (role === "ADMIN") {
-            window.location.href = "/dashboard";
-          } else {
-            window.location.href = "/";
-          }
-        }, 1500);
+        // Chuyển hướng dựa trên vai trò
+        if (role === "ADMIN") {
+          window.location.href = "/dashboard";
+        } else {
+          window.location.href = "/";
+        }
       } else {
-        // Handle other status codes
-        setError(data || "Login failed. Please try again.");
+        // Xử lý các mã trạng thái khác
+        setError(data || "Đăng nhập thất bại. Vui lòng thử lại.");
       }
     } catch (err) {
-      console.error("Login error:", err);
+      console.error("Lỗi đăng nhập:", err);
 
       if (err.response) {
-        // Server responded with an error
-        const { status, data } = err.response;
-        if (status === 401) {
-          setError(data?.data || "Incorrect email or password. Please try again.");
+        // Máy chủ phản hồi với lỗi
+        const data = err.response;
+        if (data.status === 401) {
+          setError(data?.data || "Email hoặc mật khẩu không đúng. Vui lòng thử lại.");
         } else {
-          setError(data?.data || "Login failed. Please try again.");
+          setError(data?.data || "Đăng nhập thất bại. Vui lòng thử lại.");
         }
       } else if (err.request) {
-        // No response received
-        setError("No response from server. Please check your internet connection.");
+        // Không nhận được phản hồi
+        setError("Không có phản hồi từ máy chủ. Vui lòng kiểm tra kết nối internet.");
       } else {
-        // Other error
-        setError("Login failed. Please try again later.");
+        // Lỗi khác
+        setError("Đăng nhập thất bại. Vui lòng thử lại sau.");
       }
     } finally {
       setLoading(false);
@@ -77,74 +74,77 @@ const Login = () => {
     <div className="login-page">
       <Container fluid className="h-100">
         <Row className="h-100 align-items-center">
-          {/* Left Side: Login Form */}
+          {/* Cột trái: Form đăng nhập */}
           <Col md={4} className="login-form-col">
             <Card className="login-card">
-              <Card.Body>
-                <h2 className="mb-4">Login</h2>
+              <Card.Body className="p-4">
+                <h2 className="text-center mb-4">Đăng nhập</h2>
                 {error && <Alert variant="danger">{error}</Alert>}
                 {success && <Alert variant="success">{success}</Alert>}
                 <Form onSubmit={handleSubmit}>
                   <Form.Group className="mb-3" controlId="formBasicEmail">
-                    <Form.Label>Enter your E-mail *</Form.Label>
+                    <Form.Label>Nhập email của bạn *</Form.Label>
                     <Form.Control
                       type="email"
-                      placeholder="example@email.com"
-                      required
+                      placeholder="Nhập email"
                       value={email}
-                      onChange={e => setEmail(e.target.value)}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                     />
                   </Form.Group>
 
                   <Form.Group className="mb-3" controlId="formBasicPassword">
-                    <Form.Label>Enter your password *</Form.Label>
+                    <Form.Label>Nhập mật khẩu của bạn *</Form.Label>
                     <Form.Control
                       type="password"
-                      placeholder="********"
-                      required
+                      placeholder="Nhập mật khẩu"
                       value={password}
-                      onChange={e => setPassword(e.target.value)}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
                     />
                   </Form.Group>
 
                   <div className="d-flex justify-content-between align-items-center mb-4">
                     <Form.Check
                       type="checkbox"
-                      label="Remember"
-                      id="remember-checkbox"
+                      id="rememberMe"
+                      label="Ghi nhớ đăng nhập"
                     />
-                    <a href="#" className="text-danger">
-                      Forget password?
+                    <a href="#" className="text-decoration-none">
+                      Quên mật khẩu?
                     </a>
-                  </div>                  <Button variant="danger" type="submit" className="w-100 mb-3" disabled={loading}>
-                    {loading ? 'Logging in...' : 'Login'}
+                  </div>
+                  <Button variant="danger" type="submit" className="w-100 mb-3" disabled={loading}>
+                    {loading ? 'Đang đăng nhập...' : 'Đăng nhập'}
                   </Button>
 
                   <Button
-                    variant="primary"
+                    variant="outline-primary"
                     className="w-100 mb-2 d-flex align-items-center justify-content-center"
+                    onClick={() => window.location.href = "/signup"}
                   >
-                    <i className="fab fa-facebook-f me-2"></i> Login with Facebook
+                    <i className="fab fa-facebook-f me-2"></i> Đăng nhập với Facebook
                   </Button>
 
                   <Button
-                    variant="danger"
+                    variant="outline-danger"
                     className="w-100 d-flex align-items-center justify-content-center"
-                    style={{ backgroundColor: '#dd4b39', borderColor: '#dd4b39' }}
+                    onClick={() => window.location.href = "/signup"}
                   >
-                    <i className="fab fa-google-plus-g me-2"></i> Login with Google+
+                    <i className="fab fa-google-plus-g me-2"></i> Đăng nhập với Google+
                   </Button>
                 </Form>
               </Card.Body>
             </Card>
           </Col>
 
-          {/* Right Side: Placeholder Text */}
+          {/* Cột phải: Văn bản giới thiệu */}
           <Col md={8} className="login-text-col">
             <div className="login-text">
-              <h1>LOGIN NOTE</h1>
+              <h1>LƯU Ý ĐĂNG NHẬP</h1>
               <p>
-                HCMC Metro) là hệ thống đường sắt đô thị đang xây dựng tại Thành phố Hồ Chí Minh. Dự án là sự kết hợp giữa metro, xe điện mặt đất (tramway) và tàu một ray (monorail).              </p>
+                HCMC Metro) là hệ thống đường sắt đô thị đang xây dựng tại Thành phố Hồ Chí Minh. Dự án là sự kết hợp giữa metro, xe điện mặt đất (tramway) và tàu một ray (monorail).
+              </p>
 
             </div>
           </Col>

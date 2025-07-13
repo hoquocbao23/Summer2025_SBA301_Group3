@@ -1,5 +1,5 @@
 import { useState, useEffect, useContext } from 'react';
-import { Form, InputGroup, Button, Accordion, Row, Col, Spinner } from 'react-bootstrap';
+import { Form, InputGroup, Button, Accordion, Row, Col, Spinner, Modal } from 'react-bootstrap';
 import { ArrowDownUp, Plus, Dash } from 'react-bootstrap-icons';
 import './TicketSearchTool.css';
 import { useNavigate, useLocation } from 'react-router-dom';
@@ -11,19 +11,32 @@ import axiosInstance from '../../config/axios';
 const SingleTripForm = ({ initialData, onSearch }) => {
     const navigate = useNavigate();
     const location = useLocation();
+    const [showLoginModal, setShowLoginModal] = useState(false);
     
     // Check if we're on the tickets page and if context is available
     const isOnTicketsPage = location.pathname === '/tickets';
     const context = isOnTicketsPage ? useContext(TicketContext) : null;
+
+    const initialForm = () => {
+        const savedFormData = sessionStorage.getItem('ticketFormData');
+        if (savedFormData) {
+            try {
+                return JSON.parse(savedFormData);
+            } catch (error) {
+                console.error('Error parsing saved form data:', error);
+            }
+        }
+        return initialData || {
+            fromStationId: '',
+            fromStation: '',
+            toStationId: '',
+            toStation: '',
+            ticketTypeId: '',
+            numberOfTickets: 1,
+        };
+    };
     
-    const [singleForm, setSingleForm] = useState(initialData || {
-        fromStationId: '',
-        fromStation : '',
-        toStationId: '',
-        toStation : '',
-        ticketTypeId: '',
-        numberOfTickets: 1,
-    });
+    const [singleForm, setSingleForm] = useState(initialForm());
 
     // Update form when context changes (for tickets page)
     useEffect(() => {
@@ -87,7 +100,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                 }));
                 
                 setStations(fallbackStations);
-                setError('Using offline station data. Some features may be limited.');
+                setError('Sử dụng dữ liệu ga offline. Một số tính năng có thể bị hạn chế.');
             } finally {
                 setLoading(false);
             }
@@ -110,7 +123,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                 }
             } catch (err) {
                 console.error('Failed to fetch stations:', err);
-                setError('Failed to load stations from server. Using offline data.');
+                setError('Không thể tải dữ liệu ga từ máy chủ. Sử dụng dữ liệu offline.');
                 
                 // Use fallback static data
                 const fallbackStations = availableStations.map(station => ({
@@ -153,19 +166,31 @@ const SingleTripForm = ({ initialData, onSearch }) => {
     };
 
     const handleSearch = () => {
+        // Check if user is logged in
+        const token = localStorage.getItem('token');
+        if (!token) {
+            // Show login modal if not logged in
+            setShowLoginModal(true);
+            return;
+        }
+
         // Validate form before navigation/search
         if (!singleForm.fromStationId || !singleForm.toStationId) {
-            setError('Please select both departure and destination stations');
+            setError('Vui lòng chọn cả ga đi và ga đến');
             return;
         }
         
         if (singleForm.fromStationId === singleForm.toStationId) {
-            setError('Departure and destination stations cannot be the same');
+            setError('Ga đi và ga đến không thể giống nhau');
             return;
         }
 
         // Clear any previous errors
         setError(null);
+        
+        // Clear saved form data from session storage since search is successful
+        sessionStorage.removeItem('ticketFormData');
+        sessionStorage.removeItem('eventKey');
         
         if (isOnTicketsPage) {
             // If we're on the tickets page, update context and trigger search
@@ -189,15 +214,23 @@ const SingleTripForm = ({ initialData, onSearch }) => {
         }
     };
 
+    const handleLoginRedirect = () => {
+        sessionStorage.setItem('ticketFormData', JSON.stringify(singleForm));
+        sessionStorage.setItem('eventKey', 'singletrip');
+        setShowLoginModal(false);
+        navigate('/login');
+    };
+
     return (
-        <Form>
+        <>
+            <Form>
             {/* Error Message */}
             {error && (
                 <div className="alert alert-warning mb-3 d-flex justify-content-between align-items-center" role="alert">
                     <span>{error}</span>
-                    {error.includes('Failed to load') && (
+                    {error.includes('Không thể tải') && (
                         <Button variant="outline-primary" size="sm" onClick={handleRetryLoadStations}>
-                            Retry
+                            Thử lại
                         </Button>
                     )}
                 </div>
@@ -205,9 +238,9 @@ const SingleTripForm = ({ initialData, onSearch }) => {
             
             <Row>
                 <Col md={8}>
-                    {/* Route Selection */}
+                    {/* Chọn tuyến */}
                     <Form.Group className="mb-3">
-                        <Form.Label>Route</Form.Label>
+                        <Form.Label>Tuyến</Form.Label>
                         <InputGroup>
                             <Form.Select
                                 value={singleForm.fromStationId}
@@ -224,7 +257,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                                 disabled={loading}
                             >
                                 <option value="">
-                                    {loading ? 'Loading stations...' : 'From station'}
+                                    {loading ? 'Đang tải ga...' : 'Chọn ga đi'}
                                 </option>
                                 {stations.map((station) => (
                                     <option key={station.stationId} value={station.stationId}>
@@ -237,7 +270,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                                 variant="outline-secondary" 
                                 onClick={handleSwapStations}
                                 disabled={loading || !singleForm.fromStationId || !singleForm.toStationId}
-                                title="Swap stations"
+                                title="Đổi ga"
                             >
                                 <ArrowDownUp />
                             </Button>
@@ -257,7 +290,7 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                                 disabled={loading}
                             >
                                 <option value="">
-                                    {loading ? 'Loading stations...' : 'To station'}
+                                    {loading ? 'Đang tải ga...' : 'Chọn ga đến'}
                                 </option>
                                 {stations.map((station) => (
                                     <option key={station.stationId} value={station.stationId}>
@@ -267,31 +300,31 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                             </Form.Select>
                         </InputGroup>
                         
-                        {/* Station count info */}
+                        {/* Thông tin số lượng ga */}
                         {!loading && stations.length > 0 && (
                             <Form.Text className="text-muted">
-                                {stations.length} stations available
+                                {stations.length} ga có sẵn
                             </Form.Text>
                         )}
                         
-                        {/* Loading indicator */}
+                        {/* Chỉ báo tải */}
                         {loading && (
                             <Form.Text className="text-muted d-flex align-items-center mt-1">
                                 <Spinner animation="border" size="sm" className="me-2" />
-                                Loading stations...
+                                Đang tải ga...
                             </Form.Text>
                         )}
                     </Form.Group>
 
-                    {/* Number of Tickets */}
+                    {/* Số lượng vé */}
                     <Form.Group className="mb-3">
                         <Accordion>
                             <Accordion.Item eventKey="0">
                                 <Accordion.Header>
                                     <div>
-                                        Number of Tickets
+                                        Số lượng vé
                                         <div className="text-muted small">
-                                            {singleForm.numberOfTickets} {singleForm.numberOfTickets === 1 ? 'Ticket' : 'Tickets'}
+                                            {singleForm.numberOfTickets} {singleForm.numberOfTickets === 1 ? 'vé' : 'vé'}
                                         </div>
                                     </div>
                                 </Accordion.Header>
@@ -299,8 +332,8 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                                     <div className="passenger-selector">
                                         <div className="d-flex justify-content-between align-items-center">
                                             <div>
-                                                <div className="fw-bold">Tickets</div>
-                                                <div className="text-muted small">Maximum 10 tickets per purchase</div>
+                                                <div className="fw-bold">Vé</div>
+                                                <div className="text-muted small">Tối đa 10 vé mỗi lần mua</div>
                                             </div>
                                             <div className="d-flex align-items-center">
                                                 <Button
@@ -346,12 +379,53 @@ const SingleTripForm = ({ initialData, onSearch }) => {
                                 LOADING...
                             </>
                         ) : (
-                            'SEARCH TICKETS'
+                            'TÌM VÉ'
                         )}
                     </Button>
                 </Col>
             </Row>
         </Form>
+
+        {/* Login Modal */}
+        <Modal
+            show={showLoginModal}
+            onHide={() => setShowLoginModal(false)}
+            centered
+            className="custom-modal"
+        >
+            <Modal.Header closeButton className="border-0 pb-0">
+                <Modal.Title className="text-danger fw-bold">Yêu cầu đăng nhập</Modal.Title>
+            </Modal.Header>
+            <Modal.Body className="text-center py-4">
+                <div className="mb-3">
+                    <i className="bi bi-person-circle text-danger" style={{ fontSize: '3rem' }}></i>
+                </div>
+                <p className="mb-0 fs-5">Vui lòng đăng nhập để tiếp tục tìm vé.</p>
+                <p className="text-muted small mt-2">Bạn cần đăng nhập để xem và mua vé.</p>
+            </Modal.Body>
+            <Modal.Footer className="border-0 pt-0">
+                <Button
+                    variant="outline-secondary"
+                    onClick={() => setShowLoginModal(false)}
+                    className="px-4"
+                >
+                    Hủy
+                </Button>
+                <Button
+                    variant="danger"
+                    onClick={handleLoginRedirect}
+                    className="px-4"
+                    style={{
+                        backgroundColor: '#dc3545',
+                        borderColor: '#dc3545',
+                        boxShadow: '0 2px 4px rgba(220, 53, 69, 0.2)'
+                    }}
+                >
+                    Đi đến đăng nhập
+                </Button>
+            </Modal.Footer>
+        </Modal>
+        </>
     );
 };
 

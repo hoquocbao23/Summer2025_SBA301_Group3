@@ -63,10 +63,10 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
             <Card.Header className="bg-white border-0">
               <h4 className="mb-0">
                 <i className="bi bi-person-circle me-2 text-primary"></i>
-                Passenger Information
+                Thông tin hành khách
               </h4>
               <p className="text-muted small mb-0 mt-2">
-                Please provide the email addresses for all passengers. The primary contact will receive the booking confirmation.
+                Vui lòng cung cấp địa chỉ email cho tất cả hành khách. Liên hệ chính sẽ nhận được xác nhận đặt vé.
               </p>
             </Card.Header>
             <Card.Body>
@@ -81,7 +81,7 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
             <Card.Header className="bg-white border-0">
               <h4 className="mb-0">
                 <i className="bi bi-receipt me-2 text-primary"></i>
-                Booking Summary
+                Tóm tắt đặt vé
               </h4>
             </Card.Header>
             <Card.Body>

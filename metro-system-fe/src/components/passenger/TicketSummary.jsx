@@ -41,7 +41,7 @@ const TicketSummary = ({ passengers = [],
       salePercent: 0,
       saleAmount: 0,
       paymentAmount: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000
-
+ 
     }
   );
 
@@ -51,6 +51,8 @@ const TicketSummary = ({ passengers = [],
     console.log("singleForm", singleForm);
     setTicket({
       ...ticket,
+      numberOfPassengers: singleForm?.numberOfTickets || 1,
+      total: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000,
       paymentAmount: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000,
       userEmails: passengers.map(passenger => passenger.email),
     });

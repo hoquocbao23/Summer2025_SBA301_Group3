@@ -18,18 +18,56 @@ const TicketLayout = () => {
 
     const [layoutCurrentStep, setLayoutCurrentStep] = useState(1);
 
+    // Check for saved form data in session storage
+    const getInitialFormData = () => {
+        const savedFormData = sessionStorage.getItem('ticketFormData');
+        const eventKey = sessionStorage.getItem('eventKey');
+        
+        if (savedFormData) {
+            try {
+                const parsedData = JSON.parse(savedFormData);
+                if (eventKey === 'singletrip') {
+                    return {
+                        ...parsedData,
+                        totalPrice: 0,
+                        estimatedDuration: 0,
+                    };
+                } else if (eventKey === 'travelpass') {
+                    return parsedData;
+                }
+            } catch (error) {
+                console.error('Error parsing saved form data:', error);
+            }
+        }
+        
+        return {
+            ...location.state?.singleForm,
+            totalPrice: 0,
+            estimatedDuration: 0,
+        };
+    };
+
     // Lấy dữ liệu từ SingleTripForm
     // Lưu dữ liệu vào singleForm
-    const [singleForm, setSingleForm] = useState({
-        ...location.state?.singleForm,
-        totalPrice: 0,
-        estimatedDuration: 0,
-        
-    });
+    const [singleForm, setSingleForm] = useState(getInitialFormData());
 
     // Lấy dữ liệu từ TravelPassForm
     // Lưu dữ liệu vào travelPassForm
-    const [travelPassForm, setTravelPassForm] = useState(location.state?.travelPassForm || null);
+    const getInitialTravelPassForm = () => {
+        const savedFormData = sessionStorage.getItem('ticketFormData');
+        const eventKey = sessionStorage.getItem('eventKey');
+        
+        if (savedFormData && eventKey === 'travelpass') {
+            try {
+                return JSON.parse(savedFormData);
+            } catch (error) {
+                console.error('Error parsing saved travel pass form data:', error);
+            }
+        }
+        return location.state?.travelPassForm || null;
+    };
+
+    const [travelPassForm, setTravelPassForm] = useState(getInitialTravelPassForm());
 
     
 
@@ -44,14 +82,29 @@ const TicketLayout = () => {
         if (location.state?.travelPassForm) {
             setTravelPassForm(location.state.travelPassForm);
             setLayoutCurrentStep(2); // Chuyển sang bước Passenger khi có travelPassForm
+            // Clear saved form data since it's been successfully used
+            sessionStorage.removeItem('ticketFormData');
+            sessionStorage.removeItem('eventKey');
         }
     }, [location.state]);
 
+    // Clear saved form data when form is successfully loaded from session storage
+    useEffect(() => {
+        const savedFormData = sessionStorage.getItem('ticketFormData');
+        const eventKey = sessionStorage.getItem('eventKey');
+        
+        if (savedFormData && (singleForm.fromStationId || travelPassForm)) {
+            // Clear the saved data since it's been restored
+            sessionStorage.removeItem('ticketFormData');
+            sessionStorage.removeItem('eventKey');
+        }
+    }, [singleForm, travelPassForm]);
+
    
     const steps = [
-        { number: 1, label: "TICKETS", active: true },
-        { number: 2, label: "PASSENGERS", active: false },
-        { number: 3, label: "PROMOTION", active: false },
+        { number: 1, label: "VÉ", active: true },
+        { number: 2, label: "HÀNH KHÁCH", active: false },
+        { number: 3, label: "KHUYẾN MÃI", active: false },
     ];
     
     // Search trigger for SingleTripForm when on tickets page
@@ -86,30 +139,31 @@ const TicketLayout = () => {
              setTravelPassForm,
              onFormSearch: handleFormSearch,
         }}>
-            { travelPassForm === null  && (
+            {(() => {
+                const eventKey = sessionStorage.getItem('eventKey');
                 
-                    <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
-                        <Container>
-                            <Row className="justify-content-center">
-                                <SingleTripForm initialData={singleForm} />
-                            </Row>
-                        </Container>
-                     
-                </div>
-            )}
-            {
-                singleForm == null && travelPassForm != null && (
-                    
-                    <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
-                        <Container>
-                            <Row className="justify-content-center">
-                                <TravelPassForm initialData={travelPassForm} />
-                            </Row>
-                        </Container>
-                             
-                </div>
-                )
-            }
+                if (eventKey === 'travelpass' || travelPassForm) {
+                    return (
+                        <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
+                            <Container>
+                                <Row className="justify-content-center">
+                                    <TravelPassForm initialData={travelPassForm} />
+                                </Row>
+                            </Container>
+                        </div>
+                    );
+                } else {
+                    return (
+                        <div className="ticket-search" style={{ background: "#00000099", padding: "24px 0", color: "white" }}>
+                            <Container>
+                                <Row className="justify-content-center">
+                                    <SingleTripForm initialData={singleForm} />
+                                </Row>
+                            </Container>
+                        </div>
+                    );
+                }
+            })()}
             <Row className="mt-4 text-center">
                         <div className="steps-container">
                             {steps.map((step, index) => (

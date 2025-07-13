@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { Button, Container, Spinner, Alert, Row, Col, Form } from 'react-bootstrap';
+import { Button, Container, Spinner, Alert, Row, Col, Form, Modal } from 'react-bootstrap';
 import './checkinPage.css';
 import useTicket from '../../services/ticket';
 import HistoryTable from './HistoryTable';
@@ -15,6 +15,8 @@ const CheckinPage = () => {
   const [actionError, setActionError] = useState(null);
   const [successMsg, setSuccessMsg] = useState(null);
   const [reloadTrigger, setReloadTrigger] = useState(0);
+  const [showErrorModal, setShowErrorModal] = useState(false);
+  const [errorModalMessage, setErrorModalMessage] = useState('');
   const { getTicketById, checkInTicket, checkOutTicket } = useTicket();
   const [stations, setStations] = useState([]);
   const [selectedStationId, setSelectedStationId] = useState('');
@@ -56,12 +58,14 @@ const CheckinPage = () => {
     setSuccessMsg(null);
     setTimeout(async () => {
       if (!ticket) {
-        setActionError('Không có thông tin vé.');
+        setErrorModalMessage('Không có thông tin vé.');
+        setShowErrorModal(true);
         setActionLoading(false);
         return;
       }
       if (!selectedStationId) {
-        setActionError('Vui lòng chọn ga.');
+        setErrorModalMessage('Vui lòng chọn ga.');
+        setShowErrorModal(true);
         setActionLoading(false);
         return;
       }
@@ -80,7 +84,9 @@ const CheckinPage = () => {
         if (!action) throw new Error('Hành động không hợp lệ.');
         const response = await action.fn({ ticketId: +ticketId, stationId: +selectedStationId });
         if (response && response.status && response.status !== 200) {
-          setActionError(response.message || 'Có lỗi xảy ra khi thực hiện thao tác.');
+          const errorMessage = response.message || 'Có lỗi xảy ra khi thực hiện thao tác.';
+          setErrorModalMessage(errorMessage);
+          setShowErrorModal(true);
         } else {
           setSuccessMsg(action.successMsg);
           // Reload ticket data and trigger history reload
@@ -89,7 +95,8 @@ const CheckinPage = () => {
         }
       } catch (error) {
         const apiMsg = error?.response?.data?.message || error?.message || 'Có lỗi xảy ra khi thực hiện thao tác.';
-        setActionError(apiMsg);
+        setErrorModalMessage(apiMsg);
+        setShowErrorModal(true);
         setSuccessMsg(null);
         console.error('Error:', error);
       }
@@ -149,7 +156,6 @@ const CheckinPage = () => {
                 </Form.Select>
               </div>
             </div>
-            {actionError && <Alert variant="danger">{actionError}</Alert>}
             {successMsg && <Alert variant="success">{successMsg}</Alert>}
             <div className="d-flex justify-content-center gap-4 checkin-btn-group">
 
@@ -211,6 +217,33 @@ const CheckinPage = () => {
           <HistoryTable ticketId={ticketId} reloadTrigger={reloadTrigger} />
         </Col>
       </Row>
+
+      {/* Error Modal */}
+      <Modal show={showErrorModal} onHide={() => setShowErrorModal(false)} centered>
+        <Modal.Header closeButton className="border-0">
+          <Modal.Title className="text-danger">
+            <i className="bi bi-exclamation-triangle-fill me-2"></i>
+            Lỗi
+          </Modal.Title>
+        </Modal.Header>
+        <Modal.Body className="py-4">
+          <div className="text-center">
+            <div className="mb-3">
+              <i className="bi bi-x-circle-fill text-danger" style={{ fontSize: '3rem' }}></i>
+            </div>
+            <p className="mb-0">{errorModalMessage}</p>
+          </div>
+        </Modal.Body>
+        <Modal.Footer className="border-0 justify-content-center">
+          <Button 
+            variant="secondary" 
+            onClick={() => setShowErrorModal(false)}
+            className="px-4"
+          >
+            Đóng
+          </Button>
+        </Modal.Footer>
+      </Modal>
     </Container>
   );
 };
