@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react"
-import { availableStations, getStationName, initialRoutes } from "../../../data"
 import RouteService from "../../../services/routeService"
 import StationService from "../../../services/stationService"
 import TicketRuleService from "../../../services/ticketRuleService"
@@ -183,6 +182,7 @@ const AdminRouteManager = () => {
   }
 
   const handleEditOrAdd = (route = null) => {
+    setLoading(false)
     const newRoute = route
       ? { ...route, stations: [...route.stations] }
       : {
@@ -1110,19 +1110,24 @@ const AdminRouteManager = () => {
                 >
                   {editRoute?.routeId ? "Save Route & Stations" : "Create Route & Stations"}
                 </button> */}
-                <Button 
-                  variant="primary" 
+                <Button
+                  variant="primary"
                   onClick={handleSave}
                   disabled={Object.keys(errors).length > 0 || loading}
                   style={{ borderRadius: "8px" }}
                 >
-                  <Spinner
-                    as="span"
-                    animation="border"
-                    size="sm"
-                    role="status"
-                    aria-hidden="true"
-                  />
+                  {
+                    loading ? (
+                      <Spinner
+                        as="span"
+                        animation="border"
+                        size="sm"
+                        role="status"
+                        aria-hidden="true"s
+                      />
+                    ) : ""
+                  }
+
                   <span className={loading ? "visually-hidden" : ""}>
                     {editRoute?.routeId ? "Save Route & Stations" : "Create Route & Stations"}
                   </span>

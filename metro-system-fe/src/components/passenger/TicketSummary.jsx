@@ -18,7 +18,9 @@ const TicketSummary = ({ passengers = [],
   currentPassengerStep,
   layoutCurrentStep,
   onStepChange,
-  promotion }) => {
+  promotion,
+  isFormValid
+}) => {
 
   const { singleForm, travelPassForm } = useContext(TicketContext);
 
@@ -37,6 +39,7 @@ const TicketSummary = ({ passengers = [],
 
       ticketName: travelPassForm?.ticketName,
       numberOfPassengers: singleForm?.numberOfTickets || 1,
+      ticketPrice: travelPassForm?.basePrice || singleForm?.totalPrice,
       total: travelPassForm?.basePrice || singleForm?.totalPrice * singleForm?.numberOfTickets || 20000,
       salePercent: 0,
       saleAmount: 0,
@@ -49,6 +52,7 @@ const TicketSummary = ({ passengers = [],
 
   useEffect(() => {
     console.log("singleForm", singleForm);
+    console.log("travelPassForm", travelPassForm);
     setTicket({
       ...ticket,
       numberOfPassengers: singleForm?.numberOfTickets || 1,
@@ -110,18 +114,19 @@ const TicketSummary = ({ passengers = [],
 
   const renderTicketDetails = () => {
     if (singleForm) {
+      console.log("singleForm1", singleForm);
       return (
         <>
           <div className="mb-2">
-            <small className="text-muted">From:</small>
+            <small className="text-muted">Ga đi:</small>
             <p className="mb-0">{singleForm.fromStation}</p>
           </div>
           <div className="mb-2">
-            <small className="text-muted">To:</small>
+            <small className="text-muted">Ga đến:</small>
             <p className="mb-0">{singleForm.toStation}</p>
           </div>
           <div className="mb-2">
-            <small className="text-muted">Passenger Emails:</small>
+            <small className="text-muted">Email hành khách:</small>
             {passengers.map((passenger, index) => (
               <p key={index} className="mb-0">
                 {index === 0 ? 'Primary: ' : `Passenger ${index + 1}: `}
@@ -133,18 +138,19 @@ const TicketSummary = ({ passengers = [],
       );
     }
     if (travelPassForm) {
+      console.log("travelPassForm1", travelPassForm);
       return (
         <>
           <div className="mb-2">
-            <small className="text-muted">Pass Type:</small>
+            <small className="text-muted">Loại vé:</small>
             <p className="mb-0">{travelPassForm.ticketName}</p>
           </div>
           <div className="mb-2">
-            <small className="text-muted">Route:</small>
+            <small className="text-muted">Tuyến:</small>
             <p className="mb-0">{travelPassForm.routeName}</p>
           </div>
           <div className="mb-2">
-            <small className="text-muted">Passenger Emails:</small>
+            <small className="text-muted">Email hành khách:</small>
             {passengers.map((passenger, index) => (
               <p key={index} className="mb-0">
                 {index === 0 ? 'Primary: ' : `Passenger ${index + 1}: `}
@@ -159,16 +165,16 @@ const TicketSummary = ({ passengers = [],
 
   return (
     <div>
-      <h5 className="mb-3">Ticket Summary</h5>
+      <h5 className="mb-3">Tóm tắt đặt vé</h5>
       {singleForm && (
         <div>
           <div className="mb-3">
-            <small className="text-muted d-block">From</small>
+            <small className="text-muted d-block">Từ</small>
             <span className="fw-bold">{singleForm.fromStation}</span>
           </div>
 
           <div className="mb-3">
-            <small className="text-muted d-block">To</small>
+            <small className="text-muted d-block">Đến</small>
             <span className="fw-bold">{singleForm.toStation}</span>
           </div>
         </div>
@@ -177,18 +183,18 @@ const TicketSummary = ({ passengers = [],
       {travelPassForm && (
         <div>
           <div className="mb-3">
-            <small className="text-muted d-block">Pass Type</small>
+            <small className="text-muted d-block">Loại vé</small>
             <span className="fw-bold">{travelPassForm.ticketName}</span>
           </div>
           <div className="mb-3">
-            <small className="text-muted d-block">Route</small>
+            <small className="text-muted d-block">Tuyến</small>
             <span className="fw-bold">{travelPassForm.routeName}</span>
           </div>
         </div>
       )}
 
       <div className="mb-3">
-        <small className="text-muted d-block">Date</small>
+        <small className="text-muted d-block">Ngày</small>
         <span>{new Date().toLocaleDateString('vi-VN')}</span>
       </div>
 
@@ -196,11 +202,11 @@ const TicketSummary = ({ passengers = [],
 
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
-          <span>Ticket Price</span>
-          <span>{formatCurrency(ticket.total)}</span>
+          <span>Giá vé</span>
+          <span>{formatCurrency(ticket.ticketPrice)}</span>
         </div >
         <div className="d-flex justify-content-between mb-2">
-          <span>Number of Passengers</span>
+          <span>Số lượng hành khách</span>
           <span>{ticket.numberOfPassengers}</span>
         </div>
       </div >
@@ -210,12 +216,12 @@ const TicketSummary = ({ passengers = [],
       <hr className="my-3" />
       <div className="mb-3">
         <div className="d-flex justify-content-between mb-2">
-          <span>Total</span>
+          <span>Tổng tiền</span>
           <span>{formatCurrency(ticket.total)}</span>
         </div>
         {promotion && (
           <div className="d-flex justify-content-between mb-2">
-            <span>Promotion</span>
+            <span>Khuyến mãi</span>
             <span>{formatCurrency(ticket.saleAmount)}</span>
           </div>
         )}
@@ -223,7 +229,7 @@ const TicketSummary = ({ passengers = [],
 
       <div className="mb-4">
         <div className="d-flex justify-content-between">
-          <h5>Payment</h5>
+          <h5>Thanh toán</h5>
           <h5>{formatCurrency(ticket.paymentAmount)}</h5>
         </div >
       </div >
@@ -234,7 +240,7 @@ const TicketSummary = ({ passengers = [],
             size="lg"
             className="w-100"
           >
-            Back
+            Quay lại
           </Button>
         </Col>
         <Col>
@@ -242,8 +248,10 @@ const TicketSummary = ({ passengers = [],
             <Button variant="primary"
               onClick={handleNextBtn}
               size="lg"
-              className="w-100">
-              Next
+              className="w-100"
+              disabled={!isFormValid}
+              >
+              Tiếp tục
             </Button>
           )}
           {currentPassengerStep === 2 && (
@@ -252,7 +260,7 @@ const TicketSummary = ({ passengers = [],
               size="lg"
               className="w-100"
             >
-              Confirm & Pay
+              Thanh toán
             </Button>
           )}
         </Col>
@@ -268,33 +276,33 @@ const TicketSummary = ({ passengers = [],
       {/* Confirmation Modal */}
       <Modal show={showConfirmModal} onHide={() => setShowConfirmModal(false)} centered>
         <Modal.Header closeButton>
-          <Modal.Title>Confirm Ticket Details</Modal.Title>
+          <Modal.Title>Xác nhận thông tin vé</Modal.Title>
         </Modal.Header>
         <Modal.Body>
           <div className="p-3 bg-light rounded mb-3">
             {renderTicketDetails()}
             <div className="mb-2">
-              <small className="text-muted">Date:</small>
+              <small className="text-muted">Ngày:</small>
               <p className="mb-0">{new Date().toLocaleDateString('vi-VN')}</p>
             </div>
             <div className="mb-2">
-              <small className="text-muted">Number of Passengers:</small>
+              <small className="text-muted">Số lượng hành khách:</small>
               <p className="mb-0">{ticket.numberOfPassengers}</p>
             </div>
             <hr />
             <div className="d-flex justify-content-between">
-              <span>Total Amount:</span>
+              <span>Tổng tiền:</span>
               <span className="fw-bold">{formatCurrency(ticket.paymentAmount)}</span>
             </div >
           </div >
-          <p className="text-muted mb-0">Please confirm the details above before proceeding to payment.</p>
+          <p className="text-muted mb-0">Vui lòng xác nhận thông tin trên trước khi tiến hành thanh toán.</p>
         </Modal.Body >
         <Modal.Footer>
           <Button variant="secondary" onClick={() => setShowConfirmModal(false)}>
-            Cancel
+            Hủy
           </Button>
           <Button variant="primary" onClick={handleConfirmPayment}>
-            Confirm & Pay
+            Thanh toán
           </Button>
         </Modal.Footer>
       </Modal >

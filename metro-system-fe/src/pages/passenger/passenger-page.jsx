@@ -15,6 +15,7 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
   const [appliedPromotion, setAppliedPromotion] = useState(null);
   const [promotionCode, setPromotionCode] = useState('');
   const [userEmail, setUserEmail] = useState('');
+  const [isFormValid, setIsFormValid] = useState(false);
 
   // Get user email from localStorage
   useEffect(() => {
@@ -31,6 +32,12 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
   const handlePromotionCodeChange = (code) => {
     setPromotionCode(code);
   };
+  
+  const handleFormValidChange = (isValid) => {
+    setIsFormValid(isValid);
+  };
+
+
 
   const renderStep = () => {
     switch (currentPassengerStep) {
@@ -39,6 +46,7 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
           numberOfTickets={singleForm?.numberOfTickets || travelPassForm?.numberOfTickets || 1}
           onPassengerChange={handlePassengerChange}
           userEmail={userEmail}
+          onValidationChange={handleFormValidChange}
         />;
       case 2:
         return <PromotionInput
@@ -91,8 +99,8 @@ const PassengerPage = ({ layoutCurrentStep, onStepChange }) => {
                 layoutCurrentStep={layoutCurrentStep}
                 onStepChange={onStepChange}
                 promotion={appliedPromotion}
+                isFormValid={isFormValid}
               />
-
             </Card.Body>
           </Card>
         </Col>

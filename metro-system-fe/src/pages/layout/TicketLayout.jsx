@@ -23,28 +23,26 @@ const TicketLayout = () => {
         const savedFormData = sessionStorage.getItem('ticketFormData');
         const eventKey = sessionStorage.getItem('eventKey');
         
+        // Nếu có travelPassForm từ location.state, không trả về singleForm
+        if (location.state?.travelPassForm) {
+            return null;
+        }
+        
         if (savedFormData) {
             try {
                 const parsedData = JSON.parse(savedFormData);
                 if (eventKey === 'singletrip') {
-                    return {
-                        ...parsedData,
-                        totalPrice: 0,
-                        estimatedDuration: 0,
-                    };
-                } else if (eventKey === 'travelpass') {
                     return parsedData;
+                } else if (eventKey === 'travelpass') {
+                    return null; // Không trả về singleForm khi có travelpass
                 }
             } catch (error) {
                 console.error('Error parsing saved form data:', error);
             }
         }
         
-        return {
-            ...location.state?.singleForm,
-            totalPrice: 0,
-            estimatedDuration: 0,
-        };
+        // Chỉ trả về location.state?.singleForm nếu có, không thêm giá trị mặc định
+        return location.state?.singleForm || null;
     };
 
     // Lấy dữ liệu từ SingleTripForm
@@ -81,6 +79,7 @@ const TicketLayout = () => {
         }
         if (location.state?.travelPassForm) {
             setTravelPassForm(location.state.travelPassForm);
+            setSingleForm(null); // Clear singleForm khi có travelPassForm
             setLayoutCurrentStep(2); // Chuyển sang bước Passenger khi có travelPassForm
             // Clear saved form data since it's been successfully used
             sessionStorage.removeItem('ticketFormData');

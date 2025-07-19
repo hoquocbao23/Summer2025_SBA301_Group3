@@ -4,7 +4,6 @@ import { ArrowDownUp, Plus, Dash } from 'react-bootstrap-icons';
 import './TicketSearchTool.css';
 import { useNavigate, useLocation } from 'react-router-dom';
 import StationService from '../../services/stationService';
-import { availableStations } from '../../data/stations';
 import { TicketContext } from '../../pages/layout/TicketLayout';
 import axiosInstance from '../../config/axios';
 
