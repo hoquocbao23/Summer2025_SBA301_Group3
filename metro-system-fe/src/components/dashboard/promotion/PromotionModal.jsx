@@ -23,9 +23,15 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
     setTicketTypes(response.data.data);
   };
 
+  useEffect(() => {
+      fetchTicketTypes();
+  }, []);
+
+  
+
 
   useEffect(() => {
-    fetchTicketTypes();
+    console.log(promotion);
     if (promotion) {
       // Convert timestamp to date string for input
       setPromotionData({
@@ -49,7 +55,8 @@ const PromotionModal = ({ show, onHide, onSubmit, promotion }) => {
         ticketTypeId: ''
       });
     }
-  }, [promotion]);
+    
+  }, [show]);
 
   const handleInputChange = (e) => {
     const { name, value, type, checked } = e.target;

@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Train, Circle, ChevronDown, ChevronUp } from 'lucide-react';
 import './routeOverview.css';
-import { getStationName } from '../../data/stations.js';
 import RouteService from '../../services/routeService';
 import StationService from '../../services/stationService';
 

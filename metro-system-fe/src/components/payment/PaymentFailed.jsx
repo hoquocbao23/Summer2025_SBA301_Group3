@@ -42,7 +42,7 @@ const PaymentFailed = () => {
         <div className="spinner-border text-primary" role="status">
           <span className="visually-hidden">Loading...</span>
         </div>
-        <p className="mt-3">Processing your payment status...</p>
+        <p className="mt-3">Đang xử lý trạng thái thanh toán...</p>
       </Container>
     );
   }
@@ -52,20 +52,20 @@ const PaymentFailed = () => {
       <div className="failed-animation mb-4">
         <FaTimesCircle size={80} color="#dc3545" />
       </div>
-      <h2 className="mb-3">Payment Failed</h2>
+      <h2 className="mb-3">Thanh toán thất bại</h2>
       <p className="text-muted mb-4">
-        Your payment was not successful. Please try again or contact support if the problem persists.
+        Thanh toán của bạn không thành công. Vui lòng thử lại hoặc liên hệ hỗ trợ nếu vấn đề vẫn tiếp diễn.
       </p>
       <div className="ticket-details p-4 bg-light rounded mb-4">
-        <h5 className="mb-3">Ticket Details</h5>
+        <h5 className="mb-3">Chi tiết vé</h5>
         <div className="row text-start">
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Ticket ID</small>
+            <small className="text-muted d-block">Mã vé</small>
             <span className="fw-bold">#{ticketId || 'N/A'}</span>
           </div>
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Status</small>
-            <span className="text-danger">Failed</span>
+            <small className="text-muted d-block">Trạng thái</small>
+            <span className="text-danger">Thất bại</span>
           </div>
         </div>
       </div>
@@ -74,13 +74,13 @@ const PaymentFailed = () => {
           variant="outline-primary"
           onClick={() => navigate('/bookings')}
         >
-          View My Tickets
+          Xem vé của tôi
         </Button>
         <Button
           variant="primary"
           onClick={() => navigate('/')}
         >
-          Back to Home
+          Quay về trang chủ
         </Button>
       </div>
     </Container>

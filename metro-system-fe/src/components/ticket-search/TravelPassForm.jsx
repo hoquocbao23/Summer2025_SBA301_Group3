@@ -41,8 +41,8 @@ const TravelPassForm = ({ initialData }) => {
     const fetchAvailableRoutes = async () => {
 
         const routes = await RouteService.getAllRoutes();
-
-        setAvailableRoutes(routes.data.routes);
+        const availableRoutes = routes.data.routes.filter(route => route.status === "ACTIVE");
+        setAvailableRoutes(availableRoutes);
         console.log("availableRoutes", availableRoutes);
     };
 

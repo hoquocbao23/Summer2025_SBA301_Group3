@@ -2,13 +2,17 @@ import React, { useState, useEffect } from 'react';
 import { Form, Row, Col, Card } from 'react-bootstrap';
 import './PassengerForm.css';
 
-const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) => {
+const PassengerForm = ({ 
+  numberOfTickets = 1, 
+  onPassengerChange, 
+  userEmail, 
+  onValidationChange
+}) => {
   const [passengers, setPassengers] = useState([]);
-  const [isBuyingForSelf, setIsBuyingForSelf] = useState(true);
+  const [isBuyingForSelf, setIsBuyingForSelf] = useState(false);
+  const [validationErrors, setValidationErrors] = useState({});
 
   useEffect(() => {
-    console.log('PassengerForm useEffect triggered:', { numberOfTickets, isBuyingForSelf, userEmail });
-    
     // Initialize passengers array based on number of tickets
     const initialPassengers = Array(numberOfTickets).fill('').map((_, index) => ({
       id: index + 1,
@@ -16,13 +20,37 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
     }));
     setPassengers(initialPassengers);
     
-    console.log('Initial passengers created:', initialPassengers);
-    
     // Notify parent component about the initial passengers
     if (onPassengerChange) {
       onPassengerChange(initialPassengers);
     }
+
+    // Validate initial state
+    validatePassengers(initialPassengers);
   }, [numberOfTickets, isBuyingForSelf, userEmail]);
+
+  const validatePassengers = (passengerList) => {
+    const errors = {};
+    
+    // Validate first passenger (index 0) - email is required
+    if (!passengerList[0] || !passengerList[0].email || passengerList[0].email.trim() === '') {
+      errors[0] = 'Email là bắt buộc cho hành khách chính';
+    } else {
+      // Basic email validation
+      const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+      if (!emailRegex.test(passengerList[0].email)) {
+        errors[0] = 'Email không hợp lệ';
+      }
+    }
+
+    setValidationErrors(errors);
+    
+    // Notify parent component about validation status
+    if (onValidationChange) {
+      const isValid = Object.keys(errors).length === 0;
+      onValidationChange(isValid);
+    }
+  };
 
   const handleEmailChange = (index, value) => {
     const updatedPassengers = [...passengers];
@@ -31,6 +59,11 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
       email: value
     };
     setPassengers(updatedPassengers);
+    
+    // Trigger validation ngay lập tức
+    validatePassengers(updatedPassengers);
+    
+    // Notify parent component ngay lập tức
     if (onPassengerChange) {
       onPassengerChange(updatedPassengers);
     }
@@ -44,6 +77,11 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
       email: mode && userEmail ? userEmail : ''
     }));
     setPassengers(updatedPassengers);
+    
+    // Trigger validation ngay lập tức
+    validatePassengers(updatedPassengers);
+    
+    // Notify parent component ngay lập tức
     if (onPassengerChange) {
       onPassengerChange(updatedPassengers);
     }
@@ -93,10 +131,15 @@ const PassengerForm = ({ numberOfTickets = 1, onPassengerChange, userEmail  }) =
                       placeholder="Nhập địa chỉ email"
                       value={passenger.email}
                       onChange={(e) => handleEmailChange(index, e.target.value)}
-                      className="form-control-custom"
+                      className={`form-control-custom ${validationErrors[index] ? 'is-invalid' : ''}`}
                       disabled={isBuyingForSelf}
                     />
-                    {index === 0 && (
+                    {validationErrors[index] && (
+                      <div className="invalid-feedback d-block">
+                        {validationErrors[index]}
+                      </div>
+                    )}
+                    {index === 0 && !validationErrors[index] && (
                       <Form.Text className="text-muted small">
                         Xác nhận đặt vé sẽ được gửi đến email này
                       </Form.Text>

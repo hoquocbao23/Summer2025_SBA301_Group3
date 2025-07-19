@@ -52,28 +52,28 @@ const PaymentSuccess = () => {
       <div className="success-animation mb-4">
         <FaCheckCircle size={80} color="#28a745" />
       </div>
-      <h2 className="mb-3">Payment Successful!</h2>
+      <h2 className="mb-3">Thanh toán thành công!</h2>
       <p className="text-muted mb-4">
-        Your ticket has been successfully purchased. You can find your ticket details in your email.
+        Vé của bạn đã được mua thành công. Bạn có thể tìm thông tin vé trong email của mình.
       </p>
       <div className="ticket-details p-4 bg-light rounded mb-4">
-        <h5 className="mb-3">Ticket Details</h5>
+        <h5 className="mb-3">Chi tiết vé</h5>
         <div className="row text-start">
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Booking ID</small>
+            <small className="text-muted d-block">Mã đặt vé</small>
             <span className="fw-bold">#{bookingId || 'N/A'}</span>
           </div>
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Purchase Date</small>
+            <small className="text-muted d-block">Ngày đặt vé</small>
             <span>{new Date().toLocaleDateString()}</span>
           </div>
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Status</small>
-            <span className="text-success">Confirmed</span>
+            <small className="text-muted d-block">Trạng thái</small>
+            <span className="text-success">Đã thanh toán</span>
           </div>
           <div className="col-md-6 mb-3">
-            <small className="text-muted d-block">Payment Method</small>
-            <span>Credit Card</span>
+            <small className="text-muted d-block">Phương thức thanh toán</small>
+            <span>PayOS</span>
           </div>
         </div>
       </div>
@@ -82,12 +82,12 @@ const PaymentSuccess = () => {
           variant="outline-primary"
           onClick={() => navigate('/bookings')}
         >
-          View My Tickets
+          Xem vé của tôi
         </Button>
         <Button
           onClick={() => navigate('/')}
         >
-          Back to Home
+          Quay về trang chủ
         </Button>
       </div>
     </Container>

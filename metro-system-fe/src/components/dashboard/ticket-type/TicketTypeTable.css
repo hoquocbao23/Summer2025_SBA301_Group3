@@ -1,0 +1,248 @@
+.ticket-type-dashboard {
+  background-color: #f8f9fa;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+.ticket-type-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  margin-bottom: 24px;
+}
+
+.ticket-type-header-title {
+  font-size: 28px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 8px;
+  margin: 0;
+}
+
+.ticket-type-header-subtitle {
+  color: #6c757d;
+  font-size: 14px;
+  margin: 0;
+}
+
+.ticket-type-add-btn {
+  background-color: #4f46e5;
+  color: white;
+  border: none;
+  border-radius: 8px;
+  padding: 10px 20px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+}
+
+.ticket-type-add-btn:hover {
+  background-color: #4338ca;
+}
+
+.ticket-type-stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 20px;
+  margin-bottom: 40px;
+}
+
+.ticket-type-stat-card {
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  padding: 20px;
+}
+
+.ticket-type-stat-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ticket-type-stat-label {
+  color: #6c757d;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  margin: 0;
+}
+
+.ticket-type-stat-value {
+  font-size: 32px;
+  font-weight: 700;
+  margin: 8px 0 0 0;
+}
+
+.ticket-type-stat-value.total {
+  color: #333;
+}
+
+.ticket-type-stat-value.active {
+  color: #16a34a;
+}
+
+.ticket-type-stat-value.inactive {
+  color: #dc2626;
+}
+
+.ticket-type-stat-value.limited {
+  color: #0891b2;
+}
+
+.ticket-type-stat-icon {
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.ticket-type-stat-icon.total {
+  background-color: #e0e7ff;
+}
+
+.ticket-type-stat-icon.active {
+  background-color: #dcfce7;
+}
+
+.ticket-type-stat-icon.inactive {
+  background-color: #fee2e2;
+}
+
+.ticket-type-stat-icon.limited {
+  background-color: #cffafe;
+}
+
+.ticket-type-stat-icon svg {
+  width: 24px;
+  height: 24px;
+}
+
+.ticket-type-stat-icon.total svg {
+  color: #4f46e5;
+}
+
+.ticket-type-stat-icon.active svg {
+  color: #16a34a;
+}
+
+.ticket-type-stat-icon.inactive svg {
+  color: #dc2626;
+}
+
+.ticket-type-stat-icon.limited svg {
+  color: #0891b2;
+}
+
+.ticket-type-table-section h4 {
+  font-size: 18px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 20px;
+}
+
+.ticket-type-table-container {
+  background-color: white;
+  border: 1px solid #e9ecef;
+  border-radius: 12px;
+  overflow: hidden;
+}
+
+.ticket-type-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+}
+
+.ticket-type-table thead {
+  background-color: #f8f9fa;
+}
+
+.ticket-type-table th {
+  border: none;
+  padding: 16px 20px;
+  font-weight: 600;
+  color: #374151;
+  text-align: left;
+}
+
+.ticket-type-table tbody tr {
+  border-top: 1px solid #f3f4f6;
+}
+
+.ticket-type-table tbody tr:first-child {
+  border-top: none;
+}
+
+.ticket-type-table td {
+  border: none;
+  padding: 16px 20px;
+}
+
+.ticket-type-table td.data {
+  color: #374151;
+}
+
+.ticket-type-table td.muted {
+  color: #6b7280;
+}
+
+.ticket-type-status-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.ticket-type-status-badge.active {
+  background-color: #dcfce7;
+  color: #166534;
+}
+
+.ticket-type-status-badge.inactive {
+  background-color: #fee2e2;
+  color: #991b1b;
+}
+
+.ticket-type-limit-badge {
+  font-size: 12px;
+  padding: 4px 8px;
+  border-radius: 4px;
+  font-weight: 500;
+}
+
+.ticket-type-limit-badge.limited {
+  background-color: #fef3c7;
+  color: #92400e;
+}
+
+.ticket-type-limit-badge.unlimited {
+  background-color: #dbeafe;
+  color: #1e40af;
+}
+
+.ticket-type-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.ticket-type-action-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  padding: 4px;
+}
+
+.ticket-type-action-btn.edit {
+  color: #3b82f6;
+}
+
+.ticket-type-action-btn.delete {
+  color: #dc2626;
+}
+
+.ticket-type-action-btn:hover {
+  opacity: 0.8;
+} 
