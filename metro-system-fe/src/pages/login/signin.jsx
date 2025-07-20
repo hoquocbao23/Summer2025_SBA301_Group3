@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 
 const SignUp = () => {
   const navigate = useNavigate();
-  const [email, setEmail] = useState('');
+  const [email, setEmail] = useState();
   const [fullName, setFullName] = useState('');
   const [password, setPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -234,26 +234,9 @@ const SignUp = () => {
                   </Form>
                 )}
 
-                <div className="mt-3 text-center">
-                  <p>Or sign up with social media</p>
-                </div>
+                
 
-                <Button
-                  variant="primary"
-                  className="w-100 mb-2 d-flex align-items-center justify-content-center"
-                >
-                  <FaFacebookF className="me-2" />
-                  Sign up with Facebook
-                </Button>
-
-                <Button
-                  variant="danger"
-                  className="w-100 d-flex align-items-center justify-content-center"
-                  style={{ backgroundColor: '#dd4b39', borderColor: '#dd4b39' }}
-                >
-                  <FaGooglePlusG className="me-2" />
-                  Sign up with Google+
-                </Button>
+                
               </Card.Body>
             </Card>
           </Col>
