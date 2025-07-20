@@ -17,4 +17,6 @@ public interface IPromotionService {
     List<PromotionResponseDto> findAvailablePromotions(long ticketTypeId );
     Promotion findByCode(String promotionCode);
     PromotionResponseDto isEligiblePromotion(String promotionCode, long ticketTypeId);
+
+    List<PromotionResponseDto> getEligiblePromotion(long ticketTypeId);
 }

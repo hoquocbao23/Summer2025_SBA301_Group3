@@ -55,7 +55,6 @@ public class Booking {
 
     private String qrUrl;
 
-
     @Enumerated(EnumType.STRING)
     private TransactionStatus paymentStatus;
 
@@ -64,13 +63,6 @@ public class Booking {
 
     @OneToMany(mappedBy = "booking", fetch = FetchType.LAZY)
     private List<Ticket> tickets;
-
-
-
-
-
-
-
 
 
 }

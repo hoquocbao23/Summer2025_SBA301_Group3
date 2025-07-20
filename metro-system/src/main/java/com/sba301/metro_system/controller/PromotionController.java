@@ -90,7 +90,7 @@ public class PromotionController {
     })
     public ResponseApi<?> updatePromotion(@PathVariable long id,
                                           @RequestBody PromotionRequestDto promotionRequestDto) throws BadRequestException {
-        System.out.println(promotionRequestDto);
+
         return ResponseApi
                 .builder()
                 .status(HttpStatus.OK.value())
@@ -138,6 +138,18 @@ public class PromotionController {
                 .data(promotionService.isEligiblePromotion(code, ticketTypeId ))
                 .build();
     }
+
+    @GetMapping("/get")
+    public ResponseApi<?> getPromotions(
+                                              @RequestParam(name = "ticketTypeId") long ticketTypeId) {
+        return ResponseApi.builder()
+                .status(HttpStatus.OK.value())
+                .message(HttpStatus.OK.getReasonPhrase())
+                .data(promotionService.getEligiblePromotion( ticketTypeId ))
+                .build();
+    }
+
+
 
 
 

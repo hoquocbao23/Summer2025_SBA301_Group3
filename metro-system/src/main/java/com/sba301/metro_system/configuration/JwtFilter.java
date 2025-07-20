@@ -89,13 +89,19 @@ public class JwtFilter extends OncePerRequestFilter {
             return false;
         }
 
-        // GET requests to stations are public
-        if (path.startsWith("/stations") && "GET".equals(method)) {
+        // GET requests to stations and trains are public
+        if ((path.startsWith("/stations") || path.startsWith("/trains")) && "GET".equals(method)) {
             return false;
         }
 
         // Admin protected endpoints
-        if (path.startsWith("/user/")) {
+        if (path.startsWith("/user/") || path.startsWith("/admin/")) {
+            return true;
+        }
+
+        // Protected train endpoints (POST, PUT, DELETE)
+        if ((path.startsWith("/trains/") || path.equals("/trains")) &&
+                !("GET".equals(method))) {
             return true;
         }
 

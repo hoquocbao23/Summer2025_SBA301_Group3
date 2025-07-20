@@ -66,6 +66,34 @@ public class GlobalException {
                 .build();
     }
 
+    @ExceptionHandler(StationValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseApi<?> handleStationValidationException(StationValidationException e) {
+        return ResponseApi
+                .builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(e.getMessage())
+                .build();
+    }
 
+    @ExceptionHandler(IllegalArgumentException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseApi<?> handleIllegalArgumentException(IllegalArgumentException e) {
+        return ResponseApi
+                .builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(e.getMessage())
+                .build();
+    }
+
+    @ExceptionHandler(TrainValidationException.class)
+    @ResponseStatus(HttpStatus.BAD_REQUEST)
+    public ResponseApi<?> handleTrainValidationException(TrainValidationException e) {
+        return ResponseApi
+                .builder()
+                .status(HttpStatus.BAD_REQUEST.value())
+                .message(e.getMessage())
+                .build();
+    }
 
 }

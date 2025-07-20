@@ -1,10 +1,11 @@
 package com.sba301.metro_system.dto.response;
 
-import com.sba301.metro_system.enums.TicketStatus;
+
 import lombok.Data;
 
 import java.time.LocalDateTime;
 import java.util.List;
+
 
 @Data
 public class BookingResponseDto {
@@ -19,6 +20,7 @@ public class BookingResponseDto {
     private String promotionCode;
     private String routeName;
     private String urlCheckout;
+    private List<TicketResponseDto> tickets;
 
     private long payOrderCode;
     private int numberOfPassengers;

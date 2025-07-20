@@ -2,16 +2,26 @@ package com.sba301.metro_system.service;
 
 import com.sba301.metro_system.dto.request.train.TrainRequestDTO;
 import com.sba301.metro_system.dto.response.train.TrainResponseDTO;
-import com.sba301.metro_system.entity.Train;
 
 import java.util.List;
 
 public interface ITrainService {
-    List<Train> findAll();
-    Train findById(Long id);
-    Train saveWithRout(Long id,TrainResponseDTO train);
-    void delete(Long id);
-    Train update(Long id,Train train);
+    List<TrainResponseDTO> findAll();
 
-    Train save(TrainRequestDTO trainRequestDTO);
+    TrainResponseDTO findById(Long id);
+
+    void delete(Long id);
+
+    TrainResponseDTO update(Long id, TrainRequestDTO trainRequestDTO,Long idRoute);
+
+    TrainResponseDTO save(TrainRequestDTO trainRequestDTO);
+
+    // Validation methods
+    void validateTrainData(TrainRequestDTO trainRequestDTO);
+
+    void validateTrainExists(Long trainId);
+
+    void validateTrainName(String trainName);
+
+    void validateTrainModel(String trainModel);
 }
