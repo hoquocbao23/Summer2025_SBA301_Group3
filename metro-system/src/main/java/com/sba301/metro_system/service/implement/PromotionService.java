@@ -19,6 +19,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.stream.Collectors;
 
 
 @Service
@@ -53,8 +54,8 @@ public class PromotionService implements IPromotionService {
 
     public boolean isValidDate(LocalDateTime fromDate, LocalDateTime toDate) throws BadRequestException {
         LocalDateTime now = LocalDateTime.now();
-        if (fromDate.isBefore(now) || toDate.isBefore(now)) {
-            throw new BadRequestException("Start date or end date should be greater than now");
+        if (toDate.isBefore(now)) {
+            throw new BadRequestException("End date should be greater than now");
         }
         if (fromDate.isAfter(toDate)) {
             throw new BadRequestException("Start date cannot be greater than end date");
@@ -136,6 +137,18 @@ public class PromotionService implements IPromotionService {
                 .orElseThrow(() -> new NotFoundException("Promotion is not eligible"));
         return PromotionMapper.toPromotionResponseDto(promotion);
     }
+
+    public List<PromotionResponseDto> getEligiblePromotion(long ticketTypeId) {
+        TicketType ticketType = ticketTypeService.findById(ticketTypeId);
+        List<Promotion> promotion = promotionRepository.findPromotionByTicketType(ticketType)
+                .orElseThrow(() -> new NotFoundException("Promotion is not eligible"));
+        return promotion
+                .stream()
+                .map(PromotionMapper::toPromotionResponseDto)
+                .collect(Collectors.toList());
+    }
+
+
 
 
 

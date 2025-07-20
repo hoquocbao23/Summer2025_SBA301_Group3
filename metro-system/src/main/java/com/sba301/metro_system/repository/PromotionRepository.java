@@ -12,5 +12,6 @@ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
     Optional<Promotion> findPromotionByPromotionIdAndStatus(Long id, Status status);
     Optional<Promotion> findPromotionByPromotionCodeAndStatus(String promotionCode, Status status);
     Optional<Promotion> findPromotionByPromotionCodeAndTicketTypeAndStatus(String promotionCode, TicketType ticketType, Status status);
+    Optional<List<Promotion>> findPromotionByTicketType( TicketType ticketType);
 
 }
