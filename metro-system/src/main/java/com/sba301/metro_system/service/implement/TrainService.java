@@ -63,9 +63,9 @@ public class TrainService implements ITrainService {
     @Override
     @PreAuthorize("hasRole('ADMIN')")
     public TrainResponseDTO update(Long id, TrainRequestDTO trainRequestDTO,Long idRoute) {
-        validateTrainExists(id);
-        validateTrainData(trainRequestDTO);
-        validateTrainNameForUpdate(trainRequestDTO.getTrainName().trim(), id);
+//        validateTrainExists(id);
+//        validateTrainData(trainRequestDTO);
+//        validateTrainNameForUpdate(trainRequestDTO.getTrainName().trim(), id);
 
         Train existingTrain = trainRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Train not found with id: " + id));
@@ -77,7 +77,7 @@ public class TrainService implements ITrainService {
                 && !trainRequestDTO.getTrainManufacturer().trim().isEmpty()) {
             existingTrain.setTrainManufacturer(trainRequestDTO.getTrainManufacturer().trim());
         }
-        Route route= repository.findById(idRoute).get();
+        Route route= repository.findById(idRoute).orElseThrow(() -> new NotFoundException("Route not found with id: " + idRoute));
         existingTrain.setRoute(route);
         Train savedTrain = trainRepository.save(existingTrain);
         return trainMapper.toResponseDto(savedTrain);
