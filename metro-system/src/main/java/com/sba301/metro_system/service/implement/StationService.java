@@ -1,17 +1,17 @@
 package com.sba301.metro_system.service.implement;
 
-import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.station.StationDTO;
+import com.sba301.metro_system.dto.response.StationResponseDto;
 import com.sba301.metro_system.entity.Station;
-import com.sba301.metro_system.entity.UserPrinciple;
 import com.sba301.metro_system.enums.Status;
 import com.sba301.metro_system.exception.NotFoundException;
+import com.sba301.metro_system.exception.StationValidationException;
+import com.sba301.metro_system.mapper.StationMapper;
 import com.sba301.metro_system.repository.StationRepository;
 import com.sba301.metro_system.service.ICloudinaryService;
 import com.sba301.metro_system.service.IStationService;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -28,36 +28,20 @@ public class StationService implements IStationService {
     @Autowired
     private ICloudinaryService cloudinaryService;
 
+    @Autowired
+    private StationMapper stationMapper;
+
     @Override
-    public ResponseApi<?> getAllStations() {
-        List<Station> station= stationRepository.findAll();
-        return ResponseApi.
-                builder().
-                status(HttpStatus.OK.value()).
-                message(HttpStatus.OK.getReasonPhrase()).
-                data(station).
-                build();
+    public List<StationResponseDto> getAllStations() {
+        List<Station> stations = stationRepository.findAll();
+        return stationMapper.toResponseDtoList(stations);
     }
 
-
     @Override
-    public ResponseApi<?> getStationById(Long id) {
-        Optional<Station> stationOptional = stationRepository.findById(id);
-
-        if (stationOptional.isEmpty()) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.NOT_FOUND.value())
-                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
-                    .data("Not found Station with id " + id)
-                    .build();
-        }
-
-        Station station = stationOptional.get();
-        return ResponseApi.builder()
-                .status(HttpStatus.OK.value())
-                .message(HttpStatus.OK.getReasonPhrase())
-                .data(station)
-                .build();
+    public StationResponseDto getStationById(Long id) {
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Station not found with id: " + id));
+        return stationMapper.toResponseDto(station);
     }
 
     @Override
@@ -66,83 +50,55 @@ public class StationService implements IStationService {
         return stationOptional.orElseThrow(() -> new NotFoundException("Station is not found with id " + id));
     }
 
-
-
     @Override
-    public ResponseApi<?> createStation(StationDTO stationDTO) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal == null || "anonymousUser".equals(principal)) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .message(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                    .data("UNAUTHORIZED")
-                    .build();
+    @PreAuthorize("hasRole('ADMIN')")
+    public StationResponseDto createStation(StationDTO stationDTO) {
+        validateStationData(stationDTO);
+
+        if (stationRepository.existsByStationName(stationDTO.getStationName().trim())) {
+            throw new StationValidationException("Station with this name already exists");
         }
 
-        // Tạo entity Station từ StationDTO
         Station station = new Station();
-        station.setStationName(stationDTO.getStationName());
-        station.setStationLocation(stationDTO.getStationLocation());
-        station.setDescription(stationDTO.getDescription());
+        station.setStationName(stationDTO.getStationName().trim());
+        station.setStationLocation(stationDTO.getStationLocation().trim());
+        station.setDescription(stationDTO.getDescription() != null ? stationDTO.getDescription().trim() : null);
         station.setStatus(stationDTO.getStatus() != null ? stationDTO.getStatus() : Status.ACTIVE);
 
-        // Xử lý upload hình ảnh lên Cloudinary nếu có
         MultipartFile image = stationDTO.getImage();
         if (image != null && !image.isEmpty()) {
             try {
-                Map uploadResult = cloudinaryService.upload(image, "metro_stations");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> uploadResult = (Map<String, Object>) cloudinaryService.upload(image,
+                        "metro_stations");
                 station.setImageUrl((String) uploadResult.get("secure_url"));
                 station.setImagePublicId((String) uploadResult.get("public_id"));
             } catch (Exception e) {
-                return ResponseApi.builder()
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .message("Failed to upload image: " + e.getMessage())
-                        .data(null)
-                        .build();
+                throw new RuntimeException("Failed to upload image: " + e.getMessage());
             }
         }
 
         // Lưu station vào database
-        try {
-            Station savedStation = stationRepository.save(station);
-            return ResponseApi.builder()
-                    .status(HttpStatus.CREATED.value())
-                    .message(HttpStatus.CREATED.getReasonPhrase())
-                    .data(savedStation)
-                    .build();
-        } catch (Exception e) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Failed to save station: " + e.getMessage())
-                    .data(null)
-                    .build();
-        }
+        Station savedStation = stationRepository.save(station);
+        return stationMapper.toResponseDto(savedStation);
     }
 
     @Override
-    public ResponseApi<?> updateStation(StationDTO stationDTO, Long id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal == null || "anonymousUser".equals(principal)) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .message(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                    .data("UNAUTHORIZED")
-                    .build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public StationResponseDto updateStation(StationDTO stationDTO, Long id) {
+        // Validation
+        validateStationExists(id);
+        validateStationData(stationDTO);
 
-        Optional<Station> optionalStation = stationRepository.findById(id);
-        if (optionalStation.isEmpty()) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.NOT_FOUND.value())
-                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
-                    .data("Not found Station with id " + id)
-                    .build();
-        }
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Station not found with id: " + id));
 
-        Station station = optionalStation.get();
-        station.setStationName(stationDTO.getStationName());
-        station.setStationLocation(stationDTO.getStationLocation());
-        station.setDescription(stationDTO.getDescription());
+        // Check for duplicate station name (excluding current station)
+        validateStationNameForUpdate(stationDTO.getStationName().trim(), id);
+
+        station.setStationName(stationDTO.getStationName().trim());
+        station.setStationLocation(stationDTO.getStationLocation().trim());
+        station.setDescription(stationDTO.getDescription() != null ? stationDTO.getDescription().trim() : null);
         station.setStatus(stationDTO.getStatus() != null ? stationDTO.getStatus() : Status.ACTIVE);
 
         // Xử lý upload hình ảnh mới nếu có
@@ -154,84 +110,177 @@ public class StationService implements IStationService {
                     cloudinaryService.delete(station.getImagePublicId());
                 }
                 // Upload hình ảnh mới
-                Map uploadResult = cloudinaryService.upload(image, "metro_stations");
+                @SuppressWarnings("unchecked")
+                Map<String, Object> uploadResult = (Map<String, Object>) cloudinaryService.upload(image,
+                        "metro_stations");
                 station.setImageUrl((String) uploadResult.get("secure_url"));
                 station.setImagePublicId((String) uploadResult.get("public_id"));
             } catch (Exception e) {
-                return ResponseApi.builder()
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .message("Failed to update image: " + e.getMessage())
-                        .data(null)
-                        .build();
+                throw new RuntimeException("Failed to update image: " + e.getMessage());
             }
         }
 
         // Lưu thay đổi
-        try {
-            Station updatedStation = stationRepository.save(station);
-            return ResponseApi.builder()
-                    .status(HttpStatus.OK.value())
-                    .message(HttpStatus.OK.getReasonPhrase())
-                    .data(updatedStation)
-                    .build();
-        } catch (Exception e) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.BAD_REQUEST.value())
-                    .message("Failed to update station: " + e.getMessage())
-                    .data(null)
-                    .build();
-        }
+        Station updatedStation = stationRepository.save(station);
+        return stationMapper.toResponseDto(updatedStation);
     }
 
     @Override
-    public ResponseApi<?> deleteStation(Long id) {
-        Object principal = SecurityContextHolder.getContext().getAuthentication().getPrincipal();
-        if (principal == null || "anonymousUser".equals(principal)) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.UNAUTHORIZED.value())
-                    .message(HttpStatus.UNAUTHORIZED.getReasonPhrase())
-                    .data("UNAUTHORIZED")
-                    .build();
-        }
+    @PreAuthorize("hasRole('ADMIN')")
+    public void deleteStation(Long id) {
+        // Validation
+        validateStationExists(id);
 
-        Optional<Station> optionalStation = stationRepository.findById(id);
-        if (optionalStation.isEmpty()) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.NOT_FOUND.value())
-                    .message(HttpStatus.NOT_FOUND.getReasonPhrase())
-                    .data("Not found Station with id " + id)
-                    .build();
-        }
-
-        Station station = optionalStation.get();
+        Station station = stationRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Station not found with id: " + id));
 
         // Xóa hình ảnh trên Cloudinary nếu tồn tại
         if (station.getImagePublicId() != null) {
             try {
                 cloudinaryService.delete(station.getImagePublicId());
             } catch (Exception e) {
-                return ResponseApi.builder()
-                        .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                        .message("Failed to delete image: " + e.getMessage())
-                        .data(null)
-                        .build();
+                throw new RuntimeException("Failed to delete image: " + e.getMessage());
             }
         }
 
         // Xóa cứng bản ghi
-        try {
-            stationRepository.delete(station);
-            return ResponseApi.builder()
-                    .status(HttpStatus.OK.value())
-                    .message("Station deleted successfully")
-                    .data(null)
-                    .build();
-        } catch (Exception e) {
-            return ResponseApi.builder()
-                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
-                    .message("Failed to delete station: " + e.getMessage())
-                    .data(null)
-                    .build();
+        stationRepository.delete(station);
+    }
+
+    // Validation methods implementation
+    @Override
+    public void validateStationData(StationDTO stationDTO) {
+        if (stationDTO == null) {
+            throw new StationValidationException("Station data cannot be null");
+        }
+        if (stationDTO.getStationName() == null || stationDTO.getStationName().trim().isEmpty()) {
+            throw new StationValidationException("Station name is required");
+        }
+        if (stationDTO.getStationLocation() == null || stationDTO.getStationLocation().trim().isEmpty()) {
+            throw new StationValidationException("Station location is required");
+        }
+
+        // Validate individual fields
+        validateStationName(stationDTO.getStationName().trim());
+        validateStationLocation(stationDTO.getStationLocation().trim());
+        validateStationDescription(stationDTO.getDescription());
+
+        // Validate status if provided
+        if (stationDTO.getStatus() != null) {
+            validateStationStatus(stationDTO.getStatus());
+        }
+
+        // Validate image if provided
+        if (stationDTO.getImage() != null) {
+            validateImageFile(stationDTO.getImage());
+        }
+    }
+
+    @Override
+    public void validateStationExists(Long stationId) {
+        if (stationId == null) {
+            throw new StationValidationException("Station ID cannot be null");
+        }
+        if (!stationRepository.existsById(stationId)) {
+            throw new NotFoundException("Station not found with id: " + stationId);
+        }
+    }
+
+    @Override
+    public void validateStationName(String stationName) {
+        if (stationName == null || stationName.trim().isEmpty()) {
+            throw new StationValidationException("Station name cannot be null or empty");
+        }
+        if (stationName.length() < 2) {
+            throw new StationValidationException("Station name must be at least 2 characters long");
+        }
+        if (stationName.length() > 100) {
+            throw new StationValidationException("Station name cannot exceed 100 characters");
+        }
+
+        // Check for invalid characters (only allow letters, numbers, spaces, and basic
+        // punctuation)
+        if (!stationName.matches("^[a-zA-ZÀ-ỹĂăÂâÊêÔôƠơƯư0-9\\s.,'-]+$")) {
+            throw new StationValidationException("Station name contains invalid characters");
+        }
+    }
+
+    // Additional validation method to check for duplicate names during update
+    public void validateStationNameForUpdate(String stationName, Long currentStationId) {
+        if (stationName == null || stationName.trim().isEmpty()) {
+            throw new StationValidationException("Station name cannot be null or empty");
+        }
+        if (stationName.length() < 2) {
+            throw new StationValidationException("Station name must be at least 2 characters long");
+        }
+        if (stationName.length() > 100) {
+            throw new StationValidationException("Station name cannot exceed 100 characters");
+        }
+
+        // Check for invalid characters
+        if (!stationName.matches("^[a-zA-ZÀ-ỹĂăÂâÊêÔôƠơƯư0-9\\s.,'-]+$")) {
+            throw new StationValidationException("Station name contains invalid characters");
+        }
+
+        // Check for duplicate station name (excluding current station during update)
+        Optional<Station> existingStation = stationRepository.findByStationName(stationName.trim());
+        if (existingStation.isPresent() && !existingStation.get().getStationId().equals(currentStationId)) {
+            throw new StationValidationException("Station with this name already exists");
+        }
+    }
+
+    @Override
+    public void validateStationLocation(String stationLocation) {
+        if (stationLocation == null || stationLocation.trim().isEmpty()) {
+            throw new StationValidationException("Station location cannot be null or empty");
+        }
+        if (stationLocation.length() < 5) {
+            throw new StationValidationException("Station location must be at least 5 characters long");
+        }
+        if (stationLocation.length() > 200) {
+            throw new StationValidationException("Station location cannot exceed 200 characters");
+        }
+
+        // Check for valid location format (allow letters, numbers, spaces, and common
+        // address characters)
+        if (!stationLocation.matches("^[a-zA-ZÀ-ỹĂăÂâÊêÔôƠơƯư0-9\\s.,/'-]+$")) {
+            throw new StationValidationException("Station location contains invalid characters");
+        }
+    }
+
+    // Additional validation methods
+    public void validateStationStatus(Status status) {
+        if (status == null) {
+            throw new StationValidationException("Station status cannot be null");
+        }
+    }
+
+    public void validateStationDescription(String description) {
+        if (description != null && description.length() > 500) {
+            throw new StationValidationException("Station description cannot exceed 500 characters");
+        }
+    }
+
+    public void validateImageFile(MultipartFile image) {
+        if (image != null && !image.isEmpty()) {
+            // Check file size (max 5MB)
+            if (image.getSize() > 5 * 1024 * 1024) {
+                throw new StationValidationException("Image file size cannot exceed 5MB");
+            }
+
+            // Check file type
+            String contentType = image.getContentType();
+            if (contentType == null || !contentType.startsWith("image/")) {
+                throw new StationValidationException("Only image files are allowed");
+            }
+
+            // Check specific image types
+            if (!contentType.equals("image/jpeg") &&
+                    !contentType.equals("image/png") &&
+                    !contentType.equals("image/gif") &&
+                    !contentType.equals("image/webp")) {
+                throw new StationValidationException("Only JPEG, PNG, GIF, and WebP images are allowed");
+            }
         }
     }
 }

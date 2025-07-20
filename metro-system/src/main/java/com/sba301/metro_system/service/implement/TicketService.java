@@ -92,7 +92,7 @@ public class TicketService implements ITicketService {
         }
         List<Ticket> ticketList = new ArrayList();
         List<String> userEmails = ticketRequestDto.getUserEmails();
-        
+
         for (int i = 0; i < numOfPass; i++) {
             Ticket ticket = new Ticket();
             Long ticketId = Utils.generateRandomId();
@@ -111,7 +111,7 @@ public class TicketService implements ITicketService {
 
             // put key ticketID with userEmail value
             userEmailMap.put(ticketId, userEmails.get(i));
-            
+
             ticketList.add(ticket);
         }
         return ticketList;
@@ -180,7 +180,7 @@ public class TicketService implements ITicketService {
 
         Optional<Route> route = routeRepository.findById(ticketRequestDto.getRouteId());
         if (route.isPresent()) {
-                newBooking.setRoute(route.get());
+            newBooking.setRoute(route.get());
         }
 
         newBooking.setPurchaseTime(LocalDateTime.now());
@@ -294,7 +294,7 @@ public class TicketService implements ITicketService {
             emailService.sendEmail(mailBody, model);
         });
 
-        }
+    }
 
 
 

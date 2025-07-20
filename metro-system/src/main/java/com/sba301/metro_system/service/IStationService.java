@@ -1,16 +1,31 @@
 package com.sba301.metro_system.service;
 
-import com.sba301.metro_system.dto.ResponseApi;
 import com.sba301.metro_system.dto.request.station.StationDTO;
+import com.sba301.metro_system.dto.response.StationResponseDto;
 import com.sba301.metro_system.entity.Station;
 
-public interface IStationService {
-    public ResponseApi<?> getAllStations();
-    public ResponseApi<?> getStationById(Long id);
-    public ResponseApi<?> createStation(StationDTO stationDTO);
-    public ResponseApi<?> updateStation(StationDTO stationDTO, Long id);
-    public ResponseApi<?> deleteStation(Long id);
+import java.util.List;
 
-    public Station findStationById(Long id);
+public interface IStationService {
+    List<StationResponseDto> getAllStations();
+
+    StationResponseDto getStationById(Long id);
+
+    StationResponseDto createStation(StationDTO stationDTO);
+
+    StationResponseDto updateStation(StationDTO stationDTO, Long id);
+
+    void deleteStation(Long id);
+
+    Station findStationById(Long id);
+
+    // Validation methods
+    void validateStationData(StationDTO stationDTO);
+
+    void validateStationExists(Long stationId);
+
+    void validateStationName(String stationName);
+
+    void validateStationLocation(String stationLocation);
 
 }

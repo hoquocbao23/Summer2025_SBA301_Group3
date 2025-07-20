@@ -1,23 +1,41 @@
 package com.sba301.metro_system.service;
 
-import com.sba301.metro_system.dto.ResponseApi;
+import com.sba301.metro_system.dto.request.ChangePasswordRequestDTO;
 import com.sba301.metro_system.dto.request.LoginRequestDTO;
 import com.sba301.metro_system.dto.request.SignupRequestDTO;
+import com.sba301.metro_system.dto.request.UpdateAccountRequestDTO;
 import com.sba301.metro_system.dto.request.user.UserDTO;
-import com.sba301.metro_system.entity.Account;
+import com.sba301.metro_system.dto.response.BookingResponseDto;
+import com.sba301.metro_system.dto.response.LoginResponse;
+import com.sba301.metro_system.dto.response.TicketResponseDto;
+import com.sba301.metro_system.dto.response.UserBookingResponseDto;
+import com.sba301.metro_system.dto.response.UserResponseDto;
+import com.sba301.metro_system.entity.Booking;
+
+import java.util.List;
 
 public interface IUserService {
-    ResponseApi<?> login(LoginRequestDTO loginRequestDTO);
-    ResponseApi<?> register(String mail);
-    ResponseApi<?> verify(SignupRequestDTO signupRequestDTO, Integer otp);
+    LoginResponse login(LoginRequestDTO loginRequestDTO);
 
-    ResponseApi<?> loginGoogle();
+    String register(String mail);
 
-    ResponseApi<?> getAllUser();
+    UserResponseDto verify(SignupRequestDTO signupRequestDTO, Integer otp);
 
-    ResponseApi<?> updateUser(Long id, UserDTO user);
+    LoginResponse loginGoogle();
 
-    ResponseApi<?> getUserById(Long id);
+    List<UserResponseDto> getAllUser();
 
-    ResponseApi<?> getMyTicket();
+    UserResponseDto updateUser(Long id, UserDTO user);
+
+    UserResponseDto getUserById(Long id);
+
+    List<UserBookingResponseDto> getMyBooking(Long id);
+
+    UserResponseDto updateMyAccount(Long userId, UpdateAccountRequestDTO updateAccountRequestDTO);
+
+    String changePassword(Long userId, ChangePasswordRequestDTO changePasswordRequestDTO);
+
+    String forgotPassword(String email);
+
+    String resetPassword(String token, String newPassword);
 }

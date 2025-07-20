@@ -4,6 +4,7 @@ import com.sba301.metro_system.dto.request.route.RouteRequest;
 import com.sba301.metro_system.dto.request.route.RouteStationRequest;
 import com.sba301.metro_system.dto.response.route.RouteResponse;
 import com.sba301.metro_system.dto.response.route.RouteListResponse;
+import com.sba301.metro_system.dto.response.route.RouteSummaryResponse;
 import com.sba301.metro_system.entity.Route;
 import com.sba301.metro_system.entity.Station;
 import com.sba301.metro_system.entity.StationRoute;
@@ -62,32 +63,32 @@ public class RouteService implements IRouteService {
     @Transactional
     public void updateRoute(RouteRequest routeRequest, String routeId) {
         Long id = Long.parseLong(routeId);
-        
+
         // Find existing route
         Route existingRoute = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
 
-        
         // Validate route name uniqueness (exclude current route)
-        if (routeRequest.routeName() != null && 
-            !routeRequest.routeName().equals(existingRoute.getRouteName()) &&
-            routeRepository.existsByRouteNameAndRouteIdNot(routeRequest.routeName(), id)) {
+        if (routeRequest.routeName() != null &&
+                !routeRequest.routeName().equals(existingRoute.getRouteName()) &&
+                routeRepository.existsByRouteNameAndRouteIdNot(routeRequest.routeName(), id)) {
             throw new IllegalArgumentException("Route name already exists: " + routeRequest.routeName());
         }
-        
+
         // Update ticket rule if provided
         if (routeRequest.ruleId() != null) {
             TicketRule ticketRule = ticketRuleRepository.findById(routeRequest.ruleId())
-                    .orElseThrow(() -> new NotFoundException("Ticket rule not found with ID: " + routeRequest.ruleId()));
+                    .orElseThrow(
+                            () -> new NotFoundException("Ticket rule not found with ID: " + routeRequest.ruleId()));
             existingRoute.setTicketRule(ticketRule);
         }
-        
+
         // Update route using mapper
         routeMapper.updateEntity(existingRoute, routeRequest);
-        
+
         // Recalculate total distance if needed
         recalculateTotalDistance(existingRoute);
-        
+
         routeRepository.save(existingRoute);
         routeSearchService.buildGraph();
     }
@@ -96,10 +97,10 @@ public class RouteService implements IRouteService {
     @Transactional
     public void deactivateRoute(String routeId) {
         Long id = Long.parseLong(routeId);
-        
+
         Route route = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
-        
+
         // Soft delete
         route.setStatus(Status.INACTIVE);
         routeRepository.save(route);
@@ -124,14 +125,13 @@ public class RouteService implements IRouteService {
     @Transactional(readOnly = true)
     public RouteResponse getRoute(String routeId) {
         Long id = Long.parseLong(routeId);
-        
+
         Route route = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
 
-        
         // Get station routes for this route
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteIdOrderByStationOrder(id);
-        
+
         return routeMapper.toResponseWithStations(route, stationRoutes);
     }
 
@@ -139,28 +139,28 @@ public class RouteService implements IRouteService {
     @Transactional(readOnly = true)
     public RouteListResponse getAllRoutes() {
         List<Route> routes = routeRepository.findAll();
-        
+
         List<RouteResponse> routeResponses = routes.stream()
                 .map(route -> {
                     List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
                     return routeMapper.toResponseWithStations(route, stationRoutes);
                 })
                 .collect(Collectors.toList());
-        
+
         return RouteListResponse.builder()
                 .routes(routeResponses)
                 .totalCount(routeResponses.size())
                 .build();
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public List<RouteResponse> getRoutesByTicketRule(Long ticketRuleId) {
         TicketRule ticketRule = ticketRuleRepository.findById(ticketRuleId)
                 .orElseThrow(() -> new NotFoundException("Ticket rule not found with ID: " + ticketRuleId));
-        
+
         List<Route> routes = routeRepository.findByTicketRule(ticketRule);
-        
+
         return routes.stream()
                 .map(route -> {
                     List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
@@ -168,14 +168,13 @@ public class RouteService implements IRouteService {
                 })
                 .collect(Collectors.toList());
     }
-    
+
     @Override
     @Transactional(readOnly = true)
     public RouteResponse getRouteByName(String routeName) {
         Route route = routeRepository.findByRouteName(routeName)
                 .orElseThrow(() -> new NotFoundException("Route not found with name: " + routeName));
 
-        
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
         return routeMapper.toResponseWithStations(route, stationRoutes);
     }
@@ -186,17 +185,25 @@ public class RouteService implements IRouteService {
                 .map(Route::getRouteId)
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public List<RouteSummaryResponse> getAllRouteSummary() {
+        return routeRepository.findAll().stream()
+                .map(route -> new RouteSummaryResponse(route.getRouteId(), route.getRouteName()))
+                .collect(Collectors.toList());
+    }
+
     /**
      * Helper method to recalculate total distance for a route
      */
     private void recalculateTotalDistance(Route route) {
         List<StationRoute> stationRoutes = stationRouteRepository.findByRouteOrderByStationOrder(route);
-        
+
         double totalDistance = stationRoutes.stream()
                 .filter(sr -> sr.getDistanceToNext() != null)
                 .mapToDouble(StationRoute::getDistanceToNext)
                 .sum();
-        
+
         route.setTotalDistance(totalDistance);
     }
 
@@ -211,11 +218,13 @@ public class RouteService implements IRouteService {
         for (RouteStationRequest.StationRoute stationRequest : routeStationRequest.stations()) {
             // Find the station
             Station station = stationRepository.findById(stationRequest.stationId())
-                    .orElseThrow(() -> new NotFoundException("Station not found with ID: " + stationRequest.stationId()));
+                    .orElseThrow(
+                            () -> new NotFoundException("Station not found with ID: " + stationRequest.stationId()));
 
             // Check if station route already exists
             if (stationRouteRepository.existsByRouteAndStation(route, station)) {
-                throw new IllegalArgumentException("Station is already part of this route: " + station.getStationName());
+                throw new IllegalArgumentException(
+                        "Station is already part of this route: " + station.getStationName());
             }
 
             // Create station route
@@ -240,19 +249,20 @@ public class RouteService implements IRouteService {
         // Find the route
         Route route = routeRepository.findById(routeStationRequest.routeId())
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeStationRequest.routeId()));
-        
+
         // Delete existing station routes for this route
         stationRouteRepository.deleteByRoute(route);
-        
+
         // Add new station routes
         for (RouteStationRequest.StationRoute stationRequest : routeStationRequest.stations()) {
             Station station = stationRepository.findById(stationRequest.stationId())
-                    .orElseThrow(() -> new NotFoundException("Station not found with ID: " + stationRequest.stationId()));
-            
+                    .orElseThrow(
+                            () -> new NotFoundException("Station not found with ID: " + stationRequest.stationId()));
+
             StationRoute stationRoute = routeMapper.toStationRouteEntity(stationRequest, route, station);
             stationRouteRepository.save(stationRoute);
         }
-        
+
         // Recalculate total distance
         recalculateTotalDistance(route);
         routeRepository.save(route);
@@ -263,13 +273,13 @@ public class RouteService implements IRouteService {
     @Transactional
     public void deleteStationRoute(String routeId) {
         Long id = Long.parseLong(routeId);
-        
+
         Route route = routeRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Route not found with ID: " + routeId));
-        
+
         // Delete all station routes for this route
         stationRouteRepository.deleteByRoute(route);
-        
+
         // Reset total distance
         route.setTotalDistance(0.0);
         routeRepository.save(route);

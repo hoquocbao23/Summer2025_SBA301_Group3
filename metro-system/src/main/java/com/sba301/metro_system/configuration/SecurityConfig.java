@@ -25,86 +25,86 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfig {
-    @Autowired
-    UserDetailsService userDetailService;
+        @Autowired
+        UserDetailsService userDetailService;
 
-    @Autowired
-    JwtFilter jwtFilter;
+        @Autowired
+        JwtFilter jwtFilter;
 
-    private final String[] PUBLIC_URLS= {
-            "/security/**",
-            "/swagger-ui/**",
-            "/swagger-ui.html",
-            "/v3/api-docs/**",
-            "/api-docs/**",
-            "/swagger-resources/**",
-            "/webjars/**",
-            "/security/**"
-    };
+        private final String[] PUBLIC_URLS = {
+                        "/security/**",
+                        "/swagger-ui/**",
+                        "/swagger-ui.html",
+                        "/v3/api-docs/**",
+                        "/api-docs/**",
+                        "/swagger-resources/**",
+                        "/webjars/**",
+                        "/security/**"
+        };
 
-    private final String[] GET_URLS= {
-            "/stations",
-            "/promotions",
-            "/ticket-types",
-            "train"
-    };
+        private final String[] GET_URLS = {
+                        "/stations",
+                        "/promotions",
+                        "/ticket-types",
+                        "/trains"
+        };
 
-    private final String[] ADMIN_URLS= {
-            "/stations",
-            "/user",
-            "/train"
-    };
+        private final String[] ADMIN_URLS = {
+                        "/stations",
+                        "/user",
+                        "/trains",
+                        "/admin/**"
+        };
 
-    private final String[] USER_URLS= {};
+        private final String[] USER_URLS = {};
 
-    @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity)throws Exception{
-        httpSecurity.cors(Customizer.withDefaults());
-        httpSecurity.csrf(AbstractHttpConfigurer::disable);
-        httpSecurity.authorizeHttpRequests(request -> request
-                        .requestMatchers(PUBLIC_URLS).permitAll()
-                        .requestMatchers(HttpMethod.GET,GET_URLS).permitAll()
-                        .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
+        @Bean
+        public SecurityFilterChain securityFilterChain(HttpSecurity httpSecurity) throws Exception {
+                httpSecurity.cors(Customizer.withDefaults());
+                httpSecurity.csrf(AbstractHttpConfigurer::disable);
+                httpSecurity.authorizeHttpRequests(request -> request
+                                .requestMatchers(PUBLIC_URLS).permitAll()
+                                .requestMatchers(HttpMethod.GET, GET_URLS).permitAll()
+                                .requestMatchers(ADMIN_URLS).hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.PUT, "/stations/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "/stations/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.DELETE, "/stations/**").hasRole(Role.ADMIN.name())
 
-                        .requestMatchers(HttpMethod.PUT, "/promotions/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/promotions/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/promotions/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.PUT, "/promotions/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "/promotions/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.DELETE, "/promotions/**").hasRole(Role.ADMIN.name())
 
-                        .requestMatchers(HttpMethod.PUT, "/ticket-types/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.POST, "/ticket-types/**").hasRole(Role.ADMIN.name())
-                        .requestMatchers(HttpMethod.DELETE, "/ticket-types/**").hasRole(Role.ADMIN.name())
-//                        .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
-                        .anyRequest().permitAll())
-                .sessionManagement(session ->
-                        session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)
-                )
-                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
-                .exceptionHandling(exceptions -> exceptions
-                        // 401 for unauthenticated users trying to access protected resources
-                        .authenticationEntryPoint((request, response, authException) ->
-                                response.sendError(HttpStatus.UNAUTHORIZED.value(), "Unauthorized")
-                        )
-                        // 403 for authenticated users without enough permissions
-                        .accessDeniedHandler((request, response, accessDeniedException) ->
-                                response.sendError(HttpStatus.FORBIDDEN.value(), "Forbidden")
-                        )
-                );
-        return httpSecurity.build();
-    }
+                                .requestMatchers(HttpMethod.PUT, "/ticket-types/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "/ticket-types/**").hasRole(Role.ADMIN.name())
+                                .requestMatchers(HttpMethod.DELETE, "/ticket-types/**").hasRole(Role.ADMIN.name())
+                                // .requestMatchers(USER_URLS).hasRole(Role.CUSTOMER.name())
+                                .anyRequest().permitAll())
+                                .sessionManagement(session -> session
+                                                .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                                .addFilterAfter(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                                .exceptionHandling(exceptions -> exceptions
+                                                // 401 for unauthenticated users trying to access protected resources
+                                                .authenticationEntryPoint((request, response, authException) -> response
+                                                                .sendError(HttpStatus.UNAUTHORIZED.value(),
+                                                                                "Unauthorized"))
+                                                // 403 for authenticated users without enough permissions
+                                                .accessDeniedHandler(
+                                                                (request, response, accessDeniedException) -> response
+                                                                                .sendError(HttpStatus.FORBIDDEN.value(),
+                                                                                                "Forbidden")));
+                return httpSecurity.build();
+        }
 
-    @Bean
-    public AuthenticationProvider authenticationProvider(){
-        DaoAuthenticationProvider provider=new DaoAuthenticationProvider();
-        provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
-        provider.setUserDetailsService(userDetailService);
-        return provider;
-    }
+        @Bean
+        public AuthenticationProvider authenticationProvider() {
+                DaoAuthenticationProvider provider = new DaoAuthenticationProvider();
+                provider.setPasswordEncoder(new BCryptPasswordEncoder(12));
+                provider.setUserDetailsService(userDetailService);
+                return provider;
+        }
 
-    @Bean
-    public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
-        return config.getAuthenticationManager();
-    }
+        @Bean
+        public AuthenticationManager authenticationManager(AuthenticationConfiguration config) throws Exception {
+                return config.getAuthenticationManager();
+        }
 }

@@ -55,7 +55,6 @@ public class Booking {
 
     private String qrUrl;
 
-
     @Enumerated(EnumType.STRING)
     private TransactionStatus paymentStatus;
 
