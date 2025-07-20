@@ -27,7 +27,32 @@ const AdminTrainManager = () => {
             setLoading(true);
             const response = await axiosInstance.get("/trains");
             if (response.data?.data) {
-                setTrains(response.data.data);
+                // Process trains to include route information
+                const processedTrains = await Promise.all(
+                    response.data.data.map(async (train) => {
+                        if (train.routeId) {
+                            try {
+                                // Fetch route details for trains with routeId
+                                const routeResponse = await axiosInstance.get(`/routes/${train.routeId}`);
+                                if (routeResponse.data?.data) {
+                                    return {
+                                        ...train,
+                                        route: {
+                                            id: routeResponse.data.data.id || routeResponse.data.data.routeId,
+                                            routeName: routeResponse.data.data.routeName
+                                        }
+                                    };
+                                }
+                            } catch (routeError) {
+                                console.warn(`Failed to fetch route ${train.routeId}:`, routeError);
+                                // Keep train without route info if route fetch fails
+                                return { ...train, route: null };
+                            }
+                        }
+                        return { ...train, route: null };
+                    })
+                );
+                setTrains(processedTrains);
             }
         } catch (error) {
             console.error("Failed to fetch trains:", error);
@@ -117,10 +142,20 @@ const AdminTrainManager = () => {
                 // Update existing train - can add/change route assignment
                 if (editTrain.route?.id) {
                     // If route is selected, send idRoute as query parameter
-                    await axiosInstance.put(`/trains/${editTrain.trainId}?idRoute=${editTrain.route.id}`, payload);
+                    const response = await axiosInstance.put(`/trains/${editTrain.trainId}?idRoute=${editTrain.route.id}`, payload);
+                    console.log('PUT request with route:', {
+                        url: `/trains/${editTrain.trainId}?idRoute=${editTrain.route.id}`,
+                        payload: payload,
+                        response: response.data
+                    });
                 } else {
                     // Update train without route assignment (idRoute not provided)
-                    await axiosInstance.put(`/trains/${editTrain.trainId}`, payload);
+                    const response = await axiosInstance.put(`/trains/${editTrain.trainId}`, payload);
+                    console.log('PUT request without route:', {
+                        url: `/trains/${editTrain.trainId}`,
+                        payload: payload,
+                        response: response.data
+                    });
                 }
             } else {
                 // Create new train
@@ -143,6 +178,12 @@ const AdminTrainManager = () => {
             setEditTrain(null);
         } catch (error) {
             console.error("Failed to save train:", error);
+            console.error("Error details:", {
+                message: error.message,
+                response: error.response?.data,
+                status: error.response?.status,
+                config: error.config
+            });
             const errorMessage = error.response?.data?.message || error.message;
             alert(`Failed to save train: ${errorMessage}`);
         }
@@ -180,8 +221,8 @@ const AdminTrainManager = () => {
 
     // Statistics
     const totalTrains = trains.length;
-    const activeTrains = trains.filter(t => t.route).length;
-    const unassignedTrains = trains.filter(t => !t.route).length;
+    const activeTrains = trains.filter(t => t.routeId || t.route).length;
+    const unassignedTrains = trains.filter(t => !t.routeId && !t.route).length;
 
     return (
         <div className="train-manager">
