@@ -43,64 +43,52 @@ import { FaTrain } from "react-icons/fa"
 import HistoryTable from "../../components/checkin/HistoryTable"
 
 export default function UserTickets() {
-    const [tickets, setTickets] = useState([])
+    const [bookings, setBookings] = useState([])
     const [loading, setLoading] = useState(true)
-    const [selectedTicket, setSelectedTicket] = useState(null)
+    const [selectedBooking, setSelectedBooking] = useState(null)
     const [showModal, setShowModal] = useState(false)
     const [searchQuery, setSearchQuery] = useState("")
     const [filterStatus, setFilterStatus] = useState("all")
+    const [filterTicketType, setFilterTicketType] = useState("all")
     const [sortBy, setSortBy] = useState("date-desc")
     const [currentPage, setCurrentPage] = useState(1)
     const [activeTab, setActiveTab] = useState("info")
-    const ticketsPerPage = 5
+    const bookingsPerPage = 5
     const [error, setError] = useState(null)
     const navigate = useNavigate();
     const { getTicketHistory } = useTicket();
-    //const [history, setHistory] = useState([]);
     useEffect(() => {
-        const fetchTickets = async () => {
+        const fetchBookings = async () => {
             setLoading(true)
             try {
                 const response = await axiosInstance.get('/account/ticket')
                 if (response.data && response.data.status === 200) {
-                    const ticketData = response.data.data || []
-                    console.log('Fetched tickets:', ticketData)
-                    setTickets(ticketData)
+                    const bookingData = response.data.data || []
+                    console.log('Fetched bookings:', bookingData)
+                    setBookings(bookingData)
                 } else {
-                    console.error('Failed to fetch tickets:', response)
-                    setError('Failed to fetch ticket data')
+                    console.error('Failed to fetch bookings:', response)
+                    setError('Failed to fetch booking data')
                 }
             } catch (error) {
-                console.error('Error fetching tickets:', error)
-                setError('Error fetching ticket data: ' + (error.message || 'Unknown error'))
+                console.error('Error fetching bookings:', error)
+                setError('Error fetching booking data: ' + (error.message || 'Unknown error'))
             } finally {
                 setLoading(false)
             }
         }
-        fetchTickets()
+        fetchBookings()
     }, [])
 
-    // useEffect(() => {
-    //     if (selectedTicket) {
-    //         const fetchHistory = async () => {
-    //             const history = await getTicketHistory(selectedTicket.ticketId);
-    //             console.log("history", history);
-    //             setHistory(history);
-    //         };
-    //         fetchHistory();
-    //     }
-    // }, [selectedTicket]);
-
-    const handleViewTicketDetails = (ticket) => {
-        setSelectedTicket(ticket)
+    const handleViewBookingDetails = (booking) => {
+        setSelectedBooking(booking)
         setShowModal(true)
         setActiveTab("info")
-        //navigate(`/checkin/${ticket.ticketId}`);
     }
 
     const handleCloseModal = () => {
         setShowModal(false)
-        setSelectedTicket(null)
+        setSelectedBooking(null)
     }
 
     const formatDate = (dateString) => {
@@ -116,16 +104,48 @@ export default function UserTickets() {
         return new Intl.NumberFormat("vi-VN").format(price) + " ₫"
     }
 
+    const isMonthlyPass = (ticketName) => {
+        return ticketName && (
+            ticketName.toLowerCase().includes('tháng') ||
+            ticketName.toLowerCase().includes('monthly') ||
+            ticketName.toLowerCase().includes('pass')
+        )
+    }
+
+    const getTicketTypeIcon = (ticketName) => {
+        if (isMonthlyPass(ticketName)) {
+            return <BsCalendar size={16} className="text-info" />
+        }
+        return <BsTicket size={16} className="text-danger" />
+    }
+
+    const getTicketTypeBadge = (ticketName) => {
+        if (isMonthlyPass(ticketName)) {
+            return (
+                <Badge bg="info" className="rounded-pill">
+                    <BsCalendar size={12} className="me-1" />
+                    Vé tháng
+                </Badge>
+            )
+        }
+        return (
+            <Badge bg="secondary" className="rounded-pill">
+                <BsTicket size={12} className="me-1" />
+                Vé lẻ
+            </Badge>
+        )
+    }
+
     const getStatusBadge = (status) => {
         const statusConfig = {
-            UNUSED: { variant: "danger", icon: BsCheck, text: "Chưa sử dụng" },
-            ACTIVE: { variant: "danger", icon: BsCheck, text: "Còn hiệu lực" },
-            USED: { variant: "dark", icon: BsCheck, text: "Đã sử dụng" },
-            EXPIRED: { variant: "danger", icon: BsClock, text: "Hết hạn" },
-            CANCELLED: { variant: "dark", icon: BsX, text: "Đã hủy" },
+            UNUSED: { variant: "success", icon: BsCheck, text: "Chưa sử dụng" },
+            ACTIVE: { variant: "success", icon: BsCheck, text: "Đang sử dụng" },
+            USED: { variant: "secondary", icon: BsCheck, text: "Đã sử dụng" },
+            EXPIRED: { variant: "warning", icon: BsClock, text: "Hết hạn" },
+            CANCELLED: { variant: "danger", icon: BsX, text: "Đã hủy" },
         }
 
-        const config = statusConfig[status] || { variant: "dark", icon: BsExclamationCircle, text: "Không xác định" }
+        const config = statusConfig[status] || { variant: "secondary", icon: BsExclamationCircle, text: "Không xác định" }
         const IconComponent = config.icon
 
         return (
@@ -136,25 +156,25 @@ export default function UserTickets() {
         )
     }
 
-    const getStatusCardBorder = (status) => {
-        const borderConfig = {
-            ACTIVE: "border-danger",
-            USED: "border-dark",
-            EXPIRED: "border-danger",
-            CANCELLED: "border-dark",
-        }
-        return borderConfig[status] || "border-dark"
-    }
-
-    const filteredTickets = tickets
-        .filter((ticket) => {
+    const filteredBookings = bookings
+        .filter((booking) => {
             const searchLower = searchQuery.toLowerCase()
             const matchesSearch =
-                (ticket.departureStation?.stationName || '').toLowerCase().includes(searchLower) ||
-                (ticket.arrivalStation?.stationName || '').toLowerCase().includes(searchLower) ||
-                (ticket.routeName || '').toLowerCase().includes(searchLower)
-            const matchesStatus = filterStatus === "all" || ticket.ticketStatus === filterStatus
-            return matchesSearch && matchesStatus
+                (booking.departureStation?.stationName || '').toLowerCase().includes(searchLower) ||
+                (booking.arrivalStation?.stationName || '').toLowerCase().includes(searchLower) ||
+                (booking.route?.routeName || '').toLowerCase().includes(searchLower) ||
+                (booking.ticketName || '').toLowerCase().includes(searchLower)
+
+            // Filter by ticket status if needed
+            const hasMatchingTicketStatus = filterStatus === "all" ||
+                booking.tickets?.some(ticket => ticket.status === filterStatus)
+
+            // Filter by ticket type
+            const matchesTicketType = filterTicketType === "all" ||
+                (filterTicketType === "monthly" && isMonthlyPass(booking.ticketName)) ||
+                (filterTicketType === "single" && !isMonthlyPass(booking.ticketName))
+
+            return matchesSearch && hasMatchingTicketStatus && matchesTicketType
         })
         .sort((a, b) => {
             switch (sortBy) {
@@ -171,10 +191,10 @@ export default function UserTickets() {
             }
         })
 
-    const indexOfLastTicket = currentPage * ticketsPerPage
-    const indexOfFirstTicket = indexOfLastTicket - ticketsPerPage
-    const currentTickets = filteredTickets.slice(indexOfFirstTicket, indexOfLastTicket)
-    const totalPages = Math.ceil(filteredTickets.length / ticketsPerPage)
+    const indexOfLastBooking = currentPage * bookingsPerPage
+    const indexOfFirstBooking = indexOfLastBooking - bookingsPerPage
+    const currentBookings = filteredBookings.slice(indexOfFirstBooking, indexOfLastBooking)
+    const totalPages = Math.ceil(filteredBookings.length / bookingsPerPage)
 
     if (error) {
         return (
@@ -266,15 +286,15 @@ export default function UserTickets() {
                                     <BsTicket size={28} className="text-danger" />
                                 </div>
                             </div>
-                            <h1 className="fw-bold mb-3" style={{ color: "#dc3545" }}>Vé của tôi</h1>
-                            <p className="text-muted mb-0">Quản lý và xem thông tin vé bạn đã mua</p>
+                            <h1 className="fw-bold mb-3" style={{ color: "#dc3545" }}>Vé đã đặt</h1>
+                            <p className="text-muted mb-0">Quản lý và xem thông tin vé bạn đã đặt</p>
                         </Card.Body>
                     </Card>
                 </div>                {/* Search and Filter */}
                 <Card className="shadow-sm border mb-4" style={{ borderRadius: "12px" }}>
                     <Card.Body className="p-3">
                         <Row className="g-3">
-                            <Col lg={6}>
+                            <Col lg={4}>
                                 <InputGroup>
                                     <InputGroup.Text className="bg-light border">
                                         <BsSearch size={16} className="text-danger" />
@@ -286,6 +306,22 @@ export default function UserTickets() {
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                         className="border"
                                     />
+                                </InputGroup>
+                            </Col>
+                            <Col lg={2}>
+                                <InputGroup>
+                                    <InputGroup.Text className="bg-light border">
+                                        <BsTicket size={16} className="text-danger" />
+                                    </InputGroup.Text>
+                                    <Form.Select
+                                        value={filterTicketType}
+                                        onChange={(e) => setFilterTicketType(e.target.value)}
+                                        className="border"
+                                    >
+                                        <option value="all">Tất cả loại vé</option>
+                                        <option value="single">Vé lẻ</option>
+                                        <option value="monthly">Vé tháng</option>
+                                    </Form.Select>
                                 </InputGroup>
                             </Col>
                             <Col lg={3}>
@@ -325,8 +361,8 @@ export default function UserTickets() {
                             </Col>
                         </Row>
                     </Card.Body>
-                </Card>                {/* Ticket List */}
-                {currentTickets.length === 0 ? (
+                </Card>                {/* Booking List */}
+                {currentBookings.length === 0 ? (
                     <Card className="shadow-sm border" style={{ borderRadius: "12px" }}>
                         <Card.Body className="text-center py-5">
                             <div
@@ -338,18 +374,19 @@ export default function UserTickets() {
                             >
                                 <BsTicket size={40} className="text-danger" />
                             </div>
-                            <h5 className="mb-3 fw-bold">Không tìm thấy vé nào</h5>
+                            <h5 className="mb-3 fw-bold">Không tìm thấy đơn đặt vé nào</h5>
                             <p className="text-muted mb-4">
-                                {searchQuery || filterStatus !== "all"
-                                    ? "Không có vé nào phù hợp với bộ lọc của bạn"
-                                    : "Bạn chưa mua vé nào"}
+                                {searchQuery || filterStatus !== "all" || filterTicketType !== "all"
+                                    ? "Không có đơn đặt vé nào phù hợp với bộ lọc của bạn"
+                                    : "Bạn chưa đặt vé nào"}
                             </p>
-                            {(searchQuery || filterStatus !== "all") && (<Button
+                            {(searchQuery || filterStatus !== "all" || filterTicketType !== "all") && (<Button
                                 variant="outline-dark"
                                 className="rounded-pill px-4 py-2"
                                 onClick={() => {
                                     setSearchQuery("")
                                     setFilterStatus("all")
+                                    setFilterTicketType("all")
                                 }}
                             >
                                 Xóa bộ lọc
@@ -358,9 +395,9 @@ export default function UserTickets() {
                         </Card.Body>
                     </Card>
                 ) : (<div className="d-flex flex-column gap-4">
-                    {currentTickets.map((ticket) => (
+                    {currentBookings.map((booking) => (
                         <Card
-                            key={ticket.ticketId}
+                            key={booking.bookingId}
                             className="shadow-sm border"
                             style={{
                                 borderRadius: "12px",
@@ -383,35 +420,64 @@ export default function UserTickets() {
                                         <div className="d-flex justify-content-between align-items-start mb-4">
                                             <div className="d-flex align-items-center">
                                                 <div
-                                                    className="rounded-circle p-2 me-3 bg-light"
+                                                    className={`rounded-circle p-2 me-3 ${isMonthlyPass(booking.ticketName) ? 'bg-info bg-opacity-10' : 'bg-light'}`}
                                                 >
-                                                    <FaTrain size={16} className="text-danger" />
+                                                    {isMonthlyPass(booking.ticketName) ?
+                                                        <BsCalendar size={16} className="text-info" /> :
+                                                        <FaTrain size={16} className="text-danger" />
+                                                    }
                                                 </div>
                                                 <div>
-                                                    <small className="fw-bold text-dark">
-                                                        {ticket.routeName}
-                                                    </small>
-                                                    <div className="text-muted small">#{ticket.ticketId.toString().padStart(6, "0")}</div>
+                                                    <div className="d-flex align-items-center gap-2 mb-1">
+                                                        <small className="fw-bold text-dark">
+                                                            {booking.route?.routeName}
+                                                        </small>
+                                                        {getTicketTypeBadge(booking.ticketName)}
+                                                    </div>
+                                                    <div className="text-muted small">Booking #{booking.bookingId.toString().padStart(6, "0")}</div>
+                                                    <div className="text-muted small">{booking.numberOfPassengers} hành khách</div>
                                                 </div>
                                             </div>
-                                            {getStatusBadge(ticket.ticketStatus)}
+                                            <div className="d-flex gap-2 flex-wrap">
+                                                {booking.tickets?.map((ticket, index) => (
+                                                    <div key={ticket.ticketId} className="text-center">
+                                                        <small className="text-muted d-block">Vé {index + 1}</small>
+                                                        {getStatusBadge(ticket.status)}
+                                                    </div>
+                                                ))}
+                                            </div>
                                         </div>
 
                                         {/* Route */}
                                         <div className="mb-4">
                                             <h4 className="d-flex align-items-center gap-3 mb-2 fw-bold">
-                                                <span>{ticket.departureStation?.stationName || 'N/A'}</span>
+                                                <span>{booking.departureStation?.stationName || 'N/A'}</span>
                                                 <div
                                                     className="rounded-circle p-1 bg-light"
                                                 >
                                                     <BsArrowRight size={16} className="text-danger" />
                                                 </div>
-                                                <span>{ticket.arrivalStation?.stationName || 'N/A'}</span>
+                                                <span>{booking.arrivalStation?.stationName || 'N/A'}</span>
                                             </h4>
                                             <div className="d-flex align-items-center text-muted">
-                                                <BsCalendar size={20} className="me-2" />
+                                                {isMonthlyPass(booking.ticketName) ?
+                                                    <BsCalendar size={20} className="me-2 text-info" /> :
+                                                    <BsCalendar size={20} className="me-2" />
+                                                }
                                                 <small className="fw-medium">
-                                                    {ticket.validFrom ? formatDate(ticket.validFrom) : 'N/A'} • <div style={{ fontSize: 20, color: 'red' }}>{ticket.ticketName}</div>
+                                                    {booking.purchaseTime ? formatDateTime(booking.purchaseTime) : 'N/A'} •
+                                                    <span style={{
+                                                        fontSize: 14,
+                                                        color: isMonthlyPass(booking.ticketName) ? '#0dcaf0' : '#dc3545',
+                                                        marginLeft: '8px'
+                                                    }}>
+                                                        {booking.ticketName}
+                                                    </span>
+                                                    {isMonthlyPass(booking.ticketName) && (
+                                                        <span className="badge bg-info bg-opacity-25 text-info ms-2 rounded-pill">
+                                                            Vé tháng
+                                                        </span>
+                                                    )}
                                                 </small>
                                             </div>
                                         </div>
@@ -421,30 +487,32 @@ export default function UserTickets() {
                                             <Col md={6}>
                                                 <div
                                                     className="d-flex align-items-start p-3 rounded-3 bg-light"
-                                                >                                                    <div className="rounded-circle p-2 me-3 bg-danger">
+                                                >
+                                                    <div className="rounded-circle p-2 me-3 bg-danger">
                                                         <BsGeoAlt size={16} className="text-white" />
                                                     </div>
                                                     <div>
                                                         <small className="fw-bold text-dark">
                                                             Ga đi
                                                         </small>
-                                                        <div className="fw-bold">{ticket.departureStation?.stationName || 'N/A'}</div>
-                                                        <small className="text-muted">{ticket.departureStation?.address || 'Không có thông tin'}</small>
+                                                        <div className="fw-bold">{booking.departureStation?.stationName || 'N/A'}</div>
+                                                        <small className="text-muted">{booking.departureStation?.stationLocation || 'Không có thông tin'}</small>
                                                     </div>
                                                 </div>
                                             </Col>
                                             <Col md={6}>
                                                 <div
                                                     className="d-flex align-items-start p-3 rounded-3 bg-light"
-                                                >                                                    <div className="rounded-circle p-2 me-3 bg-danger">
+                                                >
+                                                    <div className="rounded-circle p-2 me-3 bg-danger">
                                                         <BsGeoAlt size={16} className="text-white" />
                                                     </div>
                                                     <div>
                                                         <small className="fw-bold text-dark">
                                                             Ga đến
                                                         </small>
-                                                        <div className="fw-bold">{ticket.arrivalStation?.stationName || 'N/A'}</div>
-                                                        <small className="text-muted">{ticket.arrivalStation?.address || 'Không có thông tin'}</small>
+                                                        <div className="fw-bold">{booking.arrivalStation?.stationName || 'N/A'}</div>
+                                                        <small className="text-muted">{booking.arrivalStation?.stationLocation || 'Không có thông tin'}</small>
                                                     </div>
                                                 </div>
                                             </Col>
@@ -452,87 +520,94 @@ export default function UserTickets() {
 
                                         {/* Price and Action */}
                                         <div className="d-flex justify-content-between align-items-center">
-                                            <div className="d-flex align-items-center">                                                <div className="rounded-circle p-2 me-3 bg-danger">
-                                                <BsTag size={16} className="text-white" />
-                                            </div>
-                                                <div>                                                    <div className="h4 fw-bold mb-0 text-danger">
-                                                    {formatPrice(ticket.newPrice)}
+                                            <div className="d-flex align-items-center">
+                                                <div className="rounded-circle p-2 me-3 bg-danger">
+                                                    <BsTag size={16} className="text-white" />
                                                 </div>
-                                                    {ticket.oldPrice !== ticket.newPrice && (
+                                                <div>
+                                                    <div className="h4 fw-bold mb-0 text-danger">
+                                                        {formatPrice(booking.newPrice)}
+                                                    </div>
+                                                    {booking.oldPrice !== booking.newPrice && (
                                                         <Badge bg="light" text="dark" className="rounded-pill border">
-                                                            Giảm giá từ {formatPrice(ticket.oldPrice)}
+                                                            Giảm giá từ {formatPrice(booking.oldPrice)}
+                                                        </Badge>
+                                                    )}
+                                                    {booking.promotionCode && (
+                                                        <Badge bg="success" className="rounded-pill ms-2">
+                                                            Mã: {booking.promotionCode}
                                                         </Badge>
                                                     )}
                                                 </div>
                                             </div>
-                                            {/* <Button variant="outline-dark"
-                                                className="rounded-pill px-4 py-2 fw-bold"
-                                                onClick={() => handleViewTicketDetails(ticket)}
-                                            >
-                                                Chi tiết vé
-                                            </Button> */}
-                                            {ticket.ticketStatus === "UNUSED" || ticket.ticketStatus === "ACTIVE" || ticket.ticketStatus === "EXPIRED" ? (
-                                                <Button variant="outline-dark"
+                                            <div className="d-flex gap-2">
+                                                {booking.urlCheckout && (
+                                                    <Button
+                                                        variant="outline-danger"
+                                                        className="rounded-pill px-3 py-2 fw-bold"
+                                                        onClick={() => window.open(booking.urlCheckout, '_blank')}
+                                                    >
+                                                        Thanh toán
+                                                    </Button>
+                                                )}
+                                                <Button
+                                                    variant="outline-dark"
                                                     className="rounded-pill px-4 py-2 fw-bold"
-                                                    onClick={() => handleViewTicketDetails(ticket)}
+                                                    onClick={() => handleViewBookingDetails(booking)}
                                                 >
-                                                    Chi tiết vé
+                                                    Chi tiết
                                                 </Button>
-                                            ) : (
-                                                <Button variant="outline-dark"
-                                                    className="rounded-pill px-4 py-2 fw-bold"
-                                                    // onClick={() =>()}
-                                                >
-                                                    Thanh toán lại
-                                                </Button>
-                                            )}
-
+                                            </div>
                                         </div>
                                     </Card.Body>
                                 </Col>
 
-                                {/* QR Code Section */}
-                                {ticket.ticketStatus === "UNUSED" || ticket.ticketStatus === "ACTIVE" && (
-                                <Col lg={3}>
-                                    <div
-                                        className="h-100 d-flex flex-column justify-content-center align-items-center bg-light p-4"
-                                        style={{
-                                            borderRadius: "0 12px 12px 0",
-                                        }}
-                                    >
-                                        <div className="bg-white rounded-3 p-3 mb-3 border"
-
-                                            onClick={() => navigate(`/checkin/${ticket.ticketId}`)}>
-                                            <img
-                                                src={ticket.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=TICKET-${ticket.ticketId}`}
-                                                alt="QR Code"
-                                                style={{ width: "80px", height: "80px", objectFit: "contain" }}
-
-                                            />
+                                {/* QR Code Section - only show if tickets are active */}
+                                {booking.tickets?.some(ticket => ticket.status === "UNUSED" || ticket.status === "ACTIVE") && (
+                                    <Col lg={3}>
+                                        <div
+                                            className={`h-100 d-flex flex-column justify-content-center align-items-center p-4 ${isMonthlyPass(booking.ticketName) ? 'bg-info bg-opacity-10' : 'bg-light'
+                                                }`}
+                                            style={{
+                                                borderRadius: "0 12px 12px 0",
+                                            }}
+                                        >
+                                            <div className={`bg-white rounded-3 p-3 mb-3 border ${isMonthlyPass(booking.ticketName) ? 'border-info' : ''
+                                                }`}>
+                                                {isMonthlyPass(booking.ticketName) ?
+                                                    <BsCalendar size={60} className="text-info" /> :
+                                                    <BsQrCode size={60} className="text-danger" />
+                                                }
+                                            </div>
+                                            <div className="text-center">
+                                                <small className={`fw-medium ${isMonthlyPass(booking.ticketName) ? 'text-info' : 'text-danger'
+                                                    }`}>
+                                                    {isMonthlyPass(booking.ticketName) ? 'Vé tháng' : 'Mã đặt vé'}
+                                                </small>
+                                                <div className="fw-bold font-monospace text-dark">#{booking.bookingId.toString().padStart(6, "0")}</div>
+                                                <small className="text-muted">
+                                                    {booking.tickets?.length || 0} vé • {isMonthlyPass(booking.ticketName) ? 'Monthly Pass' : 'Single Trip'}
+                                                </small>
+                                            </div>
                                         </div>
-                                        <div className="text-center">
-                                            <small className="text-danger fw-medium">Mã vé</small>
-                                            <div className="fw-bold font-monospace text-dark">#{ticket.ticketId.toString().padStart(6, "0")}</div>
-                                        </div>
-                                    </div>
-                                </Col>
+                                    </Col>
                                 )}
                             </Row>
                         </Card>
                     ))}
                 </div>
                 )}                {/* Pagination */}
-                {filteredTickets.length > 0 && totalPages > 1 && (
+                {filteredBookings.length > 0 && totalPages > 1 && (
                     <Card className="shadow-sm border mt-4" style={{ borderRadius: "12px" }}>
                         <Card.Body>
                             <Row className="align-items-center">
                                 <Col>
                                     <small className="text-muted fw-medium">
-                                        Hiển thị {indexOfFirstTicket + 1}-{Math.min(indexOfLastTicket, filteredTickets.length)} trong{" "}
+                                        Hiển thị {indexOfFirstBooking + 1}-{Math.min(indexOfLastBooking, filteredBookings.length)} trong{" "}
                                         <span className="fw-bold text-dark">
-                                            {filteredTickets.length}
+                                            {filteredBookings.length}
                                         </span>{" "}
-                                        vé
+                                        đơn đặt vé
                                     </small>
                                 </Col>
                                 <Col xs="auto">
@@ -569,9 +644,9 @@ export default function UserTickets() {
                                 </div>
                                 <div>
                                     <h5 className="mb-0 text-dark">
-                                        Chi tiết vé #{selectedTicket?.ticketId.toString().padStart(6, "0")}
+                                        Chi tiết đơn đặt vé #{selectedBooking?.bookingId.toString().padStart(6, "0")}
                                     </h5>
-                                    <small className="text-muted">{selectedTicket?.routeName}</small>
+                                    <small className="text-muted">{selectedBooking?.route?.routeName}</small>
                                 </div>
                             </Modal.Title>
                             <Button variant="outline-dark" className="border-0 rounded-circle p-2" onClick={handleCloseModal}>
@@ -579,30 +654,44 @@ export default function UserTickets() {
                             </Button>
                         </Modal.Header>
                         <Modal.Body className="p-4">
-                            {selectedTicket && (
+                            {selectedBooking && (
                                 <Tabs activeKey={activeTab} onSelect={(k) => setActiveTab(k)} className="mb-4" fill>
                                     <Tab
                                         eventKey="info"
                                         title={
                                             <span className="d-flex align-items-center">
                                                 <BsInfoCircle size={16} className="me-2" />
-                                                Thông tin vé
+                                                Thông tin đặt vé
                                             </span>
                                         }
                                     >
                                         <div className="py-3">
-                                            {/* Status */}
+                                            {/* Booking Status */}
                                             <Card className="border mb-4" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
                                                 <Card.Body className="p-4">
                                                     <Row className="align-items-center">
                                                         <Col>
-                                                            <small className="text-muted fw-bold">Trạng thái vé</small>
-                                                            <div className="mt-2">{getStatusBadge(selectedTicket.ticketStatus)}</div>
+                                                            <small className="text-muted fw-bold">Thông tin đặt vé</small>
+                                                            <div className="mt-2">
+                                                                <div className="d-flex align-items-center gap-2 mb-2">
+                                                                    <div className="fw-bold text-dark">Booking #{selectedBooking.bookingId}</div>
+                                                                    {getTicketTypeBadge(selectedBooking.ticketName)}
+                                                                </div>
+                                                                <small className="text-muted">{selectedBooking.numberOfPassengers} hành khách</small>
+                                                                {isMonthlyPass(selectedBooking.ticketName) && (
+                                                                    <div className="mt-1">
+                                                                        <span className="badge bg-info bg-opacity-25 text-info rounded-pill">
+                                                                            <BsCalendar size={12} className="me-1" />
+                                                                            Vé tháng - Sử dụng không giới hạn
+                                                                        </span>
+                                                                    </div>
+                                                                )}
+                                                            </div>
                                                         </Col>
                                                         <Col xs="auto" className="text-end">
-                                                            <small className="text-muted fw-bold">Ngày mua</small>
+                                                            <small className="text-muted fw-bold">Ngày đặt</small>
                                                             <div className="fw-bold text-dark mt-1">
-                                                                {formatDateTime(selectedTicket.purchaseTime)}
+                                                                {formatDateTime(selectedBooking.purchaseTime)}
                                                             </div>
                                                         </Col>
                                                     </Row>
@@ -623,8 +712,11 @@ export default function UserTickets() {
                                                             <small className="fw-bold text-danger">
                                                                 Tuyến
                                                             </small>
-                                                            <div className="h5 fw-bold text-dark mb-1">{selectedTicket.routeName}</div>
-                                                            <small className="text-muted">{selectedTicket.ticketName}</small>
+                                                            <div className="h5 fw-bold text-dark mb-1">{selectedBooking.route?.routeName}</div>
+                                                            <small className="text-muted">{selectedBooking.ticketName}</small>
+                                                            {selectedBooking.route?.distance && (
+                                                                <small className="text-muted d-block">Khoảng cách: {selectedBooking.route.distance} km</small>
+                                                            )}
                                                         </div>
                                                         <div className="d-flex align-items-center justify-content-between">
                                                             <div className="text-center">
@@ -636,8 +728,8 @@ export default function UserTickets() {
                                                                 <small className="fw-bold text-dark">
                                                                     Ga đi
                                                                 </small>
-                                                                <div className="fw-bold text-dark">{selectedTicket.departureStation?.stationName || 'N/A'}</div>
-                                                                <small className="text-muted">{selectedTicket.departureStation?.address || 'Không có thông tin'}</small>
+                                                                <div className="fw-bold text-dark">{selectedBooking.departureStation?.stationName || 'N/A'}</div>
+                                                                <small className="text-muted">{selectedBooking.departureStation?.stationLocation || 'Không có thông tin'}</small>
                                                             </div>
                                                             <div
                                                                 className="rounded-circle p-2 bg-light"
@@ -653,15 +745,63 @@ export default function UserTickets() {
                                                                 <small className="fw-bold text-dark">
                                                                     Ga đến
                                                                 </small>
-                                                                <div className="fw-bold text-dark">{selectedTicket.arrivalStation?.stationName || 'N/A'}</div>
-                                                                <small className="text-muted">{selectedTicket.arrivalStation?.address || 'Không có thông tin'}</small>
+                                                                <div className="fw-bold text-dark">{selectedBooking.arrivalStation?.stationName || 'N/A'}</div>
+                                                                <small className="text-muted">{selectedBooking.arrivalStation?.stationLocation || 'Không có thông tin'}</small>
                                                             </div>
                                                         </div>
                                                     </Card.Body>
                                                 </Card>
                                             </div>
 
-                                            {/* Details */}
+                                            {/* Tickets List */}
+                                            <div className="mb-4">
+                                                <h6 className="d-flex align-items-center mb-3 text-dark">
+                                                    <div className="rounded-circle p-2 me-3 bg-light">
+                                                        <BsTicket className="text-danger" size={16} />
+                                                    </div>
+                                                    Danh sách vé ({selectedBooking.tickets?.length || 0} vé)
+                                                </h6>
+                                                <div className="d-flex flex-column gap-3">
+                                                    {selectedBooking.tickets?.map((ticket, index) => (
+                                                        <Card key={ticket.ticketId} className="border" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+                                                            <Card.Body className="p-3">
+                                                                <Row className="align-items-center">
+                                                                    <Col>
+                                                                        <div className="fw-bold text-dark">Vé #{index + 1}</div>
+                                                                        <small className="text-muted">ID: {ticket.ticketId}</small>
+                                                                        {ticket.ticketCode && (
+                                                                            <div><small className="text-muted">Mã: {ticket.ticketCode}</small></div>
+                                                                        )}
+                                                                    </Col>
+                                                                    <Col xs="auto">
+                                                                        {getStatusBadge(ticket.status)}
+                                                                    </Col>
+                                                                    <Col xs="auto">
+                                                                        {(ticket.status === "UNUSED" || ticket.status === "ACTIVE") && (
+                                                                            <Button
+                                                                                size="sm"
+                                                                                variant="outline-danger"
+                                                                                onClick={() => navigate(`/checkin/${ticket.ticketId}`)}
+                                                                            >
+                                                                                Check-in
+                                                                            </Button>
+                                                                        )}
+                                                                    </Col>
+                                                                </Row>
+                                                                {(ticket.validFrom || ticket.validTo) && (
+                                                                    <div className="mt-2">
+                                                                        <small className="text-muted">
+                                                                            Hiệu lực: {ticket.validFrom ? formatDateTime(ticket.validFrom) : 'N/A'} - {ticket.validTo ? formatDateTime(ticket.validTo) : 'N/A'}
+                                                                        </small>
+                                                                    </div>
+                                                                )}
+                                                            </Card.Body>
+                                                        </Card>
+                                                    ))}
+                                                </div>
+                                            </div>
+
+                                            {/* Payment Details */}
                                             <Row>
                                                 <Col md={6}>
                                                     <Card
@@ -671,18 +811,38 @@ export default function UserTickets() {
                                                         <Card.Body className="p-4">
                                                             <h6 className="d-flex align-items-center mb-3 text-dark">
                                                                 <div className="rounded-circle p-2 me-3 bg-light">
-                                                                    <BsCalendar className="text-danger" size={16} />
+                                                                    <BsCreditCard className="text-danger" size={16} />
                                                                 </div>
-                                                                Thời gian hiệu lực
+                                                                Thông tin thanh toán
                                                             </h6>
                                                             <div className="d-flex justify-content-between mb-2">
-                                                                <small className="text-muted fw-medium">Từ:</small>
-                                                                <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validFrom)}</span>
+                                                                <small className="text-muted fw-medium">Tổng tiền:</small>
+                                                                <span className="fw-bold text-danger">
+                                                                    {formatPrice(selectedBooking.newPrice)}
+                                                                </span>
                                                             </div>
-                                                            <div className="d-flex justify-content-between">
-                                                                <small className="text-muted fw-medium">Đến:</small>
-                                                                <span className="fw-bold text-dark">{formatDateTime(selectedTicket.validTo)}</span>
-                                                            </div>
+                                                            {selectedBooking.oldPrice !== selectedBooking.newPrice && (
+                                                                <div className="d-flex justify-content-between mb-2">
+                                                                    <small className="text-muted fw-medium">Giá gốc:</small>
+                                                                    <span className="text-decoration-line-through text-muted">
+                                                                        {formatPrice(selectedBooking.oldPrice)}
+                                                                    </span>
+                                                                </div>
+                                                            )}
+                                                            {selectedBooking.promotionCode && (
+                                                                <div className="d-flex justify-content-between">
+                                                                    <small className="text-muted fw-medium">Mã giảm giá:</small>
+                                                                    <Badge bg="success" className="rounded-pill">
+                                                                        {selectedBooking.promotionCode}
+                                                                    </Badge>
+                                                                </div>
+                                                            )}
+                                                            {selectedBooking.payOrderCode && (
+                                                                <div className="d-flex justify-content-between mt-2">
+                                                                    <small className="text-muted fw-medium">Mã đơn hàng:</small>
+                                                                    <small className="fw-bold text-dark">{selectedBooking.payOrderCode}</small>
+                                                                </div>
+                                                            )}
                                                         </Card.Body>
                                                     </Card>
                                                 </Col>
@@ -694,28 +854,22 @@ export default function UserTickets() {
                                                         <Card.Body className="p-4">
                                                             <h6 className="d-flex align-items-center mb-3 text-dark">
                                                                 <div className="rounded-circle p-2 me-3 bg-light">
-                                                                    <BsCreditCard className="text-danger" size={16} />
+                                                                    <BsCalendar className="text-danger" size={16} />
                                                                 </div>
-                                                                Thông tin giá vé
+                                                                Thông tin bổ sung
                                                             </h6>
                                                             <div className="d-flex justify-content-between mb-2">
-                                                                <small className="text-muted fw-medium">Loại vé:</small>
-                                                                <span className="fw-bold text-dark">{selectedTicket.ticketName}</span>
+                                                                <small className="text-muted fw-medium">Khách hàng:</small>
+                                                                <span className="fw-bold text-dark">{selectedBooking.userName}</span>
                                                             </div>
                                                             <div className="d-flex justify-content-between mb-2">
-                                                                <small className="text-muted fw-medium">Giá vé:</small>
-                                                                <span className="fw-bold text-dark">
-                                                                    {formatPrice(selectedTicket.newPrice)}
-                                                                </span>
+                                                                <small className="text-muted fw-medium">Loại vé:</small>
+                                                                <span className="fw-bold text-dark">{selectedBooking.ticketName}</span>
                                                             </div>
-                                                            {selectedTicket.oldPrice !== selectedTicket.newPrice && (
-                                                                <div className="d-flex justify-content-between">
-                                                                    <small className="text-muted fw-medium">Giá gốc:</small>
-                                                                    <Badge bg="light" text="dark" className="rounded-pill border">
-                                                                        {formatPrice(selectedTicket.oldPrice)}
-                                                                    </Badge>
-                                                                </div>
-                                                            )}
+                                                            <div className="d-flex justify-content-between">
+                                                                <small className="text-muted fw-medium">Số hành khách:</small>
+                                                                <span className="fw-bold text-dark">{selectedBooking.numberOfPassengers}</span>
+                                                            </div>
                                                         </Card.Body>
                                                     </Card>
                                                 </Col>
@@ -727,41 +881,65 @@ export default function UserTickets() {
                                         title={
                                             <span className="d-flex align-items-center">
                                                 <BsQrCode size={16} className="me-2" />
-                                                Mã QR
+                                                QR Check-in
                                             </span>
                                         }
                                     >
-                                        <div className="text-center py-5">
-                                            <div
-                                                className="d-inline-block mb-4 p-3 rounded-3 border bg-white"
-                                            >
-                                                <img
-                                                    src={selectedTicket.qrUrl || `https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=TICKET-${selectedTicket.ticketId}`}
-                                                    alt="QR Code"
-                                                    style={{ width: "200px", height: "200px", objectFit: "contain" }}
-                                                />
-                                            </div>
-                                            <h6 className="text-dark mb-2">Mã QR vé tàu điện</h6>
-                                            <p className="text-muted mb-4">Quét mã QR này tại cổng soát vé để vào ga tàu</p>
-                                            <div className="d-flex justify-content-center gap-3">
-                                                <OverlayTrigger placement="top" overlay={<Tooltip>Tải xuống mã QR</Tooltip>}>
-                                                    <Button
-                                                        variant="outline-dark"
-                                                        className="rounded-pill px-4 py-2 fw-bold"
-                                                    >
-                                                        <BsDownload size={16} className="me-2" />
-                                                        Tải mã QR
-                                                    </Button>
-                                                </OverlayTrigger>
-                                                <OverlayTrigger placement="top" overlay={<Tooltip>Chia sẻ mã QR</Tooltip>}>
-                                                    <Button
-                                                        variant="outline-dark"
-                                                        className="rounded-pill px-4 py-2 fw-bold"
-                                                    >
-                                                        <BsShare size={16} className="me-2" />
-                                                        Chia sẻ
-                                                    </Button>
-                                                </OverlayTrigger>
+                                        <div className="py-3">
+                                            <h6 className="text-center text-dark mb-4">Danh sách vé có thể check-in</h6>
+                                            <div className="d-flex flex-column gap-3">
+                                                {selectedBooking.tickets?.filter(ticket => ticket.status === "UNUSED" || ticket.status === "ACTIVE").map((ticket, index) => (
+                                                    <Card key={ticket.ticketId} className="border" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+                                                        <Card.Body className="p-4">
+                                                            <Row className="align-items-center">
+                                                                <Col xs={3} className="text-center">
+                                                                    <div
+                                                                        className="d-inline-block p-3 rounded-3 border bg-white cursor-pointer"
+                                                                        onClick={() => navigate(`/checkin/${ticket.ticketId}`)}
+                                                                        style={{ cursor: 'pointer' }}
+                                                                    >
+                                                                        <BsQrCode size={40} className="text-danger" />
+                                                                    </div>
+                                                                    <div className="mt-2">
+                                                                        <small className="text-danger fw-medium d-block">QR Code</small>
+                                                                        <small className="font-monospace text-dark">{ticket.ticketCode || `#${ticket.ticketId}`}</small>
+                                                                    </div>
+                                                                </Col>
+                                                                <Col>
+                                                                    <div className="mb-2">
+                                                                        <div className="fw-bold text-dark">Vé #{index + 1}</div>
+                                                                        <small className="text-muted">ID: {ticket.ticketId}</small>
+                                                                    </div>
+                                                                    {getStatusBadge(ticket.status)}
+                                                                    {(ticket.validFrom || ticket.validTo) && (
+                                                                        <div className="mt-2">
+                                                                            <small className="text-muted">
+                                                                                Hiệu lực: {ticket.validFrom ? formatDateTime(ticket.validFrom) : 'N/A'} - {ticket.validTo ? formatDateTime(ticket.validTo) : 'N/A'}
+                                                                            </small>
+                                                                        </div>
+                                                                    )}
+                                                                </Col>
+                                                                <Col xs="auto">
+                                                                    <Button
+                                                                        variant="danger"
+                                                                        className="rounded-pill px-4 py-2 fw-bold"
+                                                                        onClick={() => navigate(`/checkin/${ticket.ticketId}`)}
+                                                                    >
+                                                                        Check-in
+                                                                    </Button>
+                                                                </Col>
+                                                            </Row>
+                                                        </Card.Body>
+                                                    </Card>
+                                                ))}
+                                                {selectedBooking.tickets?.filter(ticket => ticket.status === "UNUSED" || ticket.status === "ACTIVE").length === 0 && (
+                                                    <div className="text-center py-5">
+                                                        <div className="text-muted">
+                                                            <BsExclamationCircle size={40} className="mb-3 d-block mx-auto" />
+                                                            <p>Không có vé nào có thể check-in</p>
+                                                        </div>
+                                                    </div>
+                                                )}
                                             </div>
                                         </div>
                                     </Tab>
@@ -770,11 +948,28 @@ export default function UserTickets() {
                                         title={
                                             <span className="d-flex align-items-center">
                                                 <BsClockHistory size={16} className="me-2" />
-                                                Lịch sử
+                                                Lịch sử vé
                                             </span>
                                         }
                                     >
-                                        <HistoryTable ticketId={selectedTicket.ticketId}  />  
+                                        <div className="py-3">
+                                            <div className="d-flex flex-column gap-3">
+                                                {selectedBooking.tickets?.map((ticket, index) => (
+                                                    <Card key={ticket.ticketId} className="border" style={{ backgroundColor: "#f8f9fa", borderRadius: "8px" }}>
+                                                        <Card.Body className="p-3">
+                                                            <div className="d-flex justify-content-between align-items-start mb-2">
+                                                                <div>
+                                                                    <div className="fw-bold text-dark">Vé #{index + 1}</div>
+                                                                    <small className="text-muted">ID: {ticket.ticketId}</small>
+                                                                </div>
+                                                                {getStatusBadge(ticket.status)}
+                                                            </div>
+                                                            <HistoryTable ticketId={ticket.ticketId} />
+                                                        </Card.Body>
+                                                    </Card>
+                                                ))}
+                                            </div>
+                                        </div>
                                     </Tab>
                                 </Tabs>
                             )}

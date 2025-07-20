@@ -1,6 +1,6 @@
 // src/components/Station.js
 import React, { useEffect, useState } from 'react';
-import { Container, Row, Col, Card, Button } from "react-bootstrap";
+import { Container, Row, Col, Card, Button, Badge } from "react-bootstrap";
 import { CircleFill } from "react-bootstrap-icons";
 import { useNavigate } from 'react-router-dom';
 import axiosInstance from '../../config/axios';
@@ -46,11 +46,11 @@ const Station = () => {
               style={{ cursor: 'pointer' }}
               onClick={() => navigate(`/stations/${station.stationId}`)}
             >
-              {station.url && (
+              {station.imageUrl && (
                 <div className="card-img-container">
                   <Card.Img
                     variant="top"
-                    src={station.url}
+                    src={station.imageUrl}
                     alt={station.stationName}
                     style={{ height: "200px", objectFit: "cover" }}
                   />
@@ -59,7 +59,7 @@ const Station = () => {
                     size="sm"
                     className="show-ticket-btn"
                   >
-                    Show Tickets
+                    Xem chi tiết
                   </Button>
                   <div className="position-absolute bottom-0 d-flex justify-content-center w-100 mb-2">
                     <div className="d-flex gap-1">
@@ -70,9 +70,27 @@ const Station = () => {
                   </div>
                 </div>
               )}
+              {!station.imageUrl && (
+                <div className="card-img-container bg-light d-flex align-items-center justify-content-center" style={{ height: "200px" }}>
+                  <div className="text-center text-muted">
+                    <div style={{ fontSize: "3rem" }}>🖼️</div>
+                    <div className="mt-2">Không có hình ảnh</div>
+                  </div>
+                </div>
+              )}
               <Card.Body className="p-3">
-                <h5 className="mb-1">{station.stationName}</h5>
-                <small className="text-muted">{station.stationLocation}</small>
+                <div className="d-flex justify-content-between align-items-start mb-2">
+                  <h5 className="mb-0">{station.stationName || 'Chưa có tên ga'}</h5>
+                  <Badge bg={station.status === 'ACTIVE' ? 'success' : 'secondary'}>
+                    {station.status === 'ACTIVE' ? 'Hoạt động' : 'Ngừng hoạt động'}
+                  </Badge>
+                </div>
+                <small className="text-muted">{station.stationLocation || 'Chưa có thông tin vị trí'}</small>
+                {station.description && (
+                  <div className="mt-2">
+                    <small className="text-muted">{station.description}</small>
+                  </div>
+                )}
               </Card.Body>
             </Card>
           </Col>

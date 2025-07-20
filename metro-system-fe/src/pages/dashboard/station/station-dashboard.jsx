@@ -36,6 +36,7 @@ const AdminStationManager = () => {
   const [selectedStations, setSelectedStations] = useState([]);
   const [selectedImage, setSelectedImage] = useState(null);
   const [imagePreview, setImagePreview] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
 
   const handleEditOrAdd = (station = null) => {
     setEditStation(
@@ -45,16 +46,73 @@ const AdminStationManager = () => {
     );
     setSelectedImage(null);
     setImagePreview(station?.imageUrl || null);
+    setValidationErrors({});
     setShowModal(true);
   };
   const handleSave = async () => {
+    // Reset previous errors
+    setValidationErrors({});
+
+    // Validation
+    const errors = {};
+
+    // Required field validation
+    if (!editStation.stationName?.trim()) {
+      errors.stationName = "Station name is required";
+    } else if (editStation.stationName.trim().length < 2) {
+      errors.stationName = "Station name must be at least 2 characters long";
+    }
+
+    if (!editStation.stationLocation?.trim()) {
+      errors.stationLocation = "Station location is required";
+    } else if (editStation.stationLocation.trim().length < 3) {
+      errors.stationLocation = "Station location must be at least 3 characters long";
+    }
+
+    if (!editStation.status) {
+      errors.status = "Status is required";
+    }
+
+    // Check if station name already exists (for new stations or different name)
+    const isDuplicateName = stations.some(station =>
+      station.stationName.toLowerCase().trim() === editStation.stationName.toLowerCase().trim() &&
+      station.stationId !== editStation.stationId
+    );
+
+    if (isDuplicateName) {
+      errors.stationName = errors.stationName ? errors.stationName + ". Station name already exists" : "Station name already exists";
+    }
+
+    // Image validation (only for new stations)
+    if (!editStation.stationId && !selectedImage) {
+      errors.image = "Station image is required for new stations";
+    }
+
+    // If selected image exists, validate file type and size
+    if (selectedImage) {
+      const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif'];
+      const maxSize = 5 * 1024 * 1024; // 5MB
+
+      if (!allowedTypes.includes(selectedImage.type)) {
+        errors.image = "Please select a valid image file (JPEG, PNG, GIF)";
+      } else if (selectedImage.size > maxSize) {
+        errors.image = "Image file size must be less than 5MB";
+      }
+    }
+
+    // Show validation errors
+    if (Object.keys(errors).length > 0) {
+      setValidationErrors(errors);
+      return;
+    }
+
     try {
       // Always use FormData to match the backend @RequestParam approach
       const formData = new FormData();
-      formData.append('stationName', editStation.stationName || '');
-      formData.append('stationLocation', editStation.stationLocation || '');
-      formData.append('status', editStation.status || 'ACTIVE');
-      formData.append('description', editStation.description || '');
+      formData.append('stationName', editStation.stationName.trim());
+      formData.append('stationLocation', editStation.stationLocation.trim());
+      formData.append('status', editStation.status);
+      formData.append('description', editStation.description?.trim() || '');
 
       // Add image if selected
       if (selectedImage) {
@@ -85,10 +143,23 @@ const AdminStationManager = () => {
       setEditStation(null);
       setSelectedImage(null);
       setImagePreview(null);
+      setValidationErrors({});
+
+      // Success message
+      alert(editStation.stationId ? "Station updated successfully!" : "Station added successfully!");
     } catch (err) {
       console.error("Failed to save station:", err);
       console.error("Error details:", err.response?.data);
-      alert(`Failed to save station: ${err.response?.data?.message || err.message}`);
+
+      // Better error message handling
+      let errorMessage = "Failed to save station";
+      if (err.response?.data?.message) {
+        errorMessage = err.response.data.message;
+      } else if (err.message) {
+        errorMessage = err.message;
+      }
+
+      alert(`Error: ${errorMessage}`);
     }
   };
 
@@ -337,44 +408,55 @@ const AdminStationManager = () => {
                   setShowModal(false);
                   setSelectedImage(null);
                   setImagePreview(null);
+                  setValidationErrors({});
                 }}></button>
               </div>
 
               <div className="modal-body p-4">
                 <div className="row g-3">
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Station Name</label>
+                    <label className="form-label fw-semibold">Station Name *</label>
                     <input
                       type="text"
                       name="stationName"
                       value={editStation?.stationName || ""}
                       onChange={(e) => setEditStation({ ...editStation, stationName: e.target.value })}
                       placeholder="Enter station name"
-                      className="form-control"
+                      className={`form-control ${validationErrors.stationName ? 'is-invalid' : ''}`}
                       style={{ borderRadius: "8px" }}
                     />
+                    {validationErrors.stationName && (
+                      <div className="invalid-feedback">{validationErrors.stationName}</div>
+                    )}
                   </div>
                   <div className="col-md-6">
-                    <label className="form-label fw-semibold">Location</label>
+                    <label className="form-label fw-semibold">Location *</label>
                     <input
                       type="text"
                       name="stationLocation"
                       value={editStation?.stationLocation || ""}
                       onChange={(e) => setEditStation({ ...editStation, stationLocation: e.target.value })}
                       placeholder="Enter station location"
-                      className="form-control"
+                      className={`form-control ${validationErrors.stationLocation ? 'is-invalid' : ''}`}
                       style={{ borderRadius: "8px" }}
                     />
+                    {validationErrors.stationLocation && (
+                      <div className="invalid-feedback">{validationErrors.stationLocation}</div>
+                    )}
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">Station Image</label>
+                    <label className="form-label fw-semibold">Station Image {!editStation?.stationId && '*'}</label>
                     <input
                       type="file"
                       accept="image/*"
                       onChange={handleImageChange}
-                      className="form-control"
+                      className={`form-control ${validationErrors.image ? 'is-invalid' : ''}`}
                       style={{ borderRadius: "8px" }}
                     />
+                    {validationErrors.image && (
+                      <div className="invalid-feedback">{validationErrors.image}</div>
+                    )}
+                    <small className="text-muted">Accepted formats: JPEG, PNG, GIF. Max size: 5MB</small>
                     {imagePreview && (
                       <div className="mt-3">
                         <img
@@ -387,17 +469,20 @@ const AdminStationManager = () => {
                     )}
                   </div>
                   <div className="col-12">
-                    <label className="form-label fw-semibold">Status</label>
+                    <label className="form-label fw-semibold">Status *</label>
                     <select
                       name="status"
                       value={editStation?.status || "ACTIVE"}
                       onChange={(e) => setEditStation({ ...editStation, status: e.target.value })}
-                      className="form-select"
+                      className={`form-select ${validationErrors.status ? 'is-invalid' : ''}`}
                       style={{ borderRadius: "8px" }}
                     >
                       <option value="ACTIVE">Active</option>
                       <option value="INACTIVE">Inactive</option>
                     </select>
+                    {validationErrors.status && (
+                      <div className="invalid-feedback">{validationErrors.status}</div>
+                    )}
                   </div>
                   <div className="col-12">
                     <label className="form-label fw-semibold">Description</label>
@@ -405,7 +490,7 @@ const AdminStationManager = () => {
                       name="description"
                       value={editStation?.description || ""}
                       onChange={(e) => setEditStation({ ...editStation, description: e.target.value })}
-                      placeholder="Enter description"
+                      placeholder="Enter description (optional)"
                       className="form-control"
                       style={{ borderRadius: "8px", minHeight: "100px" }}
                     />
@@ -421,6 +506,7 @@ const AdminStationManager = () => {
                     setShowModal(false);
                     setSelectedImage(null);
                     setImagePreview(null);
+                    setValidationErrors({});
                   }}
                   style={{ borderRadius: "8px" }}
                 >

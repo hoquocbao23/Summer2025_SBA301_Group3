@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { Container, Row, Col, Form, Button, Card, Alert } from 'react-bootstrap';
+import { Link } from 'react-router-dom';
 import './Login.scss';
 import axiosInstance from '../../config/axios';
 import axios from 'axios';
@@ -113,9 +114,9 @@ const Login = () => {
                       label="Remember"
                       id="remember-checkbox"
                     />
-                    <a href="#" className="text-danger">
+                    <Link to="/forgot-password" className="text-danger">
                       Forget password?
-                    </a>
+                    </Link>
                   </div>                  <Button variant="danger" type="submit" className="w-100 mb-3" disabled={loading}>
                     {loading ? 'Logging in...' : 'Login'}
                   </Button>

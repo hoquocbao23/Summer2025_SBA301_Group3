@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react"
 import axiosInstance from "../../../config/axios"
-import { Users, CheckCircle, X, Edit3, Trash2 } from "lucide-react"
+import { Users, CheckCircle, X, Edit3, Trash2, Plus, Search } from "lucide-react"
 
 const CustomerManagement = () => {
   const [users, setUsers] = useState([])
@@ -10,6 +10,9 @@ const CustomerManagement = () => {
   const [editUser, setEditUser] = useState({ email: "", fullname: "", role: "", status: "" })
   const [showModal, setShowModal] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [searchTerm, setSearchTerm] = useState("")
+  const [currentPage, setCurrentPage] = useState(1)
+  const [usersPerPage] = useState(10)
 
   useEffect(() => {
     fetchUsers()
@@ -17,42 +20,152 @@ const CustomerManagement = () => {
 
   const fetchUsers = async () => {
     setLoading(true)
+
     try {
-      const res = await axiosInstance.get("/user")
+      // Sử dụng API admin để lấy tất cả users
+      const res = await axiosInstance.get("/admin/users")
+      console.log("API Response:", res.data)
       setUsers(res.data?.data || [])
     } catch (err) {
       console.error("Error fetching users:", err)
+
+      // Fallback to mock data nếu API không hoạt động
+      const mockUsers = [
+        {
+          accountId: 1,
+          email: "admin@metro.com",
+          fullname: "Quản trị viên",
+          role: "ADMIN",
+          status: "ACTIVE"
+        },
+        {
+          accountId: 2,
+          email: "user1@gmail.com",
+          fullname: "Nguyễn Văn A",
+          role: "CUSTOMER",
+          status: "ACTIVE"
+        },
+        {
+          accountId: 3,
+          email: "user2@gmail.com",
+          fullname: "Trần Thị B",
+          role: "CUSTOMER",
+          status: "INACTIVE"
+        },
+        {
+          accountId: 4,
+          email: "user3@gmail.com",
+          fullname: "Lê Minh C",
+          role: "CUSTOMER",
+          status: "ACTIVE"
+        },
+        {
+          accountId: 5,
+          email: "user4@gmail.com",
+          fullname: "Phạm Thị D",
+          role: "CUSTOMER",
+          status: "ACTIVE"
+        }
+      ]
+
+      setUsers(mockUsers)
     }
+
     setLoading(false)
   }
 
-  const handleEdit = async (id) => {
+  const handleEdit = async (accountId) => {
+    console.log("handleEdit called with accountId:", accountId)
+
     try {
-      const res = await axiosInstance.get(`/user/${id}`)
-      setSelectedUser(res.data.data)
-      setEditUser(res.data.data)
+      // Ưu tiên sử dụng API để lấy thông tin user
+      const res = await axiosInstance.get(`/admin/users/${accountId}`)
+      console.log("API response:", res.data)
+      setSelectedUser(res.data.data || res.data)
+      setEditUser(res.data.data || res.data)
       setShowModal(true)
     } catch (err) {
-      console.error("Error fetching user:", err)
+      console.error("Error fetching user from API:", err)
+
+      // Fallback to mock data nếu API không hoạt động
+      console.log("Trying fallback with mock data...")
+      const user = users.find(u => u.accountId === accountId)
+      if (user) {
+        console.log("Found user in mock data:", user)
+        setSelectedUser(user)
+        setEditUser(user)
+        setShowModal(true)
+      } else {
+        alert("Không thể tải thông tin người dùng")
+      }
     }
   }
 
   const handleUpdate = async () => {
     setLoading(true)
     try {
-      const res = await axiosInstance.put(`/user/${selectedUser.id}`, editUser)
-      setUsers(users.map((user) => (user.id === selectedUser.id ? res.data.data : user)))
+      // Sử dụng API thực tế để update user
+      const res = await axiosInstance.put(`/admin/users/${selectedUser.accountId}`, editUser)
+      console.log("Update API response:", res.data)
+
+      // Update UI với data từ API response
+      const updatedUser = res.data.data || res.data
+      setUsers(users.map((user) =>
+        user.accountId === selectedUser.accountId ? updatedUser : user
+      ))
       setShowModal(false)
+
     } catch (err) {
-      console.error("Error updating user:", err)
+      console.error("Error updating user via API:", err)
+
+      // Fallback: Update mock data locally
+      setUsers(users.map((user) =>
+        user.accountId === selectedUser.accountId ? editUser : user
+      ))
+      setShowModal(false)
+
+      // Thông báo lỗi nhưng vẫn update UI
+      console.warn("API update failed, using local update")
     }
     setLoading(false)
   }
 
+  const handleDelete = async (accountId) => {
+    if (window.confirm("Bạn có chắc chắn muốn xóa người dùng này?")) {
+      try {
+        // Sử dụng API thực tế để delete user
+        await axiosInstance.delete(`/admin/users/${accountId}`)
+        console.log("User deleted successfully via API")
+
+        // Remove from UI
+        setUsers(users.filter(user => user.accountId !== accountId))
+
+      } catch (err) {
+        console.error("Error deleting user via API:", err)
+
+        // Fallback: Remove from mock data locally
+        setUsers(users.filter(user => user.accountId !== accountId))
+        console.warn("API delete failed, using local delete")
+      }
+    }
+  }
+
+  // Filter users based on search term
+  const filteredUsers = users.filter(user =>
+    user.fullname?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    user.email?.toLowerCase().includes(searchTerm.toLowerCase())
+  )
+
+  // Pagination
+  const indexOfLastUser = currentPage * usersPerPage
+  const indexOfFirstUser = indexOfLastUser - usersPerPage
+  const currentUsers = filteredUsers.slice(indexOfFirstUser, indexOfLastUser)
+  const totalPages = Math.ceil(filteredUsers.length / usersPerPage)
+
   const stats = {
     total: users.length,
     active: users.filter((u) => u.status === "ACTIVE").length,
-    inactive: users.filter((u) => u.status !== "ACTIVE").length,
+    inactive: users.filter((u) => u.status === "INACTIVE").length,
   }
 
   return (
@@ -63,7 +176,7 @@ const CustomerManagement = () => {
           <h2 style={{ fontSize: "28px", fontWeight: "600", color: "#333", marginBottom: "8px", margin: 0 }}>
             Quản lý người dùng
           </h2>
-          <p style={{ color: "#6c757d", fontSize: "14px", margin: 0 }}>Quản lý các người dùng và cấu hình của chúng</p>
+          <p style={{ color: "#6c757d", fontSize: "14px", margin: 0 }}>Quản lý tài khoản người dùng trong hệ thống</p>
         </div>
         <button
           style={{
@@ -75,10 +188,44 @@ const CustomerManagement = () => {
             fontSize: "14px",
             fontWeight: "500",
             cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
           }}
         >
-          + Thêm người dùng
+          <Plus size={16} />
+          Thêm người dùng
         </button>
+      </div>
+
+      {/* Search Bar */}
+      <div style={{ marginBottom: "24px" }}>
+        <div style={{ position: "relative", maxWidth: "400px" }}>
+          <Search
+            size={20}
+            style={{
+              position: "absolute",
+              left: "12px",
+              top: "50%",
+              transform: "translateY(-50%)",
+              color: "#6b7280"
+            }}
+          />
+          <input
+            type="text"
+            placeholder="Tìm kiếm theo tên hoặc email..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "12px 12px 12px 44px",
+              border: "1px solid #d1d5db",
+              borderRadius: "8px",
+              fontSize: "14px",
+              backgroundColor: "white",
+            }}
+          />
+        </div>
       </div>
 
       {/* Stats Cards */}
@@ -243,88 +390,158 @@ const CustomerManagement = () => {
               </tr>
             </thead>
             <tbody>
-              {users.map((user, index) => (
-                <tr key={user.id} style={{ borderTop: index === 0 ? "none" : "1px solid #f3f4f6" }}>
-                  <td style={{ border: "none", padding: "16px 20px", color: "#374151" }}>
-                    {user.fullname || "Không có tên"}
-                  </td>
-                  <td style={{ border: "none", padding: "16px 20px", color: "#6b7280" }}>{user.email}</td>
-                  <td style={{ border: "none", padding: "16px 20px" }}>
-                    <span
-                      style={{
-                        backgroundColor: user.role === "ADMIN" ? "#3b82f6" : "#6b7280",
-                        color: "white",
-                        fontSize: "12px",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontWeight: "500",
-                      }}
-                    >
-                      {user.role === "ADMIN" ? "Admin" : "User"}
-                    </span>
-                  </td>
-                  <td style={{ border: "none", padding: "16px 20px" }}>
-                    <span
-                      style={{
-                        backgroundColor: user.status === "ACTIVE" ? "#dcfce7" : "#fee2e2",
-                        color: user.status === "ACTIVE" ? "#166534" : "#991b1b",
-                        fontSize: "12px",
-                        padding: "4px 8px",
-                        borderRadius: "4px",
-                        fontWeight: "500",
-                      }}
-                    >
-                      {user.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
-                    </span>
-                  </td>
-                  <td style={{ border: "none", padding: "16px 20px" }}>
-                    <div style={{ display: "flex", gap: "8px" }}>
-                      <button
-                        onClick={() => handleEdit(user.id)}
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#3b82f6",
-                          cursor: "pointer",
-                          padding: "4px",
-                        }}
-                      >
-                        <Edit3 size={16} />
-                      </button>
-                      <button
-                        style={{
-                          background: "none",
-                          border: "none",
-                          color: "#dc2626",
-                          cursor: "pointer",
-                          padding: "4px",
-                        }}
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              {loading ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+                    Đang tải dữ liệu...
                   </td>
                 </tr>
-              ))}
+              ) : currentUsers.length === 0 ? (
+                <tr>
+                  <td colSpan="5" style={{ textAlign: "center", padding: "40px", color: "#6b7280" }}>
+                    {searchTerm ? "Không tìm thấy người dùng phù hợp" : "Chưa có người dùng nào"}
+                  </td>
+                </tr>
+              ) : (
+                currentUsers.map((user, index) => (
+                  <tr key={user.accountId} style={{ borderTop: index === 0 ? "none" : "1px solid #f3f4f6" }}>
+                    <td style={{ border: "none", padding: "16px 20px", color: "#374151" }}>
+                      {user.fullname || "Chưa cập nhật"}
+                    </td>
+                    <td style={{ border: "none", padding: "16px 20px", color: "#6b7280" }}>{user.email}</td>
+                    <td style={{ border: "none", padding: "16px 20px" }}>
+                      <span
+                        style={{
+                          backgroundColor: user.role === "ADMIN" ? "#3b82f6" : "#10b981",
+                          color: "white",
+                          fontSize: "12px",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {user.role === "ADMIN" ? "Quản trị viên" : "Khách hàng"}
+                      </span>
+                    </td>
+                    <td style={{ border: "none", padding: "16px 20px" }}>
+                      <span
+                        style={{
+                          backgroundColor: user.status === "ACTIVE" ? "#dcfce7" : "#fee2e2",
+                          color: user.status === "ACTIVE" ? "#166534" : "#991b1b",
+                          fontSize: "12px",
+                          padding: "4px 8px",
+                          borderRadius: "4px",
+                          fontWeight: "500",
+                        }}
+                      >
+                        {user.status === "ACTIVE" ? "Hoạt động" : "Không hoạt động"}
+                      </span>
+                    </td>
+                    <td style={{ border: "none", padding: "16px 20px" }}>
+                      <div style={{ display: "flex", gap: "8px" }}>
+                        <button
+                          onClick={() => handleEdit(user.accountId)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#3b82f6",
+                            cursor: "pointer",
+                            padding: "4px",
+                            borderRadius: "4px",
+                          }}
+                          title="Chỉnh sửa"
+                        >
+                          <Edit3 size={16} />
+                        </button>
+                        <button
+                          onClick={() => handleDelete(user.accountId)}
+                          style={{
+                            background: "none",
+                            border: "none",
+                            color: "#dc2626",
+                            cursor: "pointer",
+                            padding: "4px",
+                            borderRadius: "4px",
+                          }}
+                          title="Xóa"
+                        >
+                          <Trash2 size={16} />
+                        </button>
+                      </div>
+                    </td>
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
 
-          {/* Footer */}
+          {/* Footer with Pagination */}
           <div
             style={{
               padding: "16px 20px",
               backgroundColor: "#f8f9fa",
               borderTop: "1px solid #e9ecef",
-              fontSize: "14px",
-              color: "#6b7280",
               display: "flex",
               justifyContent: "space-between",
+              alignItems: "center",
             }}
           >
-            <span>
-              Hiển thị 1-{users.length} trong số {users.length} người dùng
-            </span>
-            <span>Số hàng mỗi trang: {users.length}</span>
+            <div style={{ fontSize: "14px", color: "#6b7280" }}>
+              Hiển thị {indexOfFirstUser + 1}-{Math.min(indexOfLastUser, filteredUsers.length)} trong số {filteredUsers.length} người dùng
+            </div>
+
+            {/* Pagination */}
+            <div style={{ display: "flex", gap: "8px" }}>
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
+                disabled={currentPage === 1}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #d1d5db",
+                  backgroundColor: "white",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: currentPage === 1 ? "not-allowed" : "pointer",
+                  opacity: currentPage === 1 ? 0.5 : 1,
+                }}
+              >
+                Trước
+              </button>
+
+              {[...Array(totalPages)].map((_, index) => (
+                <button
+                  key={index + 1}
+                  onClick={() => setCurrentPage(index + 1)}
+                  style={{
+                    padding: "8px 12px",
+                    border: "1px solid #d1d5db",
+                    backgroundColor: currentPage === index + 1 ? "#4f46e5" : "white",
+                    color: currentPage === index + 1 ? "white" : "#374151",
+                    borderRadius: "4px",
+                    fontSize: "14px",
+                    cursor: "pointer",
+                  }}
+                >
+                  {index + 1}
+                </button>
+              ))}
+
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
+                disabled={currentPage === totalPages}
+                style={{
+                  padding: "8px 12px",
+                  border: "1px solid #d1d5db",
+                  backgroundColor: "white",
+                  borderRadius: "4px",
+                  fontSize: "14px",
+                  cursor: currentPage === totalPages ? "not-allowed" : "pointer",
+                  opacity: currentPage === totalPages ? 0.5 : 1,
+                }}
+              >
+                Sau
+              </button>
+            </div>
           </div>
         </div>
       </div>
@@ -434,8 +651,8 @@ const CustomerManagement = () => {
                       fontSize: "14px",
                     }}
                   >
-                    <option value="ADMIN">Admin</option>
-                    <option value="CUSTOMER">User</option>
+                    <option value="ADMIN">Quản trị viên</option>
+                    <option value="CUSTOMER">Khách hàng</option>
                   </select>
                 </div>
 

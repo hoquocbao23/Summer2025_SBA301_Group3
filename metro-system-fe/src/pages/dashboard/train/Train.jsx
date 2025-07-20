@@ -25,7 +25,7 @@ const AdminTrainManager = () => {
     const fetchTrains = async () => {
         try {
             setLoading(true);
-            const response = await axiosInstance.get("/train");
+            const response = await axiosInstance.get("/trains");
             if (response.data?.data) {
                 setTrains(response.data.data);
             }
@@ -36,15 +36,18 @@ const AdminTrainManager = () => {
         }
     };
 
-    // Fetch routes for dropdown
+    // Fetch routes for dropdown - use routes summary endpoint
     const fetchRoutes = async () => {
         try {
-            const response = await axiosInstance.get("/routes");
+            const response = await axiosInstance.get("/routes/summary");
             if (response.data?.data) {
+                // Use routes summary data (id, routeName)
                 setRoutes(response.data.data);
             }
         } catch (error) {
             console.error("Failed to fetch routes:", error);
+            // Fallback to empty array on error to prevent crashes
+            setRoutes([]);
         }
     };
 
@@ -59,30 +62,80 @@ const AdminTrainManager = () => {
         setEditTrain(
             train
                 ? { ...train }
-                : { trainName: "", trainModel: "", route: null }
+                : { trainName: "", trainModel: "", trainManufacturer: "", route: null }
         );
         setShowModal(true);
     };
 
-    // Handle save (create or update)
+    // Handle save (create or update) - updated for new backend API
     const handleSave = async () => {
         try {
+            // Validate required fields with backend constraints
+            if (!editTrain.trainName?.trim()) {
+                alert("Train name is required");
+                return;
+            }
+
+            if (editTrain.trainName.trim().length < 2) {
+                alert("Train name must be at least 2 characters long");
+                return;
+            }
+
+            if (editTrain.trainName.trim().length > 50) {
+                alert("Train name cannot exceed 50 characters");
+                return;
+            }
+
+            if (!editTrain.trainModel?.trim()) {
+                alert("Train model is required");
+                return;
+            }
+
+            if (editTrain.trainModel.trim().length < 2) {
+                alert("Train model must be at least 2 characters long");
+                return;
+            }
+
+            if (editTrain.trainModel.trim().length > 50) {
+                alert("Train model cannot exceed 50 characters");
+                return;
+            }
+
+            if (editTrain.trainManufacturer && editTrain.trainManufacturer.trim().length > 100) {
+                alert("Train manufacturer cannot exceed 100 characters");
+                return;
+            }
+
+            // Prepare TrainRequestDTO payload
             const payload = {
-                trainName: editTrain.trainName,
-                trainModel: editTrain.trainModel,
-                routeId: editTrain.route?.routeId || null
+                trainName: editTrain.trainName.trim(),
+                trainModel: editTrain.trainModel.trim(),
+                trainManufacturer: editTrain.trainManufacturer?.trim() || ""
             };
 
             if (editTrain.trainId) {
-                // Update existing train
-                await axiosInstance.put(`/train/${editTrain.trainId}`, {
-                    trainName: editTrain.trainName,
-                    trainModel: editTrain.trainModel,
-                    route: editTrain.route
-                });
+                // Update existing train - can add/change route assignment
+                if (editTrain.route?.id) {
+                    // If route is selected, send idRoute as query parameter
+                    await axiosInstance.put(`/trains/${editTrain.trainId}?idRoute=${editTrain.route.id}`, payload);
+                } else {
+                    // Update train without route assignment (idRoute not provided)
+                    await axiosInstance.put(`/trains/${editTrain.trainId}`, payload);
+                }
             } else {
                 // Create new train
-                await axiosInstance.post("/train", payload);
+                const response = await axiosInstance.post("/trains", payload);
+
+                // If route is selected and train created successfully, assign route via update
+                if (editTrain.route && response.data?.data?.trainId) {
+                    try {
+                        const routeParam = `?idRoute=${editTrain.route.id}`;
+                        await axiosInstance.put(`/trains/${response.data.data.trainId}${routeParam}`, payload);
+                    } catch (routeError) {
+                        console.warn("Train created but route assignment failed:", routeError);
+                        alert("Train created successfully, but route assignment failed. You can edit the train to assign a route.");
+                    }
+                }
             }
 
             fetchTrains();
@@ -90,7 +143,8 @@ const AdminTrainManager = () => {
             setEditTrain(null);
         } catch (error) {
             console.error("Failed to save train:", error);
-            alert(`Failed to save train: ${error.response?.data?.message || error.message}`);
+            const errorMessage = error.response?.data?.message || error.message;
+            alert(`Failed to save train: ${errorMessage}`);
         }
     };
 
@@ -98,7 +152,7 @@ const AdminTrainManager = () => {
     const handleDelete = async (id) => {
         if (window.confirm("Are you sure you want to delete this train?")) {
             try {
-                await axiosInstance.delete(`/train/${id}`);
+                await axiosInstance.delete(`/trains/${id}`);
                 setTrains((prev) => prev.filter((t) => t.trainId !== id));
             } catch (error) {
                 console.error("Failed to delete train:", error);
@@ -272,12 +326,17 @@ const AdminTrainManager = () => {
                                             </td>
                                             <td className="px-4 py-3">
                                                 <div className="fw-medium text-dark">{train.trainModel}</div>
+                                                {train.trainManufacturer && (
+                                                    <small className="text-muted">{train.trainManufacturer}</small>
+                                                )}
                                             </td>
                                             <td className="px-4 py-3">
                                                 {train.route ? (
                                                     <div>
                                                         <div className="fw-medium text-dark">{train.route.routeName}</div>
-                                                        <small className="text-muted">{train.route.description}</small>
+                                                        <small className="text-muted">
+                                                            Route ID: {train.route.id || train.route.routeId}
+                                                        </small>
                                                     </div>
                                                 ) : (
                                                     <span className="text-muted fst-italic">Not assigned</span>
@@ -286,8 +345,8 @@ const AdminTrainManager = () => {
                                             <td className="px-4 py-3">
                                                 <span
                                                     className={`badge px-3 py-1 rounded-pill ${train.route
-                                                            ? "bg-success bg-opacity-10 text-success"
-                                                            : "bg-warning bg-opacity-10 text-warning"
+                                                        ? "bg-success bg-opacity-10 text-success"
+                                                        : "bg-warning bg-opacity-10 text-warning"
                                                         }`}
                                                 >
                                                     {train.route ? "Active" : "Unassigned"}
@@ -358,7 +417,7 @@ const AdminTrainManager = () => {
                             <div className="modal-body p-4">
                                 <div className="row g-3">
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Train Name</label>
+                                        <label className="form-label fw-semibold">Train Name *</label>
                                         <input
                                             type="text"
                                             value={editTrain?.trainName || ""}
@@ -368,10 +427,13 @@ const AdminTrainManager = () => {
                                             placeholder="Enter train name"
                                             className="form-control"
                                             style={{ borderRadius: "8px" }}
+                                            maxLength={50}
+                                            required
                                         />
+                                        <small className="text-muted">2-50 characters</small>
                                     </div>
                                     <div className="col-md-6">
-                                        <label className="form-label fw-semibold">Train Model</label>
+                                        <label className="form-label fw-semibold">Train Model *</label>
                                         <input
                                             type="text"
                                             value={editTrain?.trainModel || ""}
@@ -381,15 +443,35 @@ const AdminTrainManager = () => {
                                             placeholder="Enter train model"
                                             className="form-control"
                                             style={{ borderRadius: "8px" }}
+                                            maxLength={50}
+                                            required
                                         />
+                                        <small className="text-muted">2-50 characters</small>
                                     </div>
                                     <div className="col-12">
-                                        <label className="form-label fw-semibold">Route Assignment</label>
+                                        <label className="form-label fw-semibold">Train Manufacturer</label>
+                                        <input
+                                            type="text"
+                                            value={editTrain?.trainManufacturer || ""}
+                                            onChange={(e) =>
+                                                setEditTrain({ ...editTrain, trainManufacturer: e.target.value })
+                                            }
+                                            placeholder="Enter train manufacturer (optional)"
+                                            className="form-control"
+                                            style={{ borderRadius: "8px" }}
+                                            maxLength={100}
+                                        />
+                                        <small className="text-muted">Optional, max 100 characters</small>
+                                    </div>
+                                    <div className="col-12">
+                                        <label className="form-label fw-semibold">
+                                            Route Assignment
+                                        </label>
                                         <select
-                                            value={editTrain?.route?.routeId || ""}
+                                            value={editTrain?.route?.id || ""}
                                             onChange={(e) => {
                                                 const selectedRoute = routes.find(
-                                                    (route) => route.routeId === parseInt(e.target.value)
+                                                    (route) => route.id === parseInt(e.target.value)
                                                 );
                                                 setEditTrain({
                                                     ...editTrain,
@@ -398,11 +480,14 @@ const AdminTrainManager = () => {
                                             }}
                                             className="form-select"
                                             style={{ borderRadius: "8px" }}
+                                            required={false}
                                         >
-                                            <option value="">Select a route (optional)</option>
+                                            <option value="">
+                                                Select a route (optional)
+                                            </option>
                                             {routes.map((route) => (
-                                                <option key={route.routeId} value={route.routeId}>
-                                                    {route.routeName} - {route.description}
+                                                <option key={route.id} value={route.id}>
+                                                    {route.routeName}
                                                 </option>
                                             ))}
                                         </select>

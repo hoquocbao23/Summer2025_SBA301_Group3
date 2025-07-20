@@ -2,8 +2,8 @@ import React, { useState } from 'react';
 import { Navbar, Container, Form, FormControl, Nav, Dropdown, Image } from 'react-bootstrap';
 import { useNavigate } from 'react-router-dom';
 const user = {
-  name: "Sofia Rivers",
-  email: "sofia.rivers@devias.io",
+  // name: "Sofia Rivers",
+  // email: "sofia.rivers@devias.io",
   avatar: "https://randomuser.me/api/portraits/women/44.jpg" // Thay bằng avatar của bạn
 };
 
@@ -12,16 +12,16 @@ const Header = () => {
   const handleLogout = () => {
     // Clear ALL data from localStorage
     localStorage.clear();
-    
-    
+
+
     // Show logout notification
     alert('Đăng xuất thành công!');
-    
+
     // Navigate to home page
     navigate('/');
-};
+  };
   return (
-    <Navbar bg="light" expand="lg"  className="border-bottom" style={{ minHeight: 60 }}>
+    <Navbar bg="light" expand="lg" className="border-bottom" style={{ minHeight: 60 }}>
       <Container fluid>
         <Form className="d-flex flex-grow-1 me-3">
           <FormControl
@@ -49,8 +49,6 @@ const Header = () => {
                 <div className="text-muted" style={{ fontSize: 13 }}>{user.email}</div>
               </div>
               <Dropdown.Divider />
-              <Dropdown.Item>Settings</Dropdown.Item>
-              <Dropdown.Item>Profile</Dropdown.Item>
               <Dropdown.Item onClick={handleLogout}>Logout</Dropdown.Item>
             </Dropdown.Menu>
           </Dropdown>

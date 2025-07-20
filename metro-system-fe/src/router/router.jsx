@@ -22,6 +22,7 @@ import PaymentSuccess from "../components/payment/PaymentSuccess";
 import PaymentFailed from "../components/payment/PaymentFailed";
 import CheckinPage from "../components/checkin/CheckinPage";
 import Train from "../pages/dashboard/train/Train";
+import ForgotPassword from "../pages/forgot-password/ForgotPassword";
 const router = createBrowserRouter([
   {
     path: "/",
@@ -51,6 +52,10 @@ const router = createBrowserRouter([
       {
         path: "/signin",
         element: <SignUp />,
+      },
+      {
+        path: "/forgot-password",
+        element: <ForgotPassword />,
       },
       {
         path: "/routes",
