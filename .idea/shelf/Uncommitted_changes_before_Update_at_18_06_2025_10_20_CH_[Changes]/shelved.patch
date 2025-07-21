@@ -1,0 +1,1470 @@
+Index: metro-system/src/main/resources/application.properties
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>spring.application.name=metro-system\nserver.port=8080\n\nspring.datasource.url=jdbc:mysql://localhost:3306/MetroSystem\nspring.datasource.username=root\nspring.datasource.password=12345678\nspring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver\n\nspring.jpa.hibernate.ddl-auto = update\nspring.jpa.show-sql=true\n\nspring.mvc.servlet.path=/api/v1\n\n# Swagger/OpenAPI Configuration\nspringdoc.api-docs.path=/api-docs\nspringdoc.swagger-ui.path=/swagger-ui.html\nspringdoc.swagger-ui.operationsSorter=method\nspringdoc.swagger-ui.tagsSorter=alpha\nspringdoc.swagger-ui.tryItOutEnabled=true\nspringdoc.swagger-ui.filter=true\nspringdoc.swagger-ui.syntaxHighlight.activated=true\n\njwt.secret=9c9d7cc5c9fe5579d1b7b0b0d4ff4b951da90529a7859ac17a6cb0ec63290fcb\ntoken.expire=3600000\n\nspring.mail.host=smtp.gmail.com\nspring.mail.password=ykmm qfvq urjg aauw\nspring.mail.port=587\nspring.mail.properties.mail.smtp.auth=true\nspring.mail.properties.mail.smtp.starttls.enable=true\nspring.mail.properties.mail.transport.protocol=smtp\nspring.mail.username=metrohcmcsys@gmail.com\n\nmetro.forum.email.footer=© 2025 Metro SG. All rights reserved. For support, contact us at support@metrosg.com.\n\nPAYOS_CLIENT_ID={PAYOS_CLIENT_ID}\nPAYOS_API_KEY={PAYOS_API_KEY}\nPAYOS_CHECKSUM_KEY={PAYOS_CHECKSUM_KEY}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>ISO-8859-1
+===================================================================
+diff --git a/metro-system/src/main/resources/application.properties b/metro-system/src/main/resources/application.properties
+--- a/metro-system/src/main/resources/application.properties	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/resources/application.properties	(date 1750259933205)
+@@ -6,7 +6,7 @@
+ spring.datasource.password=12345678
+ spring.datasource.driver-class-name=com.mysql.cj.jdbc.Driver
+ 
+-spring.jpa.hibernate.ddl-auto = update
++spring.jpa.hibernate.ddl-auto=update
+ spring.jpa.show-sql=true
+ 
+ spring.mvc.servlet.path=/api/v1
+@@ -33,6 +33,12 @@
+ 
+ metro.forum.email.footer=© 2025 Metro SG. All rights reserved. For support, contact us at support@metrosg.com.
+ 
+-PAYOS_CLIENT_ID={PAYOS_CLIENT_ID}
+-PAYOS_API_KEY={PAYOS_API_KEY}
+-PAYOS_CHECKSUM_KEY={PAYOS_CHECKSUM_KEY}
+\ No newline at end of file
++PAYOS_CLIENT_ID=${PAYOS_CLIENT_ID}
++PAYOS_API_KEY=${PAYOS_API_KEY}
++PAYOS_CHECKSUM_KEY=${PAYOS_CHECKSUM_KEY}
++
++spring.data.redis.host=localhost
++spring.data.redis.port=6407
++
++RETURN_URL=http://localhost:5173/payment-success
++CANCEL_URL=http://localhost:5173/payment-failed
+Index: metro-system/src/main/java/com/sba301/metro_system/entity/Promotion.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.entity;\n\nimport com.sba301.metro_system.enums.Status;\nimport jakarta.persistence.*;\nimport lombok.Data;\nimport java.math.BigDecimal;\nimport java.time.LocalDateTime;\n\n@Data\n@Entity\n@Table(name = \"promotion\")\npublic class Promotion {\n    @Id\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\n    private Long promotionId;\n\n    private String promotionName;\n    private String promotionCode;\n    private BigDecimal promotionDiscount;\n    \n    @Column(name = \"from_date\")\n    private LocalDateTime fromDate;\n    \n    @Column(name = \"to_date\")\n    private LocalDateTime toDate;\n\n    @Enumerated(EnumType.STRING)\n    private Status status;\n\n    @ManyToOne\n    @JoinColumn(name = \"ticket_type_id\")\n    private TicketType ticketType;\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/entity/Promotion.java b/metro-system/src/main/java/com/sba301/metro_system/entity/Promotion.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/entity/Promotion.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/entity/Promotion.java	(date 1750259933181)
+@@ -14,8 +14,14 @@
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Long promotionId;
+ 
++    @Column(unique = true, nullable = false)
+     private String promotionName;
++
++    @Column(unique = true, nullable = false)
+     private String promotionCode;
++
++
++
+     private BigDecimal promotionDiscount;
+     
+     @Column(name = "from_date")
+Index: metro-system/src/main/java/com/sba301/metro_system/entity/Ticket.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.entity;\r\n\r\nimport com.sba301.metro_system.enums.TicketStatus;\r\nimport jakarta.persistence.*;\r\nimport lombok.Data;\r\nimport java.math.BigDecimal;\r\nimport java.time.LocalDateTime;\r\n\r\n@Data\r\n@Entity\r\n@Table(name = \"ticket\")\r\npublic class Ticket {\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n    private Long ticketId;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"departure_station_id\")\r\n    private Station departureStation;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"arrival_station_id\")\r\n    private Station arrivalStation;\r\n\r\n    private BigDecimal price;\r\n    private LocalDateTime validFrom;\r\n    private LocalDateTime validTo;\r\n    private LocalDateTime purchaseTime;\r\n    private String qrUrl;\r\n\r\n    @Enumerated(EnumType.STRING)\r\n    private TicketStatus ticketStatus;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"account_id\")\r\n    private Account account;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"ticket_type_id\")\r\n    private TicketType ticketType;    @ManyToOne\r\n    @JoinColumn(name = \"promotion_id\")\r\n    private Promotion promotion;\r\n    \r\n    @ManyToOne\r\n    @JoinColumn(name = \"route_id\")\r\n    private Route route;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/entity/Ticket.java b/metro-system/src/main/java/com/sba301/metro_system/entity/Ticket.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/entity/Ticket.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/entity/Ticket.java	(date 1750259933182)
+@@ -2,13 +2,18 @@
+ 
+ import com.sba301.metro_system.enums.TicketStatus;
+ import jakarta.persistence.*;
++import lombok.AllArgsConstructor;
++import lombok.Builder;
+ import lombok.Data;
++import lombok.NoArgsConstructor;
++
+ import java.math.BigDecimal;
+ import java.time.LocalDateTime;
+ 
+ @Data
+ @Entity
+ @Table(name = "ticket")
++@NoArgsConstructor
+ public class Ticket {
+     @Id
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+@@ -22,7 +27,9 @@
+     @JoinColumn(name = "arrival_station_id")
+     private Station arrivalStation;
+ 
+-    private BigDecimal price;
++//    private BigDecimal price;
++    private Double oldPrice;
++    private Double newPrice;
+     private LocalDateTime validFrom;
+     private LocalDateTime validTo;
+     private LocalDateTime purchaseTime;
+@@ -37,7 +44,9 @@
+ 
+     @ManyToOne
+     @JoinColumn(name = "ticket_type_id")
+-    private TicketType ticketType;    @ManyToOne
++    private TicketType ticketType;
++
++    @ManyToOne
+     @JoinColumn(name = "promotion_id")
+     private Promotion promotion;
+     
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/PaymentService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service.implement;\n\nimport com.fasterxml.jackson.databind.ObjectMapper;\nimport com.fasterxml.jackson.databind.node.ObjectNode;\nimport com.sba301.metro_system.dto.request.PaymentRequestDto;\nimport com.sba301.metro_system.service.IPaymentService;\nimport jakarta.servlet.http.HttpServletResponse;\nimport lombok.RequiredArgsConstructor;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.bind.annotation.PathVariable;\nimport org.springframework.web.bind.annotation.PostMapping;\nimport org.springframework.web.bind.annotation.PutMapping;\nimport org.springframework.web.bind.annotation.RequestBody;\nimport vn.payos.PayOS;\nimport vn.payos.type.CheckoutResponseData;\nimport vn.payos.type.ItemData;\nimport vn.payos.type.PaymentData;\nimport vn.payos.type.PaymentLinkData;\n\nimport java.time.Instant;\nimport java.util.Date;\n\n@Service\n@RequiredArgsConstructor\npublic class PaymentService implements IPaymentService {\n\n    private final PayOS payOS;\n\n    @Override\n    public String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception {\n        ItemData item = ItemData\n                .builder()\n                .name(paymentRequestDto.getProductName())\n                .price(1000)\n                .quantity(paymentRequestDto.getQuantity())\n                .build();\n\n        String currentTimeString = String.valueOf(String.valueOf(new Date().getTime()));\n        long orderCode = Long.parseLong(currentTimeString.substring(currentTimeString.length() - 6));\n\n        PaymentData paymentData = PaymentData\n                .builder()\n                .orderCode(orderCode)\n                .description(paymentRequestDto.getDescription())\n                .amount(1000)\n                .expiredAt( (Instant.now().getEpochSecond() + 900) )\n                .item(item)\n                .returnUrl(paymentRequestDto.getReturnUrl())\n                .cancelUrl(paymentRequestDto.getCancelUrl())\n                .build();\n        CheckoutResponseData data = payOS.createPaymentLink(paymentData);\n        return data.getCheckoutUrl();\n    }\n\n\n    public PaymentLinkData cancelOrder(long orderId, String cancellationReason ) throws Exception {\n            PaymentLinkData order = payOS.cancelPaymentLink(orderId, null);\n            return order;\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/PaymentService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/PaymentService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/implement/PaymentService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/PaymentService.java	(date 1750259933199)
+@@ -1,16 +1,10 @@
+ package com.sba301.metro_system.service.implement;
+ 
+-import com.fasterxml.jackson.databind.ObjectMapper;
+-import com.fasterxml.jackson.databind.node.ObjectNode;
+-import com.sba301.metro_system.dto.request.PaymentRequestDto;
++import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
+ import com.sba301.metro_system.service.IPaymentService;
+-import jakarta.servlet.http.HttpServletResponse;
+ import lombok.RequiredArgsConstructor;
++import org.springframework.beans.factory.annotation.Value;
+ import org.springframework.stereotype.Service;
+-import org.springframework.web.bind.annotation.PathVariable;
+-import org.springframework.web.bind.annotation.PostMapping;
+-import org.springframework.web.bind.annotation.PutMapping;
+-import org.springframework.web.bind.annotation.RequestBody;
+ import vn.payos.PayOS;
+ import vn.payos.type.CheckoutResponseData;
+ import vn.payos.type.ItemData;
+@@ -26,12 +20,18 @@
+ 
+     private final PayOS payOS;
+ 
++    @Value("${RETURN_URL}")
++    private String RETURN_URL;
++
++    @Value("${CANCEL_URL}")
++    private String CANCEL_URL;
++
+     @Override
+     public String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception {
+         ItemData item = ItemData
+                 .builder()
+                 .name(paymentRequestDto.getProductName())
+-                .price(1000)
++                .price(2000)
+                 .quantity(paymentRequestDto.getQuantity())
+                 .build();
+ 
+@@ -42,11 +42,11 @@
+                 .builder()
+                 .orderCode(orderCode)
+                 .description(paymentRequestDto.getDescription())
+-                .amount(1000)
++                .amount(2000)
+                 .expiredAt( (Instant.now().getEpochSecond() + 900) )
+                 .item(item)
+-                .returnUrl(paymentRequestDto.getReturnUrl())
+-                .cancelUrl(paymentRequestDto.getCancelUrl())
++                .returnUrl(RETURN_URL)
++                .cancelUrl(CANCEL_URL)
+                 .build();
+         CheckoutResponseData data = payOS.createPaymentLink(paymentData);
+         return data.getCheckoutUrl();
+@@ -54,7 +54,7 @@
+ 
+ 
+     public PaymentLinkData cancelOrder(long orderId, String cancellationReason ) throws Exception {
+-            PaymentLinkData order = payOS.cancelPaymentLink(orderId, null);
++            PaymentLinkData order = payOS.cancelPaymentLink(orderId, cancellationReason);
+             return order;
+     }
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/IEmailService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service;\r\n\r\nimport com.sba301.metro_system.record.MailBody;\r\n\r\npublic interface IEmailService {\r\n    public void sendOTP(MailBody body);\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/IEmailService.java b/metro-system/src/main/java/com/sba301/metro_system/service/IEmailService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/IEmailService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/IEmailService.java	(date 1750259933192)
+@@ -4,4 +4,5 @@
+ 
+ public interface IEmailService {
+     public void sendOTP(MailBody body);
++    void sendEmail(MailBody body);
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/controller/PaymentController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.controller;\n\nimport com.sba301.metro_system.dto.ResponseApi;\nimport com.sba301.metro_system.dto.request.PaymentRequestDto;\nimport com.sba301.metro_system.service.implement.PaymentService;\nimport lombok.RequiredArgsConstructor;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\n\n@RestController\n@RequestMapping(\"/payment\")\n@RequiredArgsConstructor\npublic class PaymentController {\n\n    private final PaymentService paymentService;\n\n    @PostMapping\n    public ResponseApi<?> createPayment(@RequestBody PaymentRequestDto paymentRequestDto) throws Exception {\n        return ResponseApi\n                .builder()\n                .status(HttpStatus.CREATED.value())\n                .message(HttpStatus.CREATED.getReasonPhrase())\n                .data(paymentService.createCheckout(paymentRequestDto))\n                .build();\n    }\n\n    @PutMapping(\"/{id}\")\n    public ResponseApi<?> cancelPayment(@PathVariable(\"orderId\") long orderId, String cancellationReason) throws Exception {\n        return ResponseApi\n                .builder()\n                .status(HttpStatus.OK.value())\n                .message(HttpStatus.OK.getReasonPhrase())\n                .data(paymentService.cancelOrder(orderId, cancellationReason))\n                .build();\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/controller/PaymentController.java b/metro-system/src/main/java/com/sba301/metro_system/controller/PaymentController.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/controller/PaymentController.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/controller/PaymentController.java	(date 1750259933174)
+@@ -1,7 +1,7 @@
+ package com.sba301.metro_system.controller;
+ 
+ import com.sba301.metro_system.dto.ResponseApi;
+-import com.sba301.metro_system.dto.request.PaymentRequestDto;
++import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
+ import com.sba301.metro_system.service.implement.PaymentService;
+ import lombok.RequiredArgsConstructor;
+ import org.springframework.http.HttpStatus;
+@@ -25,7 +25,8 @@
+     }
+ 
+     @PutMapping("/{id}")
+-    public ResponseApi<?> cancelPayment(@PathVariable("orderId") long orderId, String cancellationReason) throws Exception {
++    public ResponseApi<?> cancelPayment(@PathVariable("id") long orderId, String cancellationReason) throws Exception {
++        System.out.println();
+         return ResponseApi
+                 .builder()
+                 .status(HttpStatus.OK.value())
+Index: metro-system/src/main/java/com/sba301/metro_system/controller/TicketTypeController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.controller;\nimport com.sba301.metro_system.dto.ResponseApi;\n\nimport com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;\nimport com.sba301.metro_system.service.ITicketTypeService;\nimport com.sba301.metro_system.service.implement.TicketTypeService;\nimport io.swagger.v3.oas.annotations.tags.Tag;\nimport jakarta.validation.Valid;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.web.bind.annotation.*;\nimport lombok.RequiredArgsConstructor;\n\n@RestController\n@RequestMapping(\"/ticket-types\")\n@RequiredArgsConstructor\n@Tag(name = \"TicketType\")\npublic class TicketTypeController {\n\n    private final ITicketTypeService ticketTypeService;\n\n    @GetMapping(\"/{id}\")\n    public ResponseApi<?> getTicketTypeById(@PathVariable long id) {\n        return ResponseApi.builder()\n                .status(HttpStatus.OK.value())\n                .message(HttpStatus.OK.getReasonPhrase())\n                .data(ticketTypeService.findById(id))\n                .build();\n    }\n\n    @GetMapping\n    public ResponseApi<?> getAllTicketTypes() {\n        return ResponseApi.builder()\n                .status(HttpStatus.OK.value())\n                .message(HttpStatus.OK.getReasonPhrase())\n                .data(ticketTypeService.findAll())\n                .build();\n    }\n\n    @PostMapping\n    @ResponseStatus(HttpStatus.CREATED)\n    public ResponseApi<?> createTicketType(@Valid @RequestBody TicketTypeDto ticketTypeDto) {\n        return ResponseApi.builder()\n                .status(HttpStatus.CREATED.value())\n                .message(HttpStatus.CREATED.getReasonPhrase())\n                .data(ticketTypeService.createTicketType(ticketTypeDto))\n                .build();\n    }\n\n    @PatchMapping(\"/{id}\")\n    public ResponseApi<?>  updateTicketType( @PathVariable long id, @RequestBody TicketTypeDto ticketTypeDto) {\n        return ResponseApi.builder()\n                .status(HttpStatus.OK.value())\n                .message(HttpStatus.OK.getReasonPhrase())\n                .data(ticketTypeService.updateTicketType(id, ticketTypeDto))\n                .build();\n    }\n\n    @DeleteMapping(\"/{id}\")\n    public ResponseApi<?> deleteTicketType(@PathVariable long id) {\n        ticketTypeService.deleteTicketType(id);\n        return ResponseApi.builder()\n                .status(HttpStatus.OK.value())\n                .message(\"Ticket type deleted successfully\")\n                .data(null)\n                .build();\n    }\n\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/controller/TicketTypeController.java b/metro-system/src/main/java/com/sba301/metro_system/controller/TicketTypeController.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/controller/TicketTypeController.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/controller/TicketTypeController.java	(date 1750259933176)
+@@ -65,5 +65,14 @@
+                 .build();
+     }
+ 
++    @GetMapping("/unlimit")
++    public ResponseApi<?> getUnlimitTicketTypes() {
++        return ResponseApi.builder()
++                .status(HttpStatus.OK.value())
++                .message("Ticket type deleted successfully")
++                .data(ticketTypeService.findAllUnlimitTicketTypes())
++                .build();
++    }
++
+ 
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/repository/TicketTypeRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.repository;\n\nimport com.sba301.metro_system.entity.TicketType;\nimport org.springframework.data.jpa.repository.JpaRepository;\n\nimport java.util.List;\n\npublic interface TicketTypeRepository extends JpaRepository<TicketType, Long> {\n    List<TicketType> findAllByTicketTypeIdIn(List<Long> ids );\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/repository/TicketTypeRepository.java b/metro-system/src/main/java/com/sba301/metro_system/repository/TicketTypeRepository.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/repository/TicketTypeRepository.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/repository/TicketTypeRepository.java	(date 1750259933191)
+@@ -7,4 +7,5 @@
+ 
+ public interface TicketTypeRepository extends JpaRepository<TicketType, Long> {
+     List<TicketType> findAllByTicketTypeIdIn(List<Long> ids );
++    List<TicketType> findAllByUsageLimit(Boolean usageLimit);
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/repository/PromotionRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.repository;\n\nimport com.sba301.metro_system.entity.Promotion;\nimport com.sba301.metro_system.enums.Status;\nimport org.springframework.data.jpa.repository.JpaRepository;\nimport org.springframework.data.jpa.repository.Query;\nimport org.springframework.data.repository.query.Param;\n\nimport java.util.List;\nimport java.util.Optional;\n\npublic interface PromotionRepository extends JpaRepository<Promotion, Long> {\n    Optional<Promotion> findPromotionByPromotionIdAndStatus(Long id, Status status);\n\n//    @Query(value = \"\"\"\n//    SELECT DISTINCT p.*\n//    FROM promotion p\n//    JOIN ticket_type_promotion ttp ON p.promotion_id = ttp.promotion_id\n//    WHERE p.status = 'ACTIVE'\n//    AND ttp.ticket_type_id IN (:ticketTypeId)\n//    AND NOW() BETWEEN p.from_date AND p.to_date\n//\"\"\", nativeQuery = true)\n//    List<Promotion> findActivePromotionsByTicketTypeIds(@Param(\"ticketTypeId\") long ticketTypeId);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/repository/PromotionRepository.java b/metro-system/src/main/java/com/sba301/metro_system/repository/PromotionRepository.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/repository/PromotionRepository.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/repository/PromotionRepository.java	(date 1750259933190)
+@@ -11,14 +11,5 @@
+ 
+ public interface PromotionRepository extends JpaRepository<Promotion, Long> {
+     Optional<Promotion> findPromotionByPromotionIdAndStatus(Long id, Status status);
+-
+-//    @Query(value = """
+-//    SELECT DISTINCT p.*
+-//    FROM promotion p
+-//    JOIN ticket_type_promotion ttp ON p.promotion_id = ttp.promotion_id
+-//    WHERE p.status = 'ACTIVE'
+-//    AND ttp.ticket_type_id IN (:ticketTypeId)
+-//    AND NOW() BETWEEN p.from_date AND p.to_date
+-//""", nativeQuery = true)
+-//    List<Promotion> findActivePromotionsByTicketTypeIds(@Param("ticketTypeId") long ticketTypeId);
++    Optional<Promotion> findPromotionByPromotionCodeAndStatus(String promotionCode, Status status);
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/EmailService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service.implement;\r\n\r\nimport com.sba301.metro_system.record.MailBody;\r\nimport com.sba301.metro_system.service.IEmailService;\r\nimport jakarta.mail.MessagingException;\r\nimport jakarta.mail.internet.MimeMessage;\r\nimport lombok.RequiredArgsConstructor;\r\nimport org.springframework.beans.factory.annotation.Value;\r\nimport org.springframework.mail.javamail.JavaMailSender;\r\nimport org.springframework.mail.javamail.MimeMessageHelper;\r\nimport org.springframework.stereotype.Service;\r\n\r\n@Service\r\n@RequiredArgsConstructor\r\npublic class EmailService implements IEmailService {\r\n    private final JavaMailSender mailSender;\r\n\r\n    @Value(\"${spring.mail.username}\")\r\n    private String fromEmail;\r\n\r\n    @Value(\"${metro.forum.email.footer}\")\r\n    private String emailFooter;\r\n\r\n    @Override\r\n    public void sendOTP(MailBody mailBody) {\r\n        try {\r\n            MimeMessage mimeMessage = mailSender.createMimeMessage();\r\n            MimeMessageHelper helper = new MimeMessageHelper(mimeMessage, true, \"UTF-8\");\r\n\r\n            helper.setFrom(fromEmail);\r\n            helper.setTo(mailBody.to());\r\n            helper.setSubject(mailBody.subject());\r\n            helper.setText(buildEmailContent(mailBody.text()), true);\r\n\r\n            mailSender.send(mimeMessage);\r\n        } catch (MessagingException e) {\r\n            throw new IllegalStateException(\"Failed to send email to \" + mailBody.to() + \": \" + e.getMessage());\r\n        }\r\n    }\r\n\r\n    public String buildEmailContent(String text) {\r\n        StringBuilder emailContent = new StringBuilder();\r\n        emailContent.append(\"\"\"\r\n            <!DOCTYPE html>\r\n            <html lang=\"en\">\r\n            <head>\r\n                <meta charset=\"UTF-8\">\r\n                <meta name=\"viewport\" content=\"width=device-width, initial-scale=1.0\">\r\n                <title>Metro SG Email</title>\r\n            </head>\r\n            <body style=\"font-family: 'Helvetica Neue', Arial, sans-serif; color: #333333; margin: 0; padding: 0; background-color: #f4f4f4;\">\r\n                <div style=\"max-width: 600px; margin: 20px auto; padding: 20px; background: linear-gradient(135deg, #ffffff, #f9f9f9); border-radius: 10px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);\">\r\n                    <div style=\"text-align: center; padding-bottom: 20px;\">\r\n                        <h2 style=\"color: #2c6e49; font-size: 24px; margin: 0; font-weight: 600;\">Metro SG</h2>\r\n                    </div>\r\n                    <div style=\"font-size: 16px; line-height: 1.6; color: #444444; padding: 0 15px;\">\r\n                        %s\r\n                    </div>\r\n                    <hr style=\"border: 0; border-top: 1px solid #dddddd; margin: 20px 0;\">\r\n                    <div style=\"font-size: 12px; color: #777777; text-align: center; line-height: 1.4;\">\r\n                        %s\r\n                    </div>\r\n                </div>\r\n            </body>\r\n            </html>\r\n            \"\"\".formatted(text, emailFooter));\r\n\r\n        return emailContent.toString();\r\n    }\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/EmailService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/EmailService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/implement/EmailService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/EmailService.java	(date 1750259933198)
+@@ -38,6 +38,11 @@
+         }
+     }
+ 
++    @Override
++    public void sendEmail(MailBody body) {
++
++    }
++
+     public String buildEmailContent(String text) {
+         StringBuilder emailContent = new StringBuilder();
+         emailContent.append("""
+@@ -67,4 +72,8 @@
+ 
+         return emailContent.toString();
+     }
++
++
++
++
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/MetroSystemApplication.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system;\n\nimport org.springframework.boot.SpringApplication;\nimport org.springframework.boot.autoconfigure.SpringBootApplication;\n\n@SpringBootApplication\npublic class MetroSystemApplication {\n\n\tpublic static void main(String[] args) {\n\t\tSpringApplication.run(MetroSystemApplication.class, args);\n\t}\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/MetroSystemApplication.java b/metro-system/src/main/java/com/sba301/metro_system/MetroSystemApplication.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/MetroSystemApplication.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/MetroSystemApplication.java	(date 1750259933173)
+@@ -2,8 +2,10 @@
+ 
+ import org.springframework.boot.SpringApplication;
+ import org.springframework.boot.autoconfigure.SpringBootApplication;
++import org.springframework.transaction.annotation.EnableTransactionManagement;
+ 
+ @SpringBootApplication
++@EnableTransactionManagement
+ public class MetroSystemApplication {
+ 
+ 	public static void main(String[] args) {
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketTypeService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service.implement;\n\nimport com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;\nimport com.sba301.metro_system.entity.TicketType;\nimport com.sba301.metro_system.enums.Status;\nimport com.sba301.metro_system.exception.NotFoundException;\nimport com.sba301.metro_system.repository.TicketTypeRepository;\nimport com.sba301.metro_system.service.ITicketTypeService;\nimport jakarta.persistence.Id;\nimport lombok.RequiredArgsConstructor;\nimport org.springframework.stereotype.Service;\n\nimport java.util.List;\n\n@Service\n@RequiredArgsConstructor\npublic class TicketTypeService implements ITicketTypeService {\n    private final TicketTypeRepository ticketTypeRepository;\n\n\n    @Override\n    public TicketType findById(long id) {\n        return ticketTypeRepository.findById(id).orElseThrow(() -> new NotFoundException(\"Ticket type not found\")  );\n    }\n\n    @Override\n    public List<TicketType> findAll() {\n        return ticketTypeRepository.findAll();\n    }\n\n    @Override\n    public List<TicketType> findAllByTicketTypeId(List<Long> ids) {\n        return ticketTypeRepository.findAllByTicketTypeIdIn(ids);\n    }\n\n    @Override\n    public TicketType createTicketType(TicketTypeDto ticketType) {\n        TicketType newType = new TicketType();\n        newType.setTicketName(ticketType.getTicketName());\n        newType.setDescription(ticketType.getDescription());\n        newType.setValidityDays(ticketType.getValidityDays());\n        newType.setUsageLimit(ticketType.getUsageLimit());\n        newType.setStatus(ticketType.getStatus());\n        return ticketTypeRepository.save(newType);\n    }\n\n    @Override\n    public void deleteTicketType(long id) {\n        TicketType ticketType = findById(id);\n        ticketType.setStatus(Status.INACTIVE);\n        ticketTypeRepository.save(ticketType);\n    }\n\n    @Override\n    public TicketType updateTicketType(long id, TicketTypeDto ticketTypeDto) {\n        TicketType ticketType = findById(id);\n        if (ticketTypeDto.getTicketName() != null && !ticketTypeDto.getTicketName().trim().isEmpty()) {\n            ticketType.setTicketName(ticketTypeDto.getTicketName());\n        }\n\n        if (ticketTypeDto.getDescription() != null && !ticketTypeDto.getDescription().trim().isEmpty()) {\n            ticketType.setDescription(ticketTypeDto.getDescription());\n        }\n\n        if (ticketTypeDto.getValidityDays() != null) {\n            ticketType.setValidityDays(ticketTypeDto.getValidityDays());\n        }\n        if (ticketTypeDto.getUsageLimit() != null) {\n            ticketType.setUsageLimit(ticketTypeDto.getUsageLimit());\n        }\n\n        if (ticketTypeDto.getStatus() != null) {\n            ticketType.setStatus(ticketTypeDto.getStatus());\n        }\n\n        // Sau khi cập nhật, lưu lại nếu cần (giả sử bạn dùng JPA)\n        return ticketTypeRepository.save(ticketType);\n    }\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketTypeService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketTypeService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketTypeService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketTypeService.java	(date 1750259933202)
+@@ -8,6 +8,7 @@
+ import com.sba301.metro_system.service.ITicketTypeService;
+ import jakarta.persistence.Id;
+ import lombok.RequiredArgsConstructor;
++import org.springframework.data.redis.core.RedisTemplate;
+ import org.springframework.stereotype.Service;
+ 
+ import java.util.List;
+@@ -18,9 +19,10 @@
+     private final TicketTypeRepository ticketTypeRepository;
+ 
+ 
++
+     @Override
+     public TicketType findById(long id) {
+-        return ticketTypeRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket type not found")  );
++        return ticketTypeRepository.findById(id).orElseThrow(() -> new NotFoundException("Ticket type not found"));
+     }
+ 
+     @Override
+@@ -73,7 +75,12 @@
+             ticketType.setStatus(ticketTypeDto.getStatus());
+         }
+ 
+-        // Sau khi cập nhật, lưu lại nếu cần (giả sử bạn dùng JPA)
++
+         return ticketTypeRepository.save(ticketType);
+     }
++
++    @Override
++    public List<TicketType> findAllUnlimitTicketTypes() {
++        return ticketTypeRepository.findAllByUsageLimit(false);
++    }
+ }
+Index: .idea/compiler.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n<project version=\"4\">\r\n  <component name=\"CompilerConfiguration\">\r\n    <annotationProcessing>\r\n      <profile default=\"true\" name=\"Default\" enabled=\"true\" />\r\n      <profile name=\"Annotation profile for metro-system\" enabled=\"true\">\r\n        <sourceOutputDir name=\"target/generated-sources/annotations\" />\r\n        <sourceTestOutputDir name=\"target/generated-test-sources/test-annotations\" />\r\n        <outputRelativeToContentRoot value=\"true\" />\r\n        <processorPath useClasspath=\"false\">\r\n          <entry name=\"$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar\" />\r\n        </processorPath>\r\n        <module name=\"metro-system\" />\r\n      </profile>\r\n    </annotationProcessing>\r\n  </component>\r\n  <component name=\"JavacSettings\">\r\n    <option name=\"ADDITIONAL_OPTIONS_OVERRIDE\">\r\n      <module name=\"metro-system\" options=\"-parameters\" />\r\n    </option>\r\n  </component>\r\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/compiler.xml b/.idea/compiler.xml
+--- a/.idea/compiler.xml	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/.idea/compiler.xml	(date 1750259978201)
+@@ -9,6 +9,8 @@
+         <outputRelativeToContentRoot value="true" />
+         <processorPath useClasspath="false">
+           <entry name="$MAVEN_REPOSITORY$/org/projectlombok/lombok/1.18.38/lombok-1.18.38.jar" />
++          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct-processor/1.5.5.Final/mapstruct-processor-1.5.5.Final.jar" />
++          <entry name="$MAVEN_REPOSITORY$/org/mapstruct/mapstruct/1.5.5.Final/mapstruct-1.5.5.Final.jar" />
+         </processorPath>
+         <module name="metro-system" />
+       </profile>
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/PromotionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service.implement;\n\nimport com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;\nimport com.sba301.metro_system.dto.response.TicketTypeResponseDto;\nimport com.sba301.metro_system.entity.Promotion;\nimport com.sba301.metro_system.entity.TicketType;\nimport com.sba301.metro_system.enums.Status;\nimport com.sba301.metro_system.exception.NotFoundException;\nimport com.sba301.metro_system.repository.PromotionRepository;\nimport com.sba301.metro_system.service.IPromotionService;\nimport com.sba301.metro_system.utils.Utils;\nimport lombok.RequiredArgsConstructor;\nimport org.apache.coyote.BadRequestException;\nimport org.springframework.data.domain.Page;\nimport org.springframework.data.domain.PageRequest;\nimport org.springframework.data.domain.Pageable;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.stereotype.Service;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.server.ResponseStatusException;\n\nimport java.time.LocalDateTime;\nimport java.util.List;\nimport java.util.NoSuchElementException;\nimport java.util.Optional;\n\n\n\n@Service\n@RequiredArgsConstructor\npublic class PromotionService implements IPromotionService {\n    private final PromotionRepository promotionRepository;\n    private final TicketTypeService ticketTypeService;\n\n\n    @Override\n    public Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException {\n        Promotion promotion = new Promotion();\n\n        promotion.setPromotionCode(promotionRequestDto.getPromotionCode());\n        promotion.setPromotionName(promotionRequestDto.getPromotionName());\n        promotion.setPromotionDiscount(promotionRequestDto.getPromotionDiscount());\n\n        if (isValidDate(promotionRequestDto.getFromDate(), promotionRequestDto.getToDate())) {\n            promotion.setFromDate(promotionRequestDto.getFromDate());\n            promotion.setToDate(promotionRequestDto.getToDate());\n        }\n\n        promotion.setStatus(promotionRequestDto.getStatus());\n        if (promotionRequestDto.getTicketTypeId() != null) {\n            TicketType ticketType = ticketTypeService.findById(promotionRequestDto.getTicketTypeId());\n            promotion.setTicketType(ticketType);\n        }\n        promotionRepository.save(promotion);\n\n        return promotion;\n    }\n\n    public boolean isValidDate(LocalDateTime fromDate, LocalDateTime toDate) throws BadRequestException {\n        LocalDateTime now = LocalDateTime.now();\n        if (fromDate.isBefore(now) || toDate.isBefore(now)) {\n            throw new BadRequestException(\"Start date or end date should be greater than now\");\n        }\n        if (fromDate.isAfter(toDate)) {\n            throw new BadRequestException(\"Start date cannot be greater than end date\");\n        }\n        return true;\n    }\n\n    @Override\n    public Page<Promotion> findAll(int page, int size) {\n        Pageable pageable = PageRequest.of(page, size);\n        return promotionRepository.findAll(pageable);\n    }\n\n    @Override\n    public Promotion findById(long id) {\n        return promotionRepository.findById(id)\n                .orElseThrow(() -> new NotFoundException(\"Promotion not found\"));\n    }\n\n    @Override\n    public Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException {\n        Promotion existPromotion = promotionRepository.findById(id)\n                .orElseThrow(() -> new NotFoundException(\"Promotion not found\"));\n\n        if (Utils.validateString(promotionRequestDto.getPromotionName())) {\n            existPromotion.setPromotionName(promotionRequestDto.getPromotionName());\n        }\n\n        if (Utils.validateString(promotionRequestDto.getPromotionCode())) {\n            existPromotion.setPromotionCode(promotionRequestDto.getPromotionCode());\n        }\n\n        if (promotionRequestDto.getPromotionDiscount() != null && promotionRequestDto.getPromotionDiscount().intValue() > 0 ) {\n            existPromotion.setPromotionDiscount(promotionRequestDto.getPromotionDiscount());\n        }\n\n        if (isValidDate(promotionRequestDto.getFromDate(), promotionRequestDto.getToDate())) {\n            existPromotion.setFromDate(promotionRequestDto.getFromDate());\n            existPromotion.setToDate(promotionRequestDto.getToDate());\n        }\n\n        Utils.updateIfNotEqual(promotionRequestDto.getStatus(), existPromotion.getStatus(),\n                existPromotion::setStatus);\n\n        if (promotionRequestDto.getTicketTypeId() != null ) {\n            existPromotion.setTicketType(ticketTypeService.findById(promotionRequestDto.getTicketTypeId()));\n        }\n\n        return promotionRepository.save(existPromotion);\n\n    }\n\n    @Override\n    public void deletePromotion(long id) {\n        Promotion existPromotion = promotionRepository.findPromotionByPromotionIdAndStatus(id, Status.ACTIVE)\n                .orElseThrow(() -> new NotFoundException(\"Promotion not found\"));\n        existPromotion.setStatus(Status.INACTIVE);\n        promotionRepository.save(existPromotion);\n    }\n\n    @Override\n    public List<Promotion> findAvailablePromotions(long ticketTypeId) {\n        return null;\n    }\n\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/PromotionService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/PromotionService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/implement/PromotionService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/PromotionService.java	(date 1750259933199)
+@@ -125,5 +125,12 @@
+         return null;
+     }
+ 
++    @Override
++    public Promotion findByCode(String promotionCode) {
++        return promotionRepository.findPromotionByPromotionCodeAndStatus(promotionCode, Status.ACTIVE)
++                .orElseThrow(() -> new NotFoundException("Promotion not found"));
++
++    }
++
+ 
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/dto/request/tickettype/TicketTypeDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.dto.request.tickettype;\n\nimport com.sba301.metro_system.enums.Status;\nimport io.swagger.v3.oas.annotations.media.Schema;\nimport jakarta.validation.constraints.Min;\nimport jakarta.validation.constraints.NotBlank;\nimport jakarta.validation.constraints.NotNull;\nimport jakarta.validation.constraints.Size;\nimport lombok.Data;\n\n@Data\npublic class TicketTypeDto {\n\n\n    @Schema(example = \"Vé tháng\")\n    @NotBlank(message = \"Ticket name should not be blank\")\n    private String ticketName;\n\n    @Schema(example = \"30\")\n    @NotNull(message = \"Validity days must be provided\")\n    @Min(value = 1, message = \"Validity days must be at least 1\")\n    private Integer validityDays;\n\n    @Schema(example = \"Vé dùng trong tháng\")\n    @Size(max = 255, message = \"Description can't exceed 255 characters\")\n    private String description;\n\n    @Schema(example = \"False\")\n    @NotNull(message = \"Usage limit flag must be provided\")\n    private Boolean usageLimit;\n\n    @Schema(example = \"ACTIVE\")\n    @NotNull(message = \"Status must be provided\")\n    private Status status;\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/dto/request/tickettype/TicketTypeDto.java b/metro-system/src/main/java/com/sba301/metro_system/dto/request/tickettype/TicketTypeDto.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/dto/request/tickettype/TicketTypeDto.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/dto/request/tickettype/TicketTypeDto.java	(date 1750259933179)
+@@ -18,7 +18,7 @@
+ 
+     @Schema(example = "30")
+     @NotNull(message = "Validity days must be provided")
+-    @Min(value = 1, message = "Validity days must be at least 1")
++    @Min(value = 0, message = "Validity days must be at least 0")
+     private Integer validityDays;
+ 
+     @Schema(example = "Vé dùng trong tháng")
+Index: metro-system/src/main/java/com/sba301/metro_system/enums/PaymentMethod.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.enums;\r\n\r\npublic enum PaymentMethod {\r\n    CREDIT,\r\n    VNPAY\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/enums/PaymentMethod.java b/metro-system/src/main/java/com/sba301/metro_system/enums/PaymentMethod.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/enums/PaymentMethod.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/enums/PaymentMethod.java	(date 1750259933184)
+@@ -2,5 +2,6 @@
+ 
+ public enum PaymentMethod {
+     CREDIT,
+-    VNPAY
++    VNPAY,
++    PAYOS
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/enums/TicketStatus.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.enums;\r\n\r\npublic enum TicketStatus {\r\n    ACTIVE,\r\n    EXPIRED,\r\n    CANCELLED\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/enums/TicketStatus.java b/metro-system/src/main/java/com/sba301/metro_system/enums/TicketStatus.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/enums/TicketStatus.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/enums/TicketStatus.java	(date 1750259933185)
+@@ -3,5 +3,8 @@
+ public enum TicketStatus {
+     ACTIVE,
+     EXPIRED,
+-    CANCELLED
++    CANCELLED,
++    UNUSED,
++    PENDING,
++
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/dto/request/PaymentRequestDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/dto/request/PaymentRequestDto.java b/metro-system/src/main/java/com/sba301/metro_system/dto/request/payment/PaymentRequestDto.java
+rename from metro-system/src/main/java/com/sba301/metro_system/dto/request/PaymentRequestDto.java
+rename to metro-system/src/main/java/com/sba301/metro_system/dto/request/payment/PaymentRequestDto.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/dto/request/PaymentRequestDto.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/dto/request/payment/PaymentRequestDto.java	(date 1750259933178)
+@@ -1,4 +1,4 @@
+-package com.sba301.metro_system.dto.request;
++package com.sba301.metro_system.dto.request.payment;
+ 
+ import lombok.Data;
+ 
+@@ -6,9 +6,7 @@
+ public class PaymentRequestDto {
+     private String productName;
+     private String description;
+-    private String returnUrl;
+-    private String cancelUrl;
+-    private long price;
++    private double price;
+     private int quantity;
+ 
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/dto/request/transaction/TransactionRequestDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/dto/request/transaction/TransactionRequestDto.java b/metro-system/src/main/java/com/sba301/metro_system/dto/request/transaction/TransactionRequestDto.java
+new file mode 100644
+--- /dev/null	(date 1750259933179)
++++ b/metro-system/src/main/java/com/sba301/metro_system/dto/request/transaction/TransactionRequestDto.java	(date 1750259933179)
+@@ -0,0 +1,18 @@
++package com.sba301.metro_system.dto.request.transaction;
++
++import com.sba301.metro_system.entity.Account;
++import com.sba301.metro_system.entity.Ticket;
++import com.sba301.metro_system.enums.PaymentMethod;
++import com.sba301.metro_system.enums.TransactionStatus;
++import jakarta.persistence.*;
++import lombok.Data;
++
++import java.time.LocalDateTime;
++
++@Data
++public class TransactionRequestDto {
++    private long ticketId;
++    private PaymentMethod paymentMethod;
++    private TransactionStatus transactionStatus;
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/dto/request/ticket/TicketRequestDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/dto/request/ticket/TicketRequestDto.java b/metro-system/src/main/java/com/sba301/metro_system/dto/request/ticket/TicketRequestDto.java
+new file mode 100644
+--- /dev/null	(date 1750259933178)
++++ b/metro-system/src/main/java/com/sba301/metro_system/dto/request/ticket/TicketRequestDto.java	(date 1750259933178)
+@@ -0,0 +1,14 @@
++package com.sba301.metro_system.dto.request.ticket;
++
++import lombok.Data;
++
++@Data
++public class TicketRequestDto {
++
++    private long departureStation;
++    private long arrivalStation;
++    private long routeId;
++    private long ticketTypeId;
++    private String promotionCode;
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/entity/Route.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.entity;\r\n\r\nimport jakarta.persistence.*;\r\nimport lombok.Data;\r\nimport java.math.BigDecimal;\r\n\r\n@Data\r\n@Entity\r\n@Table(name = \"route\")\r\npublic class Route {\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n    private Long routeId;\r\n\r\n    @Column(unique = true)\r\n    private String routeName;\r\n    \r\n    private String routeDescription;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"rule_id\")\r\n    private TicketRule ticketRule;\r\n    \r\n    private BigDecimal totalDistance;\r\n    private Integer estimatedDuration;\r\n    private Integer frequencyMinutes;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/entity/Route.java b/metro-system/src/main/java/com/sba301/metro_system/entity/Route.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/entity/Route.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/entity/Route.java	(date 1750259933181)
+@@ -17,9 +17,9 @@
+     
+     private String routeDescription;
+ 
+-    @ManyToOne
+-    @JoinColumn(name = "rule_id")
+-    private TicketRule ticketRule;
++//    @ManyToOne
++//    @JoinColumn(name = "rule_id")
++//    private TicketRule ticketRule;
+     
+     private BigDecimal totalDistance;
+     private Integer estimatedDuration;
+Index: metro-system/src/main/java/com/sba301/metro_system/entity/RouteRule.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.entity;\r\n\r\nimport jakarta.persistence.*;\r\nimport lombok.Data;\r\n\r\n@Data\r\n@Entity\r\n@Table(name = \"route_rule\")\r\npublic class RouteRule {\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n    private Long routeRuleId;\r\n\r\n    @ManyToOne\r\n    @JoinColumn(name = \"route_id\")\r\n    private Route route;\r\n    @ManyToOne\r\n    @JoinColumn(name = \"rule_id\")\r\n    private TicketRule ticketRule;\r\n    \r\n    private String type;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/entity/RouteRule.java b/metro-system/src/main/java/com/sba301/metro_system/entity/RouteRule.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/entity/RouteRule.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/entity/RouteRule.java	(date 1750259933182)
+@@ -14,6 +14,7 @@
+     @ManyToOne
+     @JoinColumn(name = "route_id")
+     private Route route;
++
+     @ManyToOne
+     @JoinColumn(name = "rule_id")
+     private TicketRule ticketRule;
+Index: metro-system/src/main/java/com/sba301/metro_system/controller/RouteRuleController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/controller/RouteRuleController.java b/metro-system/src/main/java/com/sba301/metro_system/controller/RouteRuleController.java
+new file mode 100644
+--- /dev/null	(date 1750259933175)
++++ b/metro-system/src/main/java/com/sba301/metro_system/controller/RouteRuleController.java	(date 1750259933175)
+@@ -0,0 +1,31 @@
++package com.sba301.metro_system.controller;
++
++import com.sba301.metro_system.dto.ResponseApi;
++import com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;
++import com.sba301.metro_system.service.implement.RouteRuleService;
++import io.swagger.v3.oas.annotations.tags.Tag;
++import jakarta.validation.Valid;
++import lombok.RequiredArgsConstructor;
++import org.apache.coyote.BadRequestException;
++import org.springframework.http.HttpStatus;
++import org.springframework.web.bind.annotation.*;
++
++@RestController
++@RequiredArgsConstructor
++@RequestMapping("/rules")
++@Tag(name = "Route Rule")
++public class RouteRuleController {
++    private final RouteRuleService routeRuleService;
++
++    @GetMapping("/detail")
++    public ResponseApi<?> createPromotion(@RequestParam(name = "routeId") long routeId,
++                                          @RequestParam(name = "ticketType") String ticketType) {
++        return ResponseApi
++                .builder()
++                .status(HttpStatus.OK.value())
++                .message(HttpStatus.OK.getReasonPhrase())
++                .data(routeRuleService.findByRouteIdAndType(routeId, ticketType))
++                .build();
++    }
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/controller/TicketController.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/controller/TicketController.java b/metro-system/src/main/java/com/sba301/metro_system/controller/TicketController.java
+new file mode 100644
+--- /dev/null	(date 1750259933176)
++++ b/metro-system/src/main/java/com/sba301/metro_system/controller/TicketController.java	(date 1750259933176)
+@@ -0,0 +1,60 @@
++package com.sba301.metro_system.controller;
++
++import com.sba301.metro_system.dto.ResponseApi;
++import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
++import com.sba301.metro_system.service.implement.TicketService;
++import io.swagger.v3.oas.annotations.tags.Tag;
++import jakarta.validation.Valid;
++import lombok.RequiredArgsConstructor;
++import org.springframework.http.HttpStatus;
++import org.springframework.web.bind.annotation.*;
++
++@RestController
++@RequestMapping("/tickets")
++@RequiredArgsConstructor
++@Tag(name = "Ticket")
++public class TicketController {
++    private final TicketService ticketService;
++
++    @PostMapping("unlimit")
++    public ResponseApi<?> buyUnlimitTicket(@Valid @RequestBody TicketRequestDto ticket) throws Exception {
++        return ResponseApi.builder()
++                .status(HttpStatus.OK.value())
++                .message(HttpStatus.OK.getReasonPhrase())
++                .data(ticketService.buyUnlimitTicket(ticket))
++                .build();
++    }
++
++    @GetMapping("{id}")
++    public ResponseApi<?> getTicketDetails(@PathVariable long id)  {
++        return ResponseApi.builder()
++                .status(HttpStatus.OK.value())
++                .message(HttpStatus.OK.getReasonPhrase())
++                .data(ticketService.getTicketDetails(id))
++                .build();
++
++    }
++
++    @PutMapping("/success/{id}")
++    public ResponseApi<?> updateSuccesStatus(@PathVariable long id)  {
++        ticketService.paymentTicketSuccess(id);
++        return ResponseApi.builder()
++                .status(HttpStatus.OK.value())
++                .message(HttpStatus.OK.getReasonPhrase())
++                .build();
++
++    }
++
++    @PutMapping("/failed/{id}")
++    public ResponseApi<?> updateFailedStatus(@PathVariable long id)  {
++        System.out.println("updateFailedStatus");
++        ticketService.paymentTicketFail(id);
++        return ResponseApi.builder()
++                .status(HttpStatus.OK.value())
++                .message(HttpStatus.OK.getReasonPhrase())
++                .build();
++
++    }
++
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/utils/AccountHelper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/utils/AccountHelper.java b/metro-system/src/main/java/com/sba301/metro_system/utils/AccountHelper.java
+new file mode 100644
+--- /dev/null	(date 1750259933203)
++++ b/metro-system/src/main/java/com/sba301/metro_system/utils/AccountHelper.java	(date 1750259933203)
+@@ -0,0 +1,13 @@
++package com.sba301.metro_system.utils;
++
++import com.sba301.metro_system.entity.Account;
++import com.sba301.metro_system.entity.UserPrinciple;
++import org.springframework.security.core.Authentication;
++import org.springframework.security.core.context.SecurityContextHolder;
++
++public class AccountHelper {
++    public static UserPrinciple getCurrentUser() {
++        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
++        return (UserPrinciple) authentication.getPrincipal();
++    }
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/configuration/RedisConfig.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/configuration/RedisConfig.java b/metro-system/src/main/java/com/sba301/metro_system/configuration/RedisConfig.java
+new file mode 100644
+--- /dev/null	(date 1750259933174)
++++ b/metro-system/src/main/java/com/sba301/metro_system/configuration/RedisConfig.java	(date 1750259933174)
+@@ -0,0 +1,32 @@
++package com.sba301.metro_system.configuration;
++
++import org.springframework.beans.factory.annotation.Value;
++import org.springframework.context.annotation.Bean;
++import org.springframework.context.annotation.Configuration;
++import org.springframework.data.redis.connection.RedisConnectionFactory;
++import org.springframework.data.redis.connection.RedisStandaloneConfiguration;
++import org.springframework.data.redis.connection.lettuce.LettuceConnectionFactory;
++import org.springframework.data.redis.core.RedisTemplate;
++
++@Configuration
++public class RedisConfig {
++    @Value("${spring.data.redis.host}")
++    private String redisHost;
++
++    @Value("${spring.data.redis.port}")
++    private int redisPort;
++
++    @Bean
++    public LettuceConnectionFactory redisConnectionFactory() {
++        // Tạo Standalone Connection tới Redis
++        return new LettuceConnectionFactory(new RedisStandaloneConfiguration(redisHost, redisPort));
++    }
++
++    @Bean
++    public RedisTemplate<Object, Object> redisTemplate(RedisConnectionFactory redisConnectionFactory) {
++        RedisTemplate<Object, Object> template = new RedisTemplate<>();
++        template.setConnectionFactory(redisConnectionFactory);
++        return template;
++    }
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/repository/RouteRuleRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/repository/RouteRuleRepository.java b/metro-system/src/main/java/com/sba301/metro_system/repository/RouteRuleRepository.java
+new file mode 100644
+--- /dev/null	(date 1750259933190)
++++ b/metro-system/src/main/java/com/sba301/metro_system/repository/RouteRuleRepository.java	(date 1750259933190)
+@@ -0,0 +1,11 @@
++package com.sba301.metro_system.repository;
++
++import com.sba301.metro_system.entity.RouteRule;
++import org.springframework.data.jpa.repository.JpaRepository;
++import org.springframework.data.jpa.repository.Query;
++
++public interface RouteRuleRepository extends JpaRepository<RouteRule, Long> {
++
++    @Query("SELECT r FROM RouteRule r WHERE r.route.routeId =:routeId AND r.type =:type")
++    RouteRule findRuleByRouteIdAndType(Long routeId, String type);
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/repository/TicketRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/repository/TicketRepository.java b/metro-system/src/main/java/com/sba301/metro_system/repository/TicketRepository.java
+new file mode 100644
+--- /dev/null	(date 1750259933191)
++++ b/metro-system/src/main/java/com/sba301/metro_system/repository/TicketRepository.java	(date 1750259933191)
+@@ -0,0 +1,7 @@
++package com.sba301.metro_system.repository;
++
++import com.sba301.metro_system.entity.Ticket;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++public interface TicketRepository extends JpaRepository<Ticket, Long> {
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/entity/TicketType.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.entity;\r\n\r\nimport com.sba301.metro_system.enums.Status;\r\nimport jakarta.persistence.*;\r\nimport lombok.Data;\r\n\r\n@Data\r\n@Entity\r\n@Table(name = \"ticket_type\")\r\npublic class TicketType {\r\n    @Id\r\n    @GeneratedValue(strategy = GenerationType.IDENTITY)\r\n    private Long ticketTypeId;\r\n\r\n    private String ticketName;\r\n    private Integer validityDays;\r\n    private String description;\r\n    private Boolean usageLimit;\r\n\r\n    @Enumerated(EnumType.STRING)\r\n    private Status status;\r\n}\r\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/entity/TicketType.java b/metro-system/src/main/java/com/sba301/metro_system/entity/TicketType.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/entity/TicketType.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/entity/TicketType.java	(date 1750259933183)
+@@ -12,7 +12,10 @@
+     @GeneratedValue(strategy = GenerationType.IDENTITY)
+     private Long ticketTypeId;
+ 
++    @Column(unique = true, nullable = false)
+     private String ticketName;
++
++    @Column(unique = true, nullable = false)
+     private Integer validityDays;
+     private String description;
+     private Boolean usageLimit;
+Index: metro-system/src/main/java/com/sba301/metro_system/repository/TransactionRepository.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/repository/TransactionRepository.java b/metro-system/src/main/java/com/sba301/metro_system/repository/TransactionRepository.java
+new file mode 100644
+--- /dev/null	(date 1750259933192)
++++ b/metro-system/src/main/java/com/sba301/metro_system/repository/TransactionRepository.java	(date 1750259933192)
+@@ -0,0 +1,7 @@
++package com.sba301.metro_system.repository;
++
++import com.sba301.metro_system.entity.Transaction;
++import org.springframework.data.jpa.repository.JpaRepository;
++
++public interface TransactionRepository extends JpaRepository<Transaction, Long> {
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/exception/UnAuthorized.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/exception/UnAuthorized.java b/metro-system/src/main/java/com/sba301/metro_system/exception/UnAuthorized.java
+new file mode 100644
+--- /dev/null	(date 1750259933187)
++++ b/metro-system/src/main/java/com/sba301/metro_system/exception/UnAuthorized.java	(date 1750259933187)
+@@ -0,0 +1,7 @@
++package com.sba301.metro_system.exception;
++
++public class UnAuthorized extends RuntimeException {
++    public UnAuthorized(String message) {
++        super(message);
++    }
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/dto/response/TicketResponseDto.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/dto/response/TicketResponseDto.java b/metro-system/src/main/java/com/sba301/metro_system/dto/response/TicketResponseDto.java
+new file mode 100644
+--- /dev/null	(date 1750259933180)
++++ b/metro-system/src/main/java/com/sba301/metro_system/dto/response/TicketResponseDto.java	(date 1750259933180)
+@@ -0,0 +1,28 @@
++package com.sba301.metro_system.dto.response;
++
++import com.sba301.metro_system.entity.*;
++import com.sba301.metro_system.enums.TicketStatus;
++import jakarta.persistence.*;
++import lombok.Data;
++
++import java.math.BigDecimal;
++import java.time.LocalDateTime;
++
++@Data
++public class TicketResponseDto {
++
++    private Long ticketId;
++    private String departureStation;
++    private String arrivalStation;
++    private Double oldPrice;
++    private Double newPrice;
++    private LocalDateTime validFrom;
++    private LocalDateTime validTo;
++    private LocalDateTime purchaseTime;
++    private String qrUrl;
++    private TicketStatus ticketStatus;
++    private String ticketName;
++    private String promotionCode;
++    private String routeName;
++    private String urlCheckout;
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/mapper/TicketMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/mapper/TicketMapper.java b/metro-system/src/main/java/com/sba301/metro_system/mapper/TicketMapper.java
+new file mode 100644
+--- /dev/null	(date 1750259933188)
++++ b/metro-system/src/main/java/com/sba301/metro_system/mapper/TicketMapper.java	(date 1750259933188)
+@@ -0,0 +1,52 @@
++package com.sba301.metro_system.mapper;
++
++import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
++import com.sba301.metro_system.dto.response.TicketResponseDto;
++import com.sba301.metro_system.entity.Ticket;
++import org.mapstruct.Mapper;
++import org.mapstruct.factory.Mappers;
++
++
++public class TicketMapper {
++
++    public static TicketResponseDto toTicketResponseDto(Ticket ticket) {
++        TicketResponseDto ticketResponseDto = new TicketResponseDto();
++
++        if (ticket == null) {
++            return ticketResponseDto;
++        }
++
++        ticketResponseDto.setTicketId(ticket.getTicketId());
++
++        if (ticket.getDepartureStation() != null) {
++            ticketResponseDto.setDepartureStation(ticket.getDepartureStation().getStationName());
++        }
++
++        if (ticket.getArrivalStation() != null) {
++            ticketResponseDto.setArrivalStation(ticket.getArrivalStation().getStationName());
++        }
++
++        ticketResponseDto.setOldPrice(ticket.getOldPrice());
++        ticketResponseDto.setNewPrice(ticket.getNewPrice());
++        ticketResponseDto.setValidFrom(ticket.getValidFrom());
++        ticketResponseDto.setValidTo(ticket.getValidTo());
++        ticketResponseDto.setPurchaseTime(ticket.getPurchaseTime());
++        ticketResponseDto.setQrUrl(ticket.getQrUrl());
++        ticketResponseDto.setTicketStatus(ticket.getTicketStatus());
++
++        if (ticket.getPromotion() != null) {
++            ticketResponseDto.setPromotionCode(ticket.getPromotion().getPromotionCode());
++        }
++
++        if (ticket.getRoute() != null) {
++            ticketResponseDto.setRouteName(ticket.getRoute().getRouteName());
++        }
++
++        return ticketResponseDto;
++    }
++
++
++
++
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/mapper/TransactionMapper.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/mapper/TransactionMapper.java b/metro-system/src/main/java/com/sba301/metro_system/mapper/TransactionMapper.java
+new file mode 100644
+--- /dev/null	(date 1750259933188)
++++ b/metro-system/src/main/java/com/sba301/metro_system/mapper/TransactionMapper.java	(date 1750259933188)
+@@ -0,0 +1,16 @@
++package com.sba301.metro_system.mapper;
++
++import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
++import com.sba301.metro_system.entity.Transaction;
++import com.sba301.metro_system.enums.PaymentMethod;
++import com.sba301.metro_system.enums.TransactionStatus;
++
++public class TransactionMapper {
++    public static TransactionRequestDto getTransactionRequestDto(long ticketId, PaymentMethod paymentMethod, TransactionStatus transactionStatus) {
++        TransactionRequestDto transactionRequestDto = new TransactionRequestDto();
++        transactionRequestDto.setTicketId(ticketId);
++        transactionRequestDto.setPaymentMethod(paymentMethod);
++        transactionRequestDto.setTransactionStatus(transactionStatus);
++        return transactionRequestDto;
++    }
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/service/ITicketService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/ITicketService.java b/metro-system/src/main/java/com/sba301/metro_system/service/ITicketService.java
+new file mode 100644
+--- /dev/null	(date 1750259933195)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/ITicketService.java	(date 1750259933195)
+@@ -0,0 +1,12 @@
++package com.sba301.metro_system.service;
++
++import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
++import com.sba301.metro_system.dto.response.TicketResponseDto;
++
++public interface ITicketService {
++     TicketResponseDto getTicketDetails(long ticketId) ;
++     TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception;
++     void paymentTicketSuccess(long ticketId);
++     void paymentTicketFail(long ticketId);
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/service/IPaymentService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service;\n\nimport com.sba301.metro_system.dto.request.PaymentRequestDto;\nimport vn.payos.type.CheckoutResponseData;\nimport vn.payos.type.PaymentData;\n\npublic interface IPaymentService  {\n    String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception;\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/IPaymentService.java b/metro-system/src/main/java/com/sba301/metro_system/service/IPaymentService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/IPaymentService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/IPaymentService.java	(date 1750259933193)
+@@ -1,10 +1,9 @@
+ package com.sba301.metro_system.service;
+ 
+-import com.sba301.metro_system.dto.request.PaymentRequestDto;
+-import vn.payos.type.CheckoutResponseData;
+-import vn.payos.type.PaymentData;
++import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
+ 
+ public interface IPaymentService  {
+     String createCheckout(PaymentRequestDto paymentRequestDto) throws Exception;
+ 
++
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/IPromotionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service;\n\nimport com.sba301.metro_system.dto.request.promotion.PromotionRequestDto;\nimport com.sba301.metro_system.entity.Promotion;\nimport org.apache.coyote.BadRequestException;\nimport org.springframework.data.domain.Page;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\n\nimport java.util.List;\nimport java.util.Optional;\n\npublic interface IPromotionService {\n    Promotion createPromotion(PromotionRequestDto promotionRequestDto) throws BadRequestException;\n    Page<Promotion> findAll(int page, int size);\n    Promotion findById(long id);\n    Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException ;\n    void deletePromotion(long id);\n    List<Promotion> findAvailablePromotions(long ticketTypeId );\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/IPromotionService.java b/metro-system/src/main/java/com/sba301/metro_system/service/IPromotionService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/IPromotionService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/IPromotionService.java	(date 1750259933193)
+@@ -16,5 +16,6 @@
+     Promotion updatePromotion(long id, PromotionRequestDto promotionRequestDto) throws BadRequestException ;
+     void deletePromotion(long id);
+     List<Promotion> findAvailablePromotions(long ticketTypeId );
++    Promotion findByCode(String promotionCode);
+ 
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/RouteRuleService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/RouteRuleService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/RouteRuleService.java
+new file mode 100644
+--- /dev/null	(date 1750259933200)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/RouteRuleService.java	(date 1750259933200)
+@@ -0,0 +1,19 @@
++package com.sba301.metro_system.service.implement;
++
++import com.sba301.metro_system.entity.RouteRule;
++import com.sba301.metro_system.repository.RouteRuleRepository;
++import com.sba301.metro_system.service.IRouteRuleService;
++import lombok.RequiredArgsConstructor;
++import org.springframework.stereotype.Service;
++
++@Service
++@RequiredArgsConstructor
++public class RouteRuleService implements IRouteRuleService {
++    private final RouteRuleRepository routeRuleRepository;
++    @Override
++    public RouteRule findByRouteIdAndType(long routeId, String type) {
++        return routeRuleRepository.findRuleByRouteIdAndType(routeId, type) ;
++    }
++
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/service/ITransactionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/ITransactionService.java b/metro-system/src/main/java/com/sba301/metro_system/service/ITransactionService.java
+new file mode 100644
+--- /dev/null	(date 1750259933197)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/ITransactionService.java	(date 1750259933197)
+@@ -0,0 +1,9 @@
++package com.sba301.metro_system.service;
++
++import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
++import com.sba301.metro_system.entity.Ticket;
++import com.sba301.metro_system.entity.Transaction;
++
++public interface ITransactionService {
++    void saveTransaction(TransactionRequestDto transaction, Ticket ticket);
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/utils/Utils.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.utils;\n\nimport java.util.function.Consumer;\n\npublic class Utils {\n\n    public static boolean validateString(String input){\n        boolean result = true;\n        if (input == null || input.isBlank()) {\n            result = false;\n        }\n        return result;\n    }\n\n    public static <T> void updateIfNotEqual(T newValue, T oldValue, Consumer<T> setter) {\n        if (newValue != null && !newValue.equals(oldValue)) {\n            setter.accept(newValue);\n        }\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/utils/Utils.java b/metro-system/src/main/java/com/sba301/metro_system/utils/Utils.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/utils/Utils.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/utils/Utils.java	(date 1750259933204)
+@@ -18,4 +18,6 @@
+         }
+     }
+ 
++
++
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/IRouteRuleService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/IRouteRuleService.java b/metro-system/src/main/java/com/sba301/metro_system/service/IRouteRuleService.java
+new file mode 100644
+--- /dev/null	(date 1750259933195)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/IRouteRuleService.java	(date 1750259933195)
+@@ -0,0 +1,7 @@
++package com.sba301.metro_system.service;
++
++import com.sba301.metro_system.entity.RouteRule;
++
++public interface IRouteRuleService {
++    RouteRule findByRouteIdAndType(long routeId, String type);
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/exception/GlobalException.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.exception;\n\nimport com.sba301.metro_system.dto.ResponseApi;\nimport org.apache.coyote.BadRequestException;\nimport org.springframework.http.HttpStatus;\nimport org.springframework.http.ResponseEntity;\nimport org.springframework.web.bind.MethodArgumentNotValidException;\nimport org.springframework.web.bind.annotation.ExceptionHandler;\nimport org.springframework.web.bind.annotation.ResponseStatus;\nimport org.springframework.web.bind.annotation.RestControllerAdvice;\nimport org.springframework.web.server.ResponseStatusException;\n\nimport java.util.NoSuchElementException;\n\n@RestControllerAdvice\npublic class GlobalException {\n    @ExceptionHandler(BadRequestException.class)\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n    public ResponseApi<?> handleBadRequestException(BadRequestException e) {\n        return ResponseApi\n                .builder()\n                .status(HttpStatus.BAD_REQUEST.value())\n                .message(e.getMessage())\n                .build();\n\n    }\n\n    @ExceptionHandler(NotFoundException.class)\n    @ResponseStatus(HttpStatus.NOT_FOUND)\n    public ResponseApi<?> handleNotFoundException(NotFoundException e) {\n        return ResponseApi\n                .builder()\n                .status(HttpStatus.NOT_FOUND.value())\n                .message(e.getMessage())\n                .build();\n    }\n\n    @ExceptionHandler(MethodArgumentNotValidException.class)\n    @ResponseStatus(HttpStatus.BAD_REQUEST)\n    public ResponseApi<?> handleNotValidException(MethodArgumentNotValidException e) {\n        return ResponseApi\n                .builder()\n                .status(HttpStatus.BAD_REQUEST.value())\n                .message(e.getFieldError().getDefaultMessage())\n                .build();\n    }\n\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/exception/GlobalException.java b/metro-system/src/main/java/com/sba301/metro_system/exception/GlobalException.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/exception/GlobalException.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/exception/GlobalException.java	(date 1750259933185)
+@@ -8,6 +8,7 @@
+ import org.springframework.web.bind.annotation.ExceptionHandler;
+ import org.springframework.web.bind.annotation.ResponseStatus;
+ import org.springframework.web.bind.annotation.RestControllerAdvice;
++import org.springframework.web.client.HttpClientErrorException;
+ import org.springframework.web.server.ResponseStatusException;
+ 
+ import java.util.NoSuchElementException;
+@@ -44,5 +45,15 @@
+                 .message(e.getFieldError().getDefaultMessage())
+                 .build();
+     }
++
++    @ExceptionHandler(UnAuthorized.class)
++    @ResponseStatus(HttpStatus.UNAUTHORIZED)
++    public ResponseApi<?> handleNotValidException(UnAuthorized e) {
++        return ResponseApi
++                .builder()
++                .status(HttpStatus.UNAUTHORIZED.value())
++                .message(e.getMessage())
++                .build();
++    }
+ 
+ }
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketService.java
+new file mode 100644
+--- /dev/null	(date 1750259933201)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TicketService.java	(date 1750259933201)
+@@ -0,0 +1,156 @@
++package com.sba301.metro_system.service.implement;
++
++import com.sba301.metro_system.dto.request.payment.PaymentRequestDto;
++import com.sba301.metro_system.dto.request.ticket.TicketRequestDto;
++import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
++import com.sba301.metro_system.dto.response.TicketResponseDto;
++import com.sba301.metro_system.entity.*;
++import com.sba301.metro_system.enums.PaymentMethod;
++import com.sba301.metro_system.enums.TicketStatus;
++import com.sba301.metro_system.enums.TransactionStatus;
++import com.sba301.metro_system.exception.NotFoundException;
++import com.sba301.metro_system.exception.UnAuthorized;
++import com.sba301.metro_system.mapper.TicketMapper;
++import com.sba301.metro_system.mapper.TransactionMapper;
++import com.sba301.metro_system.record.MailBody;
++import com.sba301.metro_system.repository.TicketRepository;
++import com.sba301.metro_system.service.ITicketService;
++import com.sba301.metro_system.utils.AccountHelper;
++import lombok.RequiredArgsConstructor;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.time.LocalDateTime;
++
++@Service
++@RequiredArgsConstructor
++public class TicketService implements ITicketService {
++    private final TicketRepository ticketRepository;
++    private final RouteRuleService routeRuleService;
++    private final TicketTypeService ticketTypeService;
++    private final PromotionService promotionService;
++    private final PaymentService paymentService;
++    private final TransactionService transactionService;
++    private final EmailService emailService;
++
++
++    @Override
++    public TicketResponseDto getTicketDetails(long ticketId)  {
++        Ticket ticket = ticketRepository.findById(ticketId).get();
++        return TicketMapper.toTicketResponseDto(ticket);
++    }
++
++    public TicketResponseDto buyUnlimitTicket(TicketRequestDto ticketRequestDto) throws Exception{
++        final int NUMBER_OF_TICKETS = 1;
++        Ticket ticket = new Ticket();
++        Account currentAccount = AccountHelper.getCurrentUser().getUser();
++        if (currentAccount == null) {
++            throw new UnAuthorized("Login before to use this service");
++        }
++
++        TicketType ticketType = ticketTypeService.findById(ticketRequestDto.getTicketTypeId());
++        RouteRule routeRule = routeRuleService.findByRouteIdAndType(ticketRequestDto.getRouteId(),
++                ticketType.getTicketName());
++        if (routeRule == null) {
++            throw new NotFoundException("This ticket type does not apply to this route");
++        }
++
++        Double basePrice = routeRule.getTicketRule().getBasePrice();
++        Double oldPrice = basePrice;
++        Double newPrice = basePrice;
++
++        if (ticketRequestDto.getPromotionCode() != null) {
++            Promotion promotion = promotionService.findByCode(ticketRequestDto.getPromotionCode());
++            if (promotion != null) {
++                newPrice = calculateDiscountedPrice(oldPrice, promotion);
++                ticket.setPromotion(promotion);
++            }
++        }
++        ticket.setDepartureStation(null);
++        ticket.setArrivalStation(null);
++        ticket.setOldPrice(oldPrice);
++        ticket.setNewPrice(newPrice);
++        ticket.setValidFrom(null);
++        ticket.setValidTo(null);
++        ticket.setPurchaseTime(LocalDateTime.now());
++        ticket.setTicketStatus(TicketStatus.PENDING);
++        ticket.setAccount(currentAccount);
++        ticket.setTicketType(ticketType);
++        ticket.setRoute(routeRule.getRoute());
++        ticketRepository.save(ticket);
++
++        // create payment qr
++        String urlCheckout = paymentTicket(ticketType.getTicketName(),
++                generateDescription(ticketType.getTicketName()),
++                newPrice,
++                NUMBER_OF_TICKETS);
++
++        TicketResponseDto responseDto = TicketMapper.toTicketResponseDto(ticket);
++        responseDto.setUrlCheckout(urlCheckout);
++
++        return responseDto;
++    }
++
++
++
++    public Double calculateDiscountedPrice(Double oldPrice, Promotion promotion) {
++        if (promotion != null) {
++            return oldPrice * (promotion.getPromotionDiscount().doubleValue() / 100);
++        }
++        return oldPrice;
++    }
++
++    public String paymentTicket(String ticketName,String description, Double price, int quantity) throws Exception {
++        PaymentRequestDto paymentRequestDto = new PaymentRequestDto();
++        paymentRequestDto.setProductName(ticketName);
++        paymentRequestDto.setDescription(description);
++        paymentRequestDto.setPrice(price);
++        paymentRequestDto.setQuantity(quantity);
++        return paymentService.createCheckout(paymentRequestDto);
++    }
++
++    public String generateDescription(String ticketName){
++        return String.format("Thanh toan mua %s", ticketName);
++    }
++
++    public void paymentTicketSuccess(long ticketId)  {
++        Ticket ticket = ticketRepository.findById(ticketId).get();
++        //update if payment success
++        ticket.setTicketStatus(TicketStatus.UNUSED);
++        ticketRepository.save(ticket);
++
++        // create new transaction
++        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
++                PaymentMethod.PAYOS,
++                TransactionStatus.SUCCESS);
++        transactionService.saveTransaction(transactionRequestDto, ticket);
++
++        String text = "Bạn đã mua vé " + ticket.getTicketType().getTicketName();
++        MailBody mailBody = MailBody.builder()
++                .to(ticket.getAccount().getEmail())
++                .subject("Bạn đã mua vé" + ticket.getTicketType().getTicketName())
++                .text(text)
++                .build();
++        emailService.sendOTP(mailBody);
++    }
++
++    public void paymentTicketFail(long ticketId)  {
++        Ticket ticket = ticketRepository.findById(ticketId).get();
++        //update if payment failed
++        ticket.setTicketStatus(TicketStatus.CANCELLED);
++//        ticketRepository.save(ticket);
++
++        // create new transaction
++        TransactionRequestDto transactionRequestDto = TransactionMapper.getTransactionRequestDto(ticketId,
++                PaymentMethod.PAYOS,
++                TransactionStatus.FAILED);
++        transactionService.saveTransaction(transactionRequestDto, ticket);
++    }
++
++
++
++
++
++
++
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/service/implement/TransactionService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/implement/TransactionService.java b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TransactionService.java
+new file mode 100644
+--- /dev/null	(date 1750259933203)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/implement/TransactionService.java	(date 1750259933203)
+@@ -0,0 +1,38 @@
++package com.sba301.metro_system.service.implement;
++
++import com.sba301.metro_system.dto.request.transaction.TransactionRequestDto;
++import com.sba301.metro_system.dto.response.TicketResponseDto;
++import com.sba301.metro_system.entity.Ticket;
++import com.sba301.metro_system.entity.Transaction;
++import com.sba301.metro_system.enums.TransactionStatus;
++import com.sba301.metro_system.repository.TicketRepository;
++import com.sba301.metro_system.repository.TransactionRepository;
++import com.sba301.metro_system.service.ITransactionService;
++import io.swagger.v3.oas.annotations.media.Schema;
++import lombok.RequiredArgsConstructor;
++import org.springframework.stereotype.Service;
++import org.springframework.transaction.annotation.Transactional;
++
++import java.time.LocalDateTime;
++
++@Service
++@RequiredArgsConstructor
++public class TransactionService implements ITransactionService {
++
++    private final TransactionRepository transactionRepository;
++    private final TicketRepository ticketRepository;
++
++
++    @Override
++    @Transactional
++    public void saveTransaction(TransactionRequestDto transactionDto, Ticket ticket) {
++        Transaction transaction = new Transaction();
++        transaction.setAmount(ticket.getNewPrice());
++        transaction.setPaymentMethod(transactionDto.getPaymentMethod());
++        transaction.setTransactionTime(LocalDateTime.now());
++        transaction.setStatus(transactionDto.getTransactionStatus());
++        transaction.setTicket(ticket);
++        transaction.setAccount(ticket.getAccount());
++        transactionRepository.save(transaction);
++    }
++}
+Index: metro-system/src/main/java/com/sba301/metro_system/service/ITicketTypeService.java
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>package com.sba301.metro_system.service;\n\nimport com.sba301.metro_system.dto.request.tickettype.TicketTypeDto;\nimport com.sba301.metro_system.entity.TicketType;\n\nimport java.util.List;\n\npublic interface ITicketTypeService {\n    TicketType findById(long id);\n    List<TicketType> findAll();\n    List<TicketType> findAllByTicketTypeId(List<Long> ids);\n    TicketType createTicketType(TicketTypeDto ticketType);\n    void deleteTicketType(long id);\n    TicketType updateTicketType(long id, TicketTypeDto ticketType);\n}\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/src/main/java/com/sba301/metro_system/service/ITicketTypeService.java b/metro-system/src/main/java/com/sba301/metro_system/service/ITicketTypeService.java
+--- a/metro-system/src/main/java/com/sba301/metro_system/service/ITicketTypeService.java	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/src/main/java/com/sba301/metro_system/service/ITicketTypeService.java	(date 1750259933196)
+@@ -12,4 +12,5 @@
+     TicketType createTicketType(TicketTypeDto ticketType);
+     void deleteTicketType(long id);
+     TicketType updateTicketType(long id, TicketTypeDto ticketType);
++    List<TicketType> findAllUnlimitTicketTypes();
+ }
+Index: metro-system/pom.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project xmlns=\"http://maven.apache.org/POM/4.0.0\" xmlns:xsi=\"http://www.w3.org/2001/XMLSchema-instance\"\n\txsi:schemaLocation=\"http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd\">\n\t<modelVersion>4.0.0</modelVersion>\n\t<parent>\n\t\t<groupId>org.springframework.boot</groupId>\n\t\t<artifactId>spring-boot-starter-parent</artifactId>\n\t\t<version>3.4.5</version>\n\t\t<relativePath/> <!-- lookup parent from repository -->\n\t</parent>\n\t<groupId>com.sba301</groupId>\n\t<artifactId>metro-system</artifactId>\n\t<version>0.0.1-SNAPSHOT</version>\n\t<name>metro-system</name>\n\t<description>Demo project for Spring Boot</description>\n\t<url/>\n\t<licenses>\n\t\t<license/>\n\t</licenses>\n\t<developers>\n\t\t<developer/>\n\t</developers>\n\t<scm>\n\t\t<connection/>\n\t\t<developerConnection/>\n\t\t<tag/>\n\t\t<url/>\n\t</scm>\n\t<properties>\n\t\t<java.version>21</java.version>\n\t</properties>\n\t<dependencies>\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-data-jpa</artifactId>\n\t\t</dependency>\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-web</artifactId>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-devtools</artifactId>\n\t\t\t<scope>runtime</scope>\n\t\t\t<optional>true</optional>\n\t\t</dependency>\n\n\t\t<!-- https://mvnrepository.com/artifact/org.springframework.boot/spring-boot-starter-validation -->\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-validation</artifactId>\n\t\t\t<version>3.5.0</version>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>com.mysql</groupId>\n\t\t\t<artifactId>mysql-connector-j</artifactId>\n\t\t\t<scope>runtime</scope>\n\t\t</dependency>\n\t\t<dependency>\n\t\t\t<groupId>org.projectlombok</groupId>\n\t\t\t<artifactId>lombok</artifactId>\n\t\t\t<optional>true</optional>\n\t\t</dependency>\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-test</artifactId>\n\t\t\t<scope>test</scope>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>org.junit.jupiter</groupId>\n\t\t\t<artifactId>junit-jupiter-api</artifactId>\n\t\t\t<version>5.11.4</version>\n\t\t\t<scope>test</scope>\n\t\t</dependency>\n\n\t\t<!-- https://mvnrepository.com/artifact/org.springdoc/springdoc-openapi-starter-webmvc-ui -->\n\t\t<dependency>\n\t\t\t<groupId>org.springdoc</groupId>\n\t\t\t<artifactId>springdoc-openapi-starter-webmvc-ui</artifactId>\n\t\t\t<version>2.8.8</version>\n\t\t</dependency>\n\n\t\t<!-- https://mvnrepository.com/artifact/io.github.cdimascio/dotenv-java -->\n\t\t<dependency>\n\t\t\t<groupId>io.github.cdimascio</groupId>\n\t\t\t<artifactId>dotenv-java</artifactId>\n\t\t\t<version>3.0.0</version>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-security</artifactId>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>io.jsonwebtoken</groupId>\n\t\t\t<artifactId>jjwt-api</artifactId>\n\t\t\t<version>0.12.6</version>\n\t\t</dependency>\n\t\t<dependency>\n\t\t\t<groupId>io.jsonwebtoken</groupId>\n\t\t\t<artifactId>jjwt-impl</artifactId>\n\t\t\t<version>0.12.6</version>\n\t\t\t<scope>runtime</scope>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>io.jsonwebtoken</groupId>\n\t\t\t<artifactId>jjwt-jackson</artifactId>\n\t\t\t<version>0.12.6</version>\n\t\t\t<scope>runtime</scope>\n\t\t</dependency>\n\n\t\t<dependency>\n\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t<artifactId>spring-boot-starter-mail</artifactId>\n\t\t</dependency>\n\n\t\t<!-- https://mvnrepository.com/artifact/vn.payos/payos-java -->\n\t\t<dependency>\n\t\t\t<groupId>vn.payos</groupId>\n\t\t\t<artifactId>payos-java</artifactId>\n\t\t\t<version>1.0.3</version>\n\t\t</dependency>\n\n\n\t</dependencies>\n\n\t<build>\n\t\t<plugins>\n\t\t\t<plugin>\n\t\t\t\t<groupId>org.apache.maven.plugins</groupId>\n\t\t\t\t<artifactId>maven-compiler-plugin</artifactId>\n\t\t\t\t<configuration>\n\t\t\t\t\t<annotationProcessorPaths>\n\t\t\t\t\t\t<path>\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\n\t\t\t\t\t\t\t<version>${lombok.version}</version>\n\t\t\t\t\t\t</path>\n\t\t\t\t\t</annotationProcessorPaths>\n\t\t\t\t</configuration>\n\t\t\t</plugin>\n\t\t\t<plugin>\n\t\t\t\t<groupId>org.springframework.boot</groupId>\n\t\t\t\t<artifactId>spring-boot-maven-plugin</artifactId>\n\t\t\t\t<configuration>\n\t\t\t\t\t<excludes>\n\t\t\t\t\t\t<exclude>\n\t\t\t\t\t\t\t<groupId>org.projectlombok</groupId>\n\t\t\t\t\t\t\t<artifactId>lombok</artifactId>\n\t\t\t\t\t\t</exclude>\n\t\t\t\t\t</excludes>\n\t\t\t\t</configuration>\n\t\t\t</plugin>\n\t\t</plugins>\n\t</build>\n\n</project>\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/metro-system/pom.xml b/metro-system/pom.xml
+--- a/metro-system/pom.xml	(revision a83521b150d39e54ef3c99356e233e5aa39c30b7)
++++ b/metro-system/pom.xml	(date 1750259933172)
+@@ -126,6 +126,30 @@
+ 			<version>1.0.3</version>
+ 		</dependency>
+ 
++		<dependency>
++			<groupId>org.springframework.data</groupId>
++			<artifactId>spring-data-redis</artifactId>
++		</dependency>
++
++		<dependency>
++			<groupId>io.lettuce</groupId>
++			<artifactId>lettuce-core</artifactId>
++			<version>6.7.1.RELEASE</version> <!-- Check for the latest version on Maven Central -->
++		</dependency>
++
++		<dependency>
++			<groupId>org.mapstruct</groupId>
++			<artifactId>mapstruct</artifactId>
++			<version>1.5.5.Final</version> <!-- Use the latest version -->
++		</dependency>
++		<dependency>
++			<groupId>org.mapstruct</groupId>
++			<artifactId>mapstruct-processor</artifactId>
++			<version>1.5.5.Final</version>
++			<scope>provided</scope>
++		</dependency>
++
++
+ 
+ 	</dependencies>
+ 
+@@ -141,6 +165,13 @@
+ 							<artifactId>lombok</artifactId>
+ 							<version>${lombok.version}</version>
+ 						</path>
++						<path>
++							<groupId>org.mapstruct</groupId>
++							<artifactId>mapstruct-processor</artifactId>
++							<version>1.5.5.Final</version>
++							<scope>provided</scope>
++						</path>
++
+ 					</annotationProcessorPaths>
+ 				</configuration>
+ 			</plugin>
