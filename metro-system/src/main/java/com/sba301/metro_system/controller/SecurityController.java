@@ -43,7 +43,7 @@ public class SecurityController {
     }
 
     @PostMapping("/register")
-    public ResponseEntity<?> register(@RequestBody String mail) {
+    public ResponseEntity<?> register(@RequestParam String mail) {
         try {
             String message = userService.register(mail);
             ResponseApi<String> response = ResponseApi.<String>builder()
