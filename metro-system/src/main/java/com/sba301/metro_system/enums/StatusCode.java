@@ -13,7 +13,7 @@ public enum StatusCode {
     TICKET_BUY_FAILED("2007", "Ticket not available"),
 
 
-    TICKET_NOT_MATCHED("2008", "The station you selected is not valid for this ticket");
+    TICKET_NOT_MATCHED("2008", "Ga không phù hợp với vé đã mua");
 
 
     private final String code;

@@ -5,6 +5,9 @@ import com.sba301.metro_system.dto.response.TicketResponseDto;
 import com.sba301.metro_system.entity.Booking;
 import com.sba301.metro_system.entity.Ticket;
 
+import java.util.List;
+import java.util.stream.Collectors;
+
 public class BookingMapper {
     public static BookingResponseDto toBookingResponseDto(Booking booking) {
         if (booking == null) {
@@ -61,6 +64,15 @@ public class BookingMapper {
             dto.setNumberOfPassengers(booking.getTickets().size());
         } else {
             dto.setNumberOfPassengers(0);
+        }
+
+        if (booking.getTickets() != null) {
+            List<TicketResponseDto> ticketResponseDtos = booking
+                    .getTickets()
+                    .stream()
+                    .map(TicketMapper::toTicketResponseDto)
+                    .collect(Collectors.toList());
+            dto.setTickets(ticketResponseDtos);
         }
 
         return dto;
